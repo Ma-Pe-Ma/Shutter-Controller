@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Redőnykapcsoló</string>
+    <string name="monday_abb">H</string>
+    <string name="tuesday_abb">K</string>
+    <string name="wednesday_abb">Sze</string>
+    <string name="thursday_abb">Cs</string>
+    <string name="friday_abb">P</string>
+    <string name="saturday_abb">Szo</string>
+    <string name="sunday_abb">V</string>
+    <string name="time">Időpont:</string>
+    <string name="value">Érték:</string>
+    <string name="timed_configs">Időzített állítások</string>
+    <string name="days">Napok:</string>
+    <string name="timing_pref">Timing String</string>
+</resources>
