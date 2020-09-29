@@ -79,11 +79,7 @@ public class TimingSelectorFragment extends DialogFragment {
 
         Log.i("DEBUG","Dismissing!");
 
-        String timingString = Timing.generateTimingString();
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getResources().getString(R.string.timing_pref), timingString);
-        editor.commit();
+        Timing.updateTimings(getActivity());
     }
 
     @Override
@@ -189,7 +185,7 @@ public class TimingSelectorFragment extends DialogFragment {
         }
 
         TextView daysText = view.findViewById(R.id.days_text);
-        daysText.setText(timing.generateDaysString());
+        daysText.setText(timing.generateActiveDaysString());
 
         Switch timingSwitch = (Switch) view.findViewById(R.id.timing_switch);
         timingSwitch.setChecked(timing.isActive());

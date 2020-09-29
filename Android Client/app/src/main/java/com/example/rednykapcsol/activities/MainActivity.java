@@ -21,7 +21,9 @@ import android.widget.Toast;
 
 import com.example.rednykapcsol.FragmentCommunicating;
 import com.example.rednykapcsol.R;
+import com.example.rednykapcsol.RequestDispatcher2;
 import com.example.rednykapcsol.Timing;
+import com.example.rednykapcsol.ZeroState;
 import com.example.rednykapcsol.fragments.SeekbarFragment;
 import com.example.rednykapcsol.fragments.TimingSelectorFragment;
 
@@ -72,10 +74,23 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
         setupButtons();
         setupProgressBar();
-        setupTimings();
+
+        Timing.initialize(this);
 
         inactiveColor = ContextCompat.getColor(MainActivity.this,R.color.colorGray);
         activeColor = ContextCompat.getColor(MainActivity.this,R.color.colorGreen);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        RequestDispatcher2.getRequestDispatcher().setContext(this.getApplicationContext());
+    }
+
+    @Override
+    protected void onPause () {
+        super.onPause();
+        RequestDispatcher2.getRequestDispatcher().setContext(null);
     }
 
     private void setupProgressBar() {
@@ -197,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         builder.setPositiveButton("Fent", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                RequestDispatcher2.getRequestDispatcher().postZeroState(ZeroState.up);
             }
         });
 
@@ -213,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         builder.setNegativeButton("Lent", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                RequestDispatcher2.getRequestDispatcher().postZeroState(ZeroState.down);
             }
         });
 
@@ -238,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         builder.setPositiveButton("Igen", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                RequestDispatcher2.getRequestDispatcher().postZeroState(ZeroState.find);
             }
         });
 
@@ -257,16 +272,6 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
     public ProgressBar getProgressBar() {
         return progressBar;
-    }
-
-    private void setupTimings() {
-        //TODO: Only needed when developing
-        Timing.initialize();
-
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        String key = getResources().getString(R.string.timing_pref);
-        String timing = sharedPref.getString(key, "");
-        Timing.parsePreferences(timing);
     }
 
     @Override

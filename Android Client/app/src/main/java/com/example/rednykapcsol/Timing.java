@@ -1,27 +1,33 @@
 package com.example.rednykapcsol;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.util.Pair;
 
 import org.joda.time.LocalTime;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.time.DayOfWeek;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import com.example.rednykapcsol.WeekDay;
 
 public class Timing {
-    private static final int numberOfSlots = 12;
+    public static final int numberOfSlots = 12;
     private static Timing timings[] = new Timing[numberOfSlots];
     private static Map<WeekDay, String> dayID;
 
+    private int ID;
     private boolean active;
     private int value = 100;
     private LocalTime time;
     private Map<WeekDay, Boolean> days;
 
-    public static void initialize() {
+    public static void initialize(Activity activity) {
         dayID = new HashMap<>();
 
         dayID.put(WeekDay.MONDAY, "H");
@@ -31,6 +37,15 @@ public class Timing {
         dayID.put(WeekDay.FRIDAY, "P");
         dayID.put(WeekDay.SATURDAY, "Szo");
         dayID.put(WeekDay.SUNDAY, "V");
+
+        for (Timing timing : timings) {
+            timing = new Timing();
+        }
+
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        String key = activity.getResources().getString(R.string.timing_pref);
+        String timingString = sharedPref.getString(key, "");
+        parseTimingObjectDump(timingString);
     }
 
     public Timing() {
@@ -85,7 +100,7 @@ public class Timing {
         Timing.timings = timings;
     }
 
-    public String generateDaysString() {
+    public String generateActiveDaysString() {
         String activeDays = "";
 
         if (days != null) {
@@ -103,97 +118,126 @@ public class Timing {
         return activeDays;
     }
 
-    public static String generateTimingString() {
-        String result = "";
+    public JSONObject generateTimingObject() {
+        JSONObject timingObject = new JSONObject();
 
-        for(int i = 0; i < numberOfSlots; i++) {
-            Timing timing = timings[i];
+        try {
+            //timingObject.put("ID", ID);
+            timingObject.put("ACTIVE", active);
+            timingObject.put("VALUE", value);
 
-            if(timing.getDays() != null) {
-                result += i + ";";
+            String daysString = "";
 
-                if (timing.isActive()) {
-                    result += "T;";
+            if (days == null) {
+                return null;
+            }
+
+            for (WeekDay weekDay : WeekDay.values()) {
+                boolean opened = days.get(weekDay);
+                if (opened) {
+                    daysString += "T";
                 }
                 else {
-                    result += "F;";
+                    daysString += "F";
                 }
-
-                result += timing.getTime().getHourOfDay()+":"+timing.getTime().getMinuteOfHour()+";";
-
-                for (WeekDay weekDay : WeekDay.values()) {
-                    boolean active = timing.getDays().get(weekDay);
-
-                    if(active) {
-                        result += "T";
-                    }
-                    else {
-                        result += "F";
-                    }
-                }
-                result += ";"+timing.getValue()+'\n';
             }
-            else {
-                result += "" + i +'\n';
+
+            timingObject.put("DAYS", daysString);
+
+            if (time == null) {
+                return null;
             }
+
+            timingObject.put("HOUR", time.getHourOfDay());
+            timingObject.put("MIN", time.getMinuteOfHour());
+
+        } catch (JSONException e) {
+
         }
 
-        //SendToServer();
-
-        Log.i("DEBUG","Saved string: "+result);
-        return result;
+        return timingObject;
     }
 
-    public static void parsePreferences(String preferences) {
+    public static JSONObject generateTimingObjectDump() {
+        JSONObject timingConfig = new JSONObject();
 
-        if(preferences.length() < 10) {
-            for (int i = 0; i < numberOfSlots; i++) {
-                timings[i] = new Timing();
+        for(int i = 0; i < numberOfSlots; i++) {
+            JSONObject timingObject = timings[i].generateTimingObject();
+            if (timingObject == null) {
+                continue;
+            }
+            try {
+                timingConfig.put(String.valueOf(i), timingObject);
+            }
+            catch (JSONException e) {
+
             }
         }
-        else {
-            String[] timingStrings = preferences.split("\n");
 
-            for(int i = 0; i < numberOfSlots; i++) {
-                if (timingStrings[i].length()<=2) {
-                    Timing timing = new Timing();
-                    timings[i] = timing;
+        return timingConfig;
+    }
+
+    public static Timing parseTimingObject(JSONObject timingObject) {
+        int value = 100;
+        String dayString = "FFFFFFF";
+
+        Map<WeekDay, Boolean> dayMap = new HashMap<>();
+        for (WeekDay day : WeekDay.values()) {
+            dayMap.put(day, false);
+        }
+
+        LocalTime time = new LocalTime(12, 0);
+
+        try {
+            value = (int) timingObject.get("VALUE");
+
+            String daysString = (String) timingObject.get("DAYS");
+            for (int i = 0; i < daysString.length(); i++) {
+                Boolean opened = false;
+                if (daysString.charAt(i) == 'T') {
+                    opened = true;
                 }
-                else {
-                    String[] properties = timingStrings[i].split(";");
 
-                    boolean switched = false;
+                dayMap.put(WeekDay.values()[i], opened);
+            }
 
-                    if (properties[1].charAt(0) =='F') {
-                        switched = false;
-                    }
-                    if (properties[1].charAt(0) =='T') {
-                        switched = true;
-                    }
+            int hour = (int) timingObject.get("HOUR");
+            int minute = (int) timingObject.get("MIN");
 
-                    String[] timeString = properties[2].split(":");
-                    LocalTime time = new LocalTime(Integer.parseInt(timeString[0]), Integer.parseInt(timeString[1]));
-                    int value = Integer.parseInt(properties[4]);
+            time = new LocalTime(hour, minute);
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-                    Map<WeekDay, Boolean> days = new HashMap<>();
-                    for(int j = 0; j < 7; j++) {
-                        boolean state = false;
+        return new Timing(value, dayMap, time);
+    }
 
-                        if (properties[3].charAt(j) =='F') {
-                            state = false;
-                        }
-                        if (properties[3].charAt(j) =='T') {
-                            state = true;
-                        }
+    public static void parseTimingObjectDump(String timingConfigString) {
+        if (timingConfigString.length() > 0) {
+            JSONObject timingConfig = null;
+            try {
+                timingConfig = new JSONObject(timingConfigString);
 
-                        WeekDay weekDay = WeekDay.values()[j];
-                        days.put(weekDay, state);
-                    }
+                for (Iterator<String> iter = timingConfig.keys(); iter.hasNext(); ) {
+                    String key = iter.next();
 
-                    timings[i] = new Timing(value, days, time);
-                    timings[i].setActive(switched);
+                    JSONObject timingObject = (JSONObject) timingConfig.get(key);
+                    Timing timing = parseTimingObject(timingObject);
+                    timings[Integer.valueOf(key)] = timing;
                 }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
+    }
+
+    public static void updateTimings(Activity activity) {
+        String timingString = generateTimingObjectDump().toString();
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(activity.getResources().getString(R.string.timing_pref), timingString);
+        editor.commit();
     }
 }
