@@ -15,6 +15,8 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.util.function.Consumer;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -34,6 +36,14 @@ public class RequestDispatcher2 {
         }
 
         return requestDispatcher;
+    }
+
+    public void getDump() {
+
+    }
+
+    public void getState() {
+
     }
 
     public void postZeroState(ZeroState zeroState) {
@@ -144,64 +154,91 @@ public class RequestDispatcher2 {
     public void postTimings() {
         String customURL = URL + "/SCH";
 
-        try {
-            RequestQueue requestQueue = Volley.newRequestQueue(context);
-            JSONObject jsonBody = new JSONObject();
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        JSONObject jsonBody =  Timing.generateTimingObjectDump();
 
-            for (int i = 0; i < Timing.numberOfSlots; i++) {
-                JSONObject timingObject = new JSONObject();
-                timingObject.put("ID", i);
-                timingObject.put("ACTIVE", Timing.getTimings()[i].isActive());
-                timingObject.put("VALUE", Timing.getTimings()[i].getValue());
-                //TODO:
-                //timingObject.put("DAYS", Timing.getTimings()[i].getDays());
+        final String requestBody = jsonBody.toString();
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, customURL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.i("VOLLEY", response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("VOLLEY", error.toString());
+            }
+        }) {
+            @Override
+            public String getBodyContentType() {
+                return "application/json; charset=utf-8";
             }
 
-            final String requestBody = jsonBody.toString();
+            @Override
+            public byte[] getBody() throws AuthFailureError {
+                try {
+                    return requestBody == null ? null : requestBody.getBytes("utf-8");
+                } catch (UnsupportedEncodingException uee) {
+                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                    return null;
+                }
+            }
 
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, customURL, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.i("VOLLEY", response);
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                String responseString = "";
+                if (response != null) {
+                    responseString = String.valueOf(response.statusCode);
+                    // can get more details such as response.headers
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("VOLLEY", error.toString());
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
+                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+            }
+        };
 
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
+        requestQueue.add(stringRequest);
+    }
 
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-                        responseString = String.valueOf(response.statusCode);
-                        // can get more details such as response.headers
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
+    public void handleResponse(JSONObject responseObject) {
+        try {
+            String status = (String) responseObject.get("STATUS");
+            JSONObject newMessages = (JSONObject) responseObject.get("MES");
+            float time = (float) responseObject.get("TIME") + 1;
 
-            requestQueue.add(stringRequest);
+            Consumer<Void> simpleReference;
+
+            switch (status) {
+                case "OK":
+
+                    break;
+
+                case "WAIT":
+
+                    break;
+
+                case "DUMP":
+
+                    break;
+
+                case "SET":
+
+                    break;
+
+                case "TIME":
+
+                    break;
+
+                case "ZERO":
+
+                    break;
+            }
+
+            //simpleReference.accept();
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-
 
     public Context getContext() {
         return context;
