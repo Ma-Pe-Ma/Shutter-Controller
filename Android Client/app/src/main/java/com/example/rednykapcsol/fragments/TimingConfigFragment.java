@@ -31,7 +31,7 @@ import org.joda.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
-public class  TimingConfigFragment extends DialogFragment {
+public class TimingConfigFragment extends DialogFragment {
     private int position;
     private int value;
     private Timing timing;

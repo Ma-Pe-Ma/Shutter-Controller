@@ -15,14 +15,19 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
 public class RequestDispatcher2 {
+
+    private FragmentCommunicating fragmentCommunicating;
 
     final String URL = "http://...";
 
@@ -36,6 +41,14 @@ public class RequestDispatcher2 {
         }
 
         return requestDispatcher;
+    }
+
+    public FragmentCommunicating getFragmentCommunicating() {
+        return fragmentCommunicating;
+    }
+
+    public void setFragmentCommunicating(FragmentCommunicating fragmentCommunicating) {
+        this.fragmentCommunicating = fragmentCommunicating;
     }
 
     public void getDump() {
@@ -202,7 +215,7 @@ public class RequestDispatcher2 {
     public void handleResponse(JSONObject responseObject) {
         try {
             String status = (String) responseObject.get("STATUS");
-            JSONObject newMessages = (JSONObject) responseObject.get("MES");
+
             float time = (float) responseObject.get("TIME") + 1;
 
             Consumer<Void> simpleReference;
@@ -213,25 +226,22 @@ public class RequestDispatcher2 {
                     break;
 
                 case "WAIT":
-
-                    break;
-
-                case "DUMP":
-
-                    break;
-
-                case "SET":
-
-                    break;
-
-                case "TIME":
-
-                    break;
-
-                case "ZERO":
-
-                    break;
             }
+
+            JSONArray newMessagesArray = (JSONArray) responseObject.get("MES");
+            List<String> newMessagesList = new ArrayList<>();
+
+            for (int i = 0; i < newMessagesArray.length(); i++) {
+                String newMessage = (String) newMessagesArray.get(i);
+                newMessagesList.add(newMessage);
+            }
+
+            String[] newMessages = new String[newMessagesList.size()];
+            for(int i = 0; i< newMessagesList.size(); i++) {
+                newMessages[i] = newMessagesList.get(i);
+            }
+
+            fragmentCommunicating.notifyMessage(newMessages);
 
             //simpleReference.accept();
 

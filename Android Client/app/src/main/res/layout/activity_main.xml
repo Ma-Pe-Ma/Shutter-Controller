@@ -87,6 +87,14 @@
             android:src="@drawable/download_circular_button"
             android:background="@null" />
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/infoButton"
+            android:src="@drawable/information_50"
+            android:background="@null"/>
+
+
     </LinearLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

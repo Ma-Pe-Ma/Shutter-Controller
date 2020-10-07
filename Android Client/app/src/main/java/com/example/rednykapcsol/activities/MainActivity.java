@@ -3,12 +3,14 @@ package com.example.rednykapcsol.activities;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.icu.text.IDNA;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,10 +22,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.rednykapcsol.FragmentCommunicating;
+import com.example.rednykapcsol.MessageContainer;
 import com.example.rednykapcsol.R;
 import com.example.rednykapcsol.RequestDispatcher2;
 import com.example.rednykapcsol.Timing;
 import com.example.rednykapcsol.ZeroState;
+import com.example.rednykapcsol.fragments.InfoDialogFragment;
 import com.example.rednykapcsol.fragments.SeekbarFragment;
 import com.example.rednykapcsol.fragments.TimingSelectorFragment;
 
@@ -48,8 +52,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private ImageButton upMax;
     private ImageButton downMax;
 
-    private PrintWriter output;
-    private BufferedReader input;
+    private ImageButton infoButton;
 
     private ProgressBar progressBar;
     private TextView progressText;
@@ -57,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     private int inactiveColor;
     private int activeColor;
     private final String selectorTag = "selector";
-    private final String configTag= "config";
+    private final String configTag = "config";
 
     //TODO: automatikus nullázás reggel/este?
     //TODO: újraindítási figyelmeztetés az utolsó 10 napban
@@ -84,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     @Override
     protected void onResume() {
         super.onResume();
+        RequestDispatcher2.getRequestDispatcher().setFragmentCommunicating(this);
         RequestDispatcher2.getRequestDispatcher().setContext(this.getApplicationContext());
     }
 
@@ -91,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     protected void onPause () {
         super.onPause();
         RequestDispatcher2.getRequestDispatcher().setContext(null);
+        RequestDispatcher2.getRequestDispatcher().setFragmentCommunicating(null);
     }
 
     private void setupProgressBar() {
@@ -133,6 +138,14 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
     }
 
     private void setupButtons() {
+        infoButton = findViewById(R.id.infoButton);
+        infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                
+            }
+        });
+
         up = findViewById(R.id.up);
         up.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -270,6 +283,24 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
         return zeroAutomatic;
     }
 
+    public void showMessageWindow(String[] messages) {
+        InfoDialogFragment infoDialogFragment = (InfoDialogFragment) getSupportFragmentManager().findFragmentByTag("INFO");
+
+        if (infoDialogFragment != null) {
+            infoDialogFragment.dismiss();
+            getSupportFragmentManager().beginTransaction();
+
+            if (messages.length == 0) {
+                return;
+            }
+        }
+
+        String[] processedMessages = MessageContainer.processMessages(messages);
+
+        infoDialogFragment = new InfoDialogFragment(messages);
+        infoDialogFragment.show(getSupportFragmentManager(), "INFO");
+    }
+
     public ProgressBar getProgressBar() {
         return progressBar;
     }
@@ -288,6 +319,16 @@ public class MainActivity extends AppCompatActivity implements FragmentCommunica
 
     @Override
     public void notifyConfig() {
+
+    }
+
+    @Override
+    public void notifyMessage(String[] newMessages) {
+        showMessageWindow(newMessages);
+    }
+
+    @Override
+    public void notifyAboutTimedUpdate(int secondsTillUpdate) {
 
     }
 }
