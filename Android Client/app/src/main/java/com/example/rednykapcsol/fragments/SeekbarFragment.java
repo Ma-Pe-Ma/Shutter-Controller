@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.example.rednykapcsol.R;
+import com.example.rednykapcsol.RequestDispatcher;
 import com.example.rednykapcsol.activities.MainActivity;
 
 import java.util.Objects;
@@ -23,6 +24,8 @@ public class SeekbarFragment extends DialogFragment {
     private TextView progressText;
     private Button okButton;
     private SeekBar seekBar;
+
+    int currentProgress;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,13 +45,16 @@ public class SeekbarFragment extends DialogFragment {
         okButton = seekbarDialog.findViewById(R.id.choose);
         progressText = seekbarDialog.findViewById(R.id.value);
 
-        seekBar.setProgress(mainActivity.getProgressBar().getProgress());
+        currentProgress = mainActivity.getProgressBar().getProgress();
+
+        seekBar.setProgress(currentProgress);
         progressText.setText(mainActivity.getProgressBar().getProgress()+"%");
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 progressText.setText(progress+"%");
+                currentProgress = progress;
             }
 
             @Override
@@ -65,7 +71,7 @@ public class SeekbarFragment extends DialogFragment {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+            RequestDispatcher.getRequestDispatcher().postNewValue(currentProgress);
             getDialog().dismiss();
             }
         });

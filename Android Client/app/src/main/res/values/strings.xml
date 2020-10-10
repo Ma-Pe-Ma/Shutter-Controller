@@ -12,4 +12,7 @@
     <string name="timed_configs">Időzített állítások</string>
     <string name="days">Napok:</string>
     <string name="timing_pref">Timing String</string>
+    <string name="noMessage">A szervertől nem kaptunk üzenetet</string>
+    <string name="infoTitle">Üzenetek:</string>
+    <string name="nightZeroSwitchText">Pozíció nullázása éjszaka</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.example.rednykapcsol.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -19,12 +18,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
-import com.example.rednykapcsol.FragmentCommunicating;
+import com.example.rednykapcsol.ActivityNotifier;
 import com.example.rednykapcsol.R;
 import com.example.rednykapcsol.Timing;
 import com.example.rednykapcsol.WeekDay;
+import com.example.rednykapcsol.activities.MainActivity;
 
 import org.joda.time.LocalTime;
 
@@ -42,7 +41,7 @@ public class TimingConfigFragment extends DialogFragment {
     private TextView valueText;
     private TimePicker picker;
 
-    private FragmentCommunicating fragmentCommunicating;
+    private ActivityNotifier activityNotifier;
 
     public TimingConfigFragment(int position) {
         this.position = position;
@@ -52,7 +51,7 @@ public class TimingConfigFragment extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        fragmentCommunicating = (FragmentCommunicating) getActivity();
+        activityNotifier = (ActivityNotifier) getActivity();
     }
 
     @Override
@@ -68,7 +67,7 @@ public class TimingConfigFragment extends DialogFragment {
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         super.onCancel(dialogInterface);
-        fragmentCommunicating.notifySelectorAboutCanceling(position);
+        ((MainActivity) getActivity()).notifySelectorAboutCanceling(position);
         Log.i("DEBUG", "CANCELLED");
     }
 
@@ -178,7 +177,7 @@ public class TimingConfigFragment extends DialogFragment {
                     toast.show();
 
                 } else {
-                    fragmentCommunicating.notifySelectorAboutNewTiming(position, new Timing(value, days, time));
+                    ((MainActivity) getActivity()).notifySelectorAboutNewTiming(position, new Timing(value, days, time));
                     dismiss();
                 }
             }

@@ -1,8 +1,6 @@
 package com.example.rednykapcsol.fragments;
 
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,38 +14,32 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import androidx.annotation.FractionRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.rednykapcsol.FragmentCommunicating;
+import com.example.rednykapcsol.ActivityNotifier;
+import com.example.rednykapcsol.FragmentNotifier;
 import com.example.rednykapcsol.R;
+import com.example.rednykapcsol.RequestDispatcher;
 import com.example.rednykapcsol.Timing;
-import com.example.rednykapcsol.WeekDay;
+import com.example.rednykapcsol.activities.MainActivity;
 
-import org.joda.time.LocalTime;
-
-import java.util.Map;
-import java.util.Objects;
-
-public class TimingSelectorFragment extends DialogFragment {
+public class TimingSelectorFragment extends DialogFragment implements FragmentNotifier {
 
     private CustomAdapter customAdapter;
     private ImageButton closeButton;
     private ListView listView;
     //private TextView valueText;
-    private FragmentCommunicating fragmentCommunicating;
+    private ActivityNotifier activityNotifier;
     private final String configTag = "config";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         customAdapter = new CustomAdapter();
-        fragmentCommunicating = (FragmentCommunicating) getActivity();
+        activityNotifier = (ActivityNotifier) getActivity();
     }
 
     @Override
@@ -76,16 +68,31 @@ public class TimingSelectorFragment extends DialogFragment {
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         super.onDismiss(dialogInterface);
-
-        Log.i("DEBUG","Dismissing!");
-
         Timing.updateTimings(getActivity());
+        RequestDispatcher.getRequestDispatcher().postTimings();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        ((MainActivity) getActivity()).subscribeToFragmentNotifications(this);
         getDialog().getWindow().setLayout(700, 1100);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        ((MainActivity) getActivity()).unsubscribeToFragmentNotifications(this);
+    }
+
+    @Override
+    public void notifySelectorAboutNewTiming(int position, Timing timing) {
+        saveSettings(position, timing);
+    }
+
+    @Override
+    public void notifySelectorAboutCanceling(int position) {
+        cancelSetup(position);
     }
 
     public class CustomAdapter extends BaseAdapter {
@@ -120,7 +127,7 @@ public class TimingSelectorFragment extends DialogFragment {
 
             Timing timing = Timing.getTimings()[position];
 
-            Log.i("DEBUG", "Timing - "+position +": "+timing);
+            Log.i("DEBUG", "Timing - "+position + ": " + timing);
 
             updateListViewElement(view, timing);
 
@@ -190,5 +197,9 @@ public class TimingSelectorFragment extends DialogFragment {
         Switch timingSwitch = (Switch) view.findViewById(R.id.timing_switch);
         timingSwitch.setChecked(timing.isActive());
     }
+
+
+
+
 }
 

@@ -3,25 +3,20 @@ package com.example.rednykapcsol;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
-import android.util.Pair;
 
 import org.joda.time.LocalTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.time.DayOfWeek;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import com.example.rednykapcsol.WeekDay;
 
 public class Timing {
     public static final int numberOfSlots = 12;
-    private static Timing timings[] = new Timing[numberOfSlots];
+    private static Timing[] timings = new Timing[numberOfSlots];
     private static Map<WeekDay, String> dayID;
 
-    private int ID;
     private boolean active;
     private int value = 100;
     private LocalTime time;
@@ -38,8 +33,8 @@ public class Timing {
         dayID.put(WeekDay.SATURDAY, "Szo");
         dayID.put(WeekDay.SUNDAY, "V");
 
-        for (Timing timing : timings) {
-            timing = new Timing();
+        for (int i = 0; i < timings.length; i++) {
+            timings[i] = new Timing();
         }
 
         SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
@@ -50,7 +45,12 @@ public class Timing {
 
     public Timing() {
         time = null;
-        days = null;
+        days = new HashMap<>();
+
+        for (WeekDay day : WeekDay.values()) {
+            days.put(day, false);
+        }
+
         value = 100;
     }
 
@@ -118,19 +118,17 @@ public class Timing {
         return activeDays;
     }
 
-    public JSONObject generateTimingObject() {
+    public JSONObject serializeTimingObject() {
         JSONObject timingObject = new JSONObject();
 
         try {
             //timingObject.put("ID", ID);
             timingObject.put("ACTIVE", active);
-            timingObject.put("VALUE", value);
+
+            float valueFloat = (value * 1.0f) / 100;
+            timingObject.put("VALUE", valueFloat);
 
             String daysString = "";
-
-            if (days == null) {
-                return null;
-            }
 
             for (WeekDay weekDay : WeekDay.values()) {
                 boolean opened = days.get(weekDay);
@@ -145,11 +143,13 @@ public class Timing {
             timingObject.put("DAYS", daysString);
 
             if (time == null) {
-                return null;
+                timingObject.put("HOUR", -1);
+                timingObject.put("MIN", -1);
             }
-
-            timingObject.put("HOUR", time.getHourOfDay());
-            timingObject.put("MIN", time.getMinuteOfHour());
+            else {
+                timingObject.put("HOUR", time.getHourOfDay());
+                timingObject.put("MIN", time.getMinuteOfHour());
+            }
 
         } catch (JSONException e) {
 
@@ -158,11 +158,11 @@ public class Timing {
         return timingObject;
     }
 
-    public static JSONObject generateTimingObjectDump() {
+    public static JSONObject serializeTimingObjectDump() {
         JSONObject timingConfig = new JSONObject();
 
         for(int i = 0; i < numberOfSlots; i++) {
-            JSONObject timingObject = timings[i].generateTimingObject();
+            JSONObject timingObject = timings[i].serializeTimingObject();
             if (timingObject == null) {
                 continue;
             }
@@ -189,7 +189,8 @@ public class Timing {
         LocalTime time = new LocalTime(12, 0);
 
         try {
-            value = (int) timingObject.get("VALUE");
+            float floatValue = (float) timingObject.get("VALUE");
+            value = (int) (floatValue * 100);
 
             String daysString = (String) timingObject.get("DAYS");
             for (int i = 0; i < daysString.length(); i++) {
@@ -204,7 +205,12 @@ public class Timing {
             int hour = (int) timingObject.get("HOUR");
             int minute = (int) timingObject.get("MIN");
 
-            time = new LocalTime(hour, minute);
+            if (hour == -1 || minute == -1) {
+                time = null;
+            }
+            else {
+                time = new LocalTime(hour, minute);
+            }
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -234,10 +240,10 @@ public class Timing {
     }
 
     public static void updateTimings(Activity activity) {
-        String timingString = generateTimingObjectDump().toString();
+        String timingString = serializeTimingObjectDump().toString();
         SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(activity.getResources().getString(R.string.timing_pref), timingString);
-        editor.commit();
+        editor.apply();
     }
 }
