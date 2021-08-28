@@ -26,6 +26,8 @@ import com.example.rednykapcsol.RequestDispatcher;
 import com.example.rednykapcsol.Timing;
 import com.example.rednykapcsol.activities.MainActivity;
 
+import org.json.JSONObject;
+
 public class TimingSelectorFragment extends DialogFragment implements FragmentNotifier {
 
     private CustomAdapter customAdapter;
@@ -59,6 +61,8 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
             @Override
             public void onClick(View v) {
                 getDialog().dismiss();
+                JSONObject timingsObject = Timing.generateTimingObjectDump();
+                RequestDispatcher.getRequestDispatcher().postTimings(timingsObject);
             }
         });
 
@@ -68,13 +72,14 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
         super.onDismiss(dialogInterface);
-        Timing.updateTimings(getActivity());
-        RequestDispatcher.getRequestDispatcher().postTimings();
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        Timing.updateBuffer();
+
         ((MainActivity) getActivity()).subscribeToFragmentNotifications(this);
         getDialog().getWindow().setLayout(700, 1100);
     }
@@ -86,8 +91,34 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
     }
 
     @Override
+    public void onCancel(DialogInterface dialogInterface) {
+        super.onCancel(dialogInterface);
+        Timing.updateBuffer();
+    }
+
+    @Override
     public void notifySelectorAboutNewTiming(int position, Timing timing) {
-        saveSettings(position, timing);
+        View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
+
+        boolean active = false;
+
+        //check if modified object has active days
+        for (Object value : timing.getDays().values()) {
+            if ((Boolean) value) {
+                active = true;
+                break;
+            }
+        }
+
+        if (Timing.getBufferTimings()[position].getTime() == null && active) {
+            timing.setActive(true);
+        }
+        else {
+            timing.setActive(Timing.getBufferTimings()[position].isActive());
+        }
+
+        Timing.getBufferTimings()[position] = timing;
+        updateListViewElement(view, timing);
     }
 
     @Override
@@ -99,12 +130,12 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
 
         @Override
         public int getCount() {
-            return Timing.getTimings().length;
+            return Timing.getBufferTimings().length;
         }
 
         @Override
         public Object getItem(int position) {
-            return Timing.getTimings()[position];
+            return Timing.getBufferTimings()[position];
         }
 
         @Override
@@ -125,9 +156,7 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
                 }
             });
 
-            Timing timing = Timing.getTimings()[position];
-
-            Log.i("DEBUG", "Timing - "+position + ": " + timing);
+            Timing timing = Timing.getBufferTimings()[position];
 
             updateListViewElement(view, timing);
 
@@ -136,11 +165,19 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
             timingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    Timing timing = Timing.getTimings()[position];
+                    Timing timing = Timing.getBufferTimings()[position];
 
-                    if(timing.getDays() == null && isChecked) {
-                        Log.i("DEBUG", "time: "+timing.getTime()+", days: "+timing.getDays());
+                    boolean nonactive = true;
 
+                    for (Object value : timing.getDays().values()) {
+                        if ((Boolean) value) {
+                            nonactive = false;
+                            break;
+                        }
+                    }
+
+                    if((timing.getTime() == null || nonactive) && isChecked) {
+                        timing.setActive(true);
                         TimingConfigFragment timingConfigFragment = new TimingConfigFragment(position);
                         timingConfigFragment.show(getActivity().getSupportFragmentManager(), timingConfigFragment.getTag());
                     }
@@ -153,24 +190,8 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
         }
     }
 
-    public void saveSettings(int position, Timing timing) {
-        View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
-
-        if (Timing.getTimings()[position].getDays() == null) {
-            timing.setActive(true);
-            Log.i("DEBUG", "Prev false, now true!");
-        }
-        else {
-            timing.setActive(Timing.getTimings()[position].isActive());
-        }
-
-        Timing.getTimings()[position] = timing;
-        updateListViewElement(view, timing);
-    }
-
     public void cancelSetup(int position) {
-        Log.i("OMMIK", "Cancelling: "+position);
-        Timing timing = Timing.getTimings()[position];
+        Timing timing = Timing.getBufferTimings()[position];
 
         if(timing.getDays() == null) {
             View view = listView.getChildAt(position - listView.getFirstVisiblePosition());
@@ -182,13 +203,13 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
     private void updateListViewElement(View view, Timing timing) {
         TextView timeText = view.findViewById(R.id.time_text);
         TextView valueText = view.findViewById(R.id.value_text);
-        if(timing.getTime() != null){
+        if(timing.getTime() != null && timing.getTime().getMinuteOfHour() > -1 && timing.getTime().getHourOfDay() > -1){
             timeText.setText(timing.getTime().toString("HH:mm"));
-            valueText.setText(timing.getValue()+"%");
+            valueText.setText(getString(R.string.percentage, timing.getValue()));
         }
         else {
-            timeText.setText("ÓÓ:PP");
-            valueText.setText("-");
+            timeText.setText(getString(R.string.unsetTime));
+            valueText.setText(getString(R.string.hyphen));
         }
 
         TextView daysText = view.findViewById(R.id.days_text);
@@ -197,9 +218,4 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
         Switch timingSwitch = (Switch) view.findViewById(R.id.timing_switch);
         timingSwitch.setChecked(timing.isActive());
     }
-
-
-
-
 }
-

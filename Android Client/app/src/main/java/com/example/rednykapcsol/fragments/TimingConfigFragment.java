@@ -45,7 +45,7 @@ public class TimingConfigFragment extends DialogFragment {
 
     public TimingConfigFragment(int position) {
         this.position = position;
-        this.timing = Timing.getTimings()[position];
+        this.timing = Timing.getBufferTimings()[position];
     }
 
     @Override
@@ -68,7 +68,6 @@ public class TimingConfigFragment extends DialogFragment {
     public void onCancel(DialogInterface dialogInterface) {
         super.onCancel(dialogInterface);
         ((MainActivity) getActivity()).notifySelectorAboutCanceling(position);
-        Log.i("DEBUG", "CANCELLED");
     }
 
     @Override
@@ -77,7 +76,7 @@ public class TimingConfigFragment extends DialogFragment {
         View timingConfig = getLayoutInflater().inflate(R.layout.timing_config, container, false);
 
         TextView title = timingConfig.findViewById(R.id.title);
-        title.setText(position + 1 +". ütemezés");
+        title.setText(getString(R.string.scheduling, position+1));
 
         setupPicker(timingConfig);
         setupSeekbar(timingConfig);
@@ -107,9 +106,8 @@ public class TimingConfigFragment extends DialogFragment {
     }
 
     private void setupSeekbar(View timingConfig) {
-
         valueText = (TextView) timingConfig.findViewById(R.id.value_text);
-        valueText.setText(timing.getValue()+"%");
+        valueText.setText(getString(R.string.percentage, timing.getValue()));
 
         SeekBar seekBar = (SeekBar) timingConfig.findViewById(R.id.seekbar);
         value = timing.getValue();
@@ -118,10 +116,8 @@ public class TimingConfigFragment extends DialogFragment {
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
                 value = progress;
-                valueText.setText(progress+"%");
-
+                valueText.setText(getString(R.string.percentage, progress));
             }
 
             @Override
@@ -170,14 +166,13 @@ public class TimingConfigFragment extends DialogFragment {
                 if (inactive) {
                     days = null;
                     Context context = getActivity().getApplicationContext();
-                    CharSequence text = "Kérem adjon meg legalább 1 napot!";
                     int duration = Toast.LENGTH_SHORT;
 
-                    Toast toast = Toast.makeText(context, text, duration);
+                    Toast toast = Toast.makeText(context, getString(R.string.requestingDay), duration);
                     toast.show();
 
                 } else {
-                    ((MainActivity) getActivity()).notifySelectorAboutNewTiming(position, new Timing(value, days, time));
+                    ((MainActivity) getActivity()).notifySelectorAboutNewTiming(position, new Timing(value, days, time, false));
                     dismiss();
                 }
             }

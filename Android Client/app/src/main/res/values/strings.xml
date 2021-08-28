@@ -1,5 +1,12 @@
 <resources>
     <string name="app_name">Redőnykapcsoló</string>
+
+    <string name="percentage">%1$d %%</string>
+    <string name="scheduling">%1$d. ütemezés</string>
+    <string name="time">Időpont:</string>
+    <string name="value">Érték:</string>
+    <string name="timed_configs">Időzített állítások</string>
+
     <string name="monday_abb">H</string>
     <string name="tuesday_abb">K</string>
     <string name="wednesday_abb">Sze</string>
@@ -7,12 +14,38 @@
     <string name="friday_abb">P</string>
     <string name="saturday_abb">Szo</string>
     <string name="sunday_abb">V</string>
-    <string name="time">Időpont:</string>
-    <string name="value">Érték:</string>
-    <string name="timed_configs">Időzített állítások</string>
     <string name="days">Napok:</string>
     <string name="timing_pref">Timing String</string>
+
+    <string name="serverState">Állapot: %1$S</string>
     <string name="noMessage">A szervertől nem kaptunk üzenetet</string>
-    <string name="infoTitle">Üzenetek:</string>
+    <string name="syncInProgress">Szinkronizálás folyamatban</string>
     <string name="nightZeroSwitchText">Pozíció nullázása éjszaka</string>
+    <string name="serverUnavailable" >A szerver nem elérhető</string>
+    <string name="connectionLost">Megszakadt a szerverrel a kapcsolat%</string>
+    <string name="serverStart">Szerverindítás</string>
+
+    <string name="messagesTitle">Üzenetek:</string>
+    <string name="startDate">Indítás dátuma: %1$S</string>
+
+    <string name="requestingDay">Kérem adjon meg legalább egy napot!</string>
+    <string name="unsetTime">ÓÓ:pp</string>
+    <string name="hyphen">-</string>
+    <string name="yes">Igen</string>
+    <string name="exit">Kilép?</string>
+
+    <string name="nullQuestion">Nullázni szeretne?</string>
+    <string name="up">Fent</string>
+    <string name="down">Lent</string>
+    <string name="current">Aktuális</string>
+
+    <string name="jsonError">JSON hiba (%1$S %2$S)</string>
+    <string name="nullError">Nullázás sikertelen, beállítás folyamatban</string>
+    <string name="nullSuccessUp">Nullázás sikeres, fent!</string>
+    <string name="nullSuccessDown">Nullázás sikeres, lent!</string>
+    <string name="scheduleSuccess">%1$1S. ütemezés végrahajtva: %2$S%%;</string>
+    <string name="manualSet">Kézi beállítás: %1$S%%</string>
+    <string name="positionFound">Pozíció megkeresve: %1$S%%</string>
+    <string name="scheduleUpdated">Ütemezések frissítve!</string>
+    <string name="unknownEvent">Ismeretlen esemény: %1$S - %2$S - %3$S</string>
 </resources>

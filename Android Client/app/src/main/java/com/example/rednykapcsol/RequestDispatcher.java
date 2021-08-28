@@ -1,15 +1,14 @@
 package com.example.rednykapcsol;
 
+import android.content.Context;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -19,14 +18,15 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import android.os.Handler;
 
 public class RequestDispatcher {
 
-    private List<ActivityNotifier> activityNotifiers = new ArrayList<>();
+    final String URL = "https://shuttermpm.duckdns.org";
 
-    public void notifyNewValue(float newValue) {
+    final private List<ActivityNotifier> activityNotifiers = new ArrayList<>();
+
+    public void notifyNewValue(int newValue) {
         for(ActivityNotifier activityNotifier : activityNotifiers) {
             activityNotifier.notifyNewValue(newValue);
         }
@@ -35,6 +35,12 @@ public class RequestDispatcher {
     public void notifyMessage(int newMessageSize) {
         for(ActivityNotifier activityNotifier : activityNotifiers) {
             activityNotifier.notifyMessage(newMessageSize);
+        }
+    }
+
+    public void notifySynchronisation() {
+        for(ActivityNotifier activityNotifier : activityNotifiers) {
+            activityNotifier.notifySynchronisation();
         }
     }
 
@@ -66,11 +72,13 @@ public class RequestDispatcher {
         activityNotifiers.remove(activityNotifier);
     }
 
-    final String URL = "http://...";
-
     public static RequestDispatcher requestDispatcher = null;
 
-    private RequestQueue requestQueue = null;
+    private RequestQueue requestQueue;
+
+    public void createRequestQueue(Context context) {
+        requestQueue = Volley.newRequestQueue(context);
+    }
 
     public static RequestDispatcher getRequestDispatcher() {
         if (requestDispatcher == null) {
@@ -81,21 +89,14 @@ public class RequestDispatcher {
         return requestDispatcher;
     }
 
-    public void getDump() {
-        notifyDisableGUI();
-        String customURL = URL + "/STAT";
+    public void getRoot() {
+        String customURL = URL + "/";
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, customURL,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        try {
-                            JSONObject dumpObject = new JSONObject(response);
-                            handleDumpResponse(dumpObject);
-                        }
-                        catch (JSONException e) {
 
-                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -103,268 +104,184 @@ public class RequestDispatcher {
                 notifyTimeout();
             }
         }) {
-
         };
 
         requestQueue.add(stringRequest);
     }
 
-    public void getState() {
-        String customURL = URL + "/STAT";
+    public void getDump() {
+        notifyDisableGUI();
+        notifySynchronisation();
+        String customURL = URL + "/D";
+        Log.i("DEBUG", "GET DUMP!");
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, customURL,
-                new Response.Listener<String>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, customURL, null,
+                new Response.Listener<JSONObject>() {
                     @Override
-                    public void onResponse(String response) {
+                    public void onResponse(JSONObject response) {
+                        handleDumpResponse(response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        notifyTimeout();
+                    }
+                }) {
+        };
 
-                        try {
-                            JSONObject stateObject = new JSONObject(response);
-                            handleGenericResponse(stateObject);
-                        }
-                        catch (JSONException e) {
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                        }
+        requestQueue.add(jsonObjectRequest);
+    }
+
+    public void getState() {
+        String customURL = URL + "/S";
+
+        notifySynchronisation();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, customURL, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                            handleGenericResponse(response);
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         //TODO: Handle this
                     }
-        }) {
+        });
 
-        };
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-        requestQueue.add(stringRequest);
+        requestQueue.add(jsonObjectRequest);
     }
 
     public void postZeroState(ZeroState zeroState) {
         notifyDisableGUI();
-
-        String customURL = URL + "/NUL";
+        String customURL = URL + "/Z";
+        notifySynchronisation();
 
         try {
             JSONObject jsonBody = new JSONObject();
-            jsonBody.put("STATE", zeroState.name());
-            final String requestBody = jsonBody.toString();
+            jsonBody.put("Z", zeroState.name());
 
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, customURL, new Response.Listener<String>() {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, customURL, jsonBody, new Response.Listener<JSONObject>() {
                 @Override
-                public void onResponse(String response) {
-                    Log.i("VOLLEY", response);
-
-                    try {
-                        JSONObject zeroResponse = new JSONObject(response);
-                        handleGenericResponse(zeroResponse);
-                    }
-                    catch (JSONException e) {
-
-                    }
+                public void onResponse(JSONObject response) {
+                    handleGenericResponse(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.e("VOLLEY", error.toString());
                     notifyTimeout();
-                    notifyEnableGUI();
                 }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
+            });
 
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-                        responseString = String.valueOf(response.statusCode);
-                        // can get more details such as response.headers
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
-
-            requestQueue.add(stringRequest);
+            requestQueue.add(jsonObjectRequest);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void postNewValue(float valueInt) {
+    public void postNewValue(int valueInt) {
         notifyDisableGUI();
-        String customURL = URL + "/SET";
-        float value = ((float) valueInt) / 100;
+        String customURL = URL + "/V";
+        notifySynchronisation();
 
         try {
             JSONObject jsonBody = new JSONObject();
-            jsonBody.put("VALUE", value);
-            final String requestBody = jsonBody.toString();
+            jsonBody.put("V", valueInt);
 
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, customURL, new Response.Listener<String>() {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, customURL, jsonBody, new Response.Listener<JSONObject>() {
+
                 @Override
-                public void onResponse(String response) {
-                    Log.i("VOLLEY", response);
-                    try {
-                        JSONObject newValueResponse = new JSONObject(response);
-                        handleGenericResponse(newValueResponse);
-                    }
-                    catch (JSONException e) {
-
-                    }
+                public void onResponse(JSONObject response) {
+                    handleGenericResponse(response);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Log.e("VOLLEY", error.toString());
                     notifyTimeout();
-                    notifyEnableGUI();
                 }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
+            });
 
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-                        responseString = String.valueOf(response.statusCode);
-                        // can get more details such as response.headers
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
-
-            requestQueue.add(stringRequest);
+            requestQueue.add(jsonObjectRequest);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public void postTimings() {
+    public void postTimings(JSONObject timingObject) {
+        notifySynchronisation();
         notifyDisableGUI();
+        String customURL = URL + "/T";
 
-        String customURL = URL + "/SCH";
-
-        JSONObject jsonBody =  Timing.serializeTimingObjectDump();
-
-        final String requestBody = jsonBody.toString();
-
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, customURL, new Response.Listener<String>() {
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, customURL, timingObject, new Response.Listener<JSONObject>() {
             @Override
-            public void onResponse(String response) {
-                Log.i("VOLLEY", response);
-
-                try {
-                    JSONObject timingResponse = new JSONObject(response);
-                    handleGenericResponse(timingResponse);
-                }
-                catch (JSONException e) {
-                    //TODO: Handle bad message!
-                }
+            public void onResponse(JSONObject response) {
+                Timing.updateTimings();
+                handleGenericResponse(response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e("VOLLEY", error.toString());
                 notifyTimeout();
-                notifyEnableGUI();
             }
-        }) {
-            @Override
-            public String getBodyContentType() {
-                return "application/json; charset=utf-8";
-            }
+        });
 
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                try {
-                    return requestBody == null ? null : requestBody.getBytes("utf-8");
-                } catch (UnsupportedEncodingException uee) {
-                    VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                    return null;
-                }
-            }
+        jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
-            @Override
-            protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                String responseString = "";
-                if (response != null) {
-                    responseString = String.valueOf(response.statusCode);
-                    // can get more details such as response.headers
-                }
-                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-            }
-        };
-
-        requestQueue.add(stringRequest);
+        requestQueue.add(jsonObjectRequest);
     }
 
     public void handleGenericResponse(JSONObject responseObject) {
         try {
-            String status = (String) responseObject.get("TYPE");
+            //time
+            int time = (int) responseObject.get("T");
 
-            float time = (float) responseObject.get("TIME") + 1;
-
-            JSONObject newMessagesObject = (JSONObject) responseObject.get("MES");
-            List<String> newMessagesList = new ArrayList<>();
-
-            for (int i = 0; i < newMessagesObject.length(); i++) {
-                String ID = "" + (i + 1);
-
-                String newMessage = (String) newMessagesObject.get(ID);
-                newMessagesList.add(newMessage);
+            if (time > 0) {
+                notifyDisableGUI();
+                stateHandler.postDelayed(shortStateChecker, (int) (time * 1000));
+                return;
+            }
+            else {
+                notifyEnableGUI();
             }
 
-            MessageContainer.getMessageContainer().addNewMessages(newMessagesList);
+            JSONObject newMessagesObject = (JSONObject) responseObject.get("M");
 
-            switch (status) {
-                case "OK":
-                    notifyEnableGUI();
-                    break;
+            //Messages
+            JSONObject genericMessages = (JSONObject) newMessagesObject.get("M");
+            MessageContainer.getMessageContainer().updateMessages(genericMessages);
 
-                case "WAIT":
-                    notifyDisableGUI();
+            int count = (int) newMessagesObject.get("C");
+            String startDate = (String) newMessagesObject.get("S");
+            MessageContainer.getMessageContainer().setStartupTime(startDate);
 
-                    //TODO: CHECK THIS
-                    Runnable newRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            getState();
-                        }
-                    };
+           notifyMessage(MessageContainer.getMessageContainer().numberOfMessages);
 
-                    stateHandler.postDelayed(newRunnable, (int) (time * 1000));
-
-                    break;
-            }
-
-           if (newMessagesList.size() > 0) {
-                notifyMessage(newMessagesList.size());
-           }
-
-           float value = (float) responseObject.get("VALUE");
+            //value
+           int value = responseObject.getInt("V");
            notifyNewValue(value);
 
         } catch (JSONException e) {
@@ -374,45 +291,15 @@ public class RequestDispatcher {
 
     public void handleDumpResponse(JSONObject dumpObject) {
         try {
-            boolean blackout = (Boolean) dumpObject.get("BO");
-            String time = (String) dumpObject.get("START");
-            MessageContainer.getMessageContainer().setStartupTime(time);
+            //Getting timings
+            JSONObject timingObject = (JSONObject) dumpObject.get("T");
+            Timing.parseTimingObjectDump(timingObject);
 
-            //Getting or Setting timing objects
-            if (blackout) {
-                postTimings();
-            }
-            else {
-                JSONObject timingObject = (JSONObject) dumpObject.get("TIM");
-                Timing.parseTimingObject(timingObject);
-            }
-
-            //Getting messages
-            JSONObject messages = (JSONObject) dumpObject.get("MES");
-
-            List<String> newMessagesList = new ArrayList<>();
-
-            for (int i = 0; i < messages.length(); i++) {
-                String ID = "" + (i + 1);
-
-                String newMessage = (String) messages.get(ID);
-                newMessagesList.add(newMessage);
-            }
-
-            MessageContainer.getMessageContainer().addNewMessages(newMessagesList);
-
-            int newMessageCount = (int) dumpObject.get("MC");
-
-            if (newMessageCount > 0) {
-                notifyMessage(newMessageCount);
-            }
-
-            float value = (float) dumpObject.get("VALUE");
-            notifyNewValue(value);
+            //Getting generic response
+            JSONObject messageObject = (JSONObject) dumpObject.get("G");
+            handleGenericResponse(messageObject);
 
             startCyclicUpdate();
-
-            notifyEnableGUI();
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -420,7 +307,7 @@ public class RequestDispatcher {
     }
 
     private Handler stateHandler = new Handler();
-    private Runnable stateChecker =  new Runnable () {
+    private Runnable longStateChecker =  new Runnable () {
         @Override
         public void run() {
             getState();
@@ -428,11 +315,18 @@ public class RequestDispatcher {
         }
     };
 
+    private Runnable shortStateChecker =  new Runnable () {
+        @Override
+        public void run() {
+            getState();
+        }
+    };
+
     private void startCyclicUpdate() {
-        stateHandler.postDelayed(stateChecker, 30000);
+        stateHandler.postDelayed(longStateChecker, 30000);
     }
 
     public void stopCyclicUpdate() {
-        stateHandler.removeCallbacks(stateChecker);
+        stateHandler.removeCallbacks(longStateChecker);
     }
 }
