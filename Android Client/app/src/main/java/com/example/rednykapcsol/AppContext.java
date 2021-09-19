@@ -1,26 +1,38 @@
 package com.example.rednykapcsol;
 
 import android.app.Application;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import com.example.rednykapcsol.activities.MainActivity;
+
+import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-
-import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,6 +48,8 @@ public class AppContext extends Application {
         super.onCreate();
         AppContext.context = getApplicationContext();
         addCustomCertificate();
+        createNotificationChannel();
+        setPeriodicRequestWork();
     }
 
     public static Context getAppContext() {
@@ -162,5 +176,69 @@ public class AppContext extends Application {
         //HttpsURLConnection.setDefaultHostnameVerifier(hostnameVerifier);
 
         Log.i("DEBUG", "CUST CERT ADDED! ");
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.notificationChannelName);
+            String description = getString(R.string.notificationChannelDescription);
+            String channelID = getString(R.string.notificationChannelID);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel(channelID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    static int notificationID = 0;
+
+    final static int requestCode = 1001;
+
+    public static void createNotification() {
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode, intent, 0);
+
+        MessageContainer messageContainer = MessageContainer.getMessageContainer();
+        String lastSetting = messageContainer.getMessage(0).getEvent() + " - " + messageContainer.getMessage(0).getDate();
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(AppContext.getAppContext(), AppContext.getAppContext().getString(R.string.notificationChannelID))
+                .setSmallIcon(R.drawable.shutter)
+                .setContentTitle(context.getString(R.string.notificationChannelName))
+                .setContentText(lastSetting)
+                .setPriority(PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(notificationID++, notificationBuilder.build());
+    }
+
+    private void setPeriodicRequestWork() {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                //.setRequiresDeviceIdle(true)
+                .build();
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(PeriodicShutterWork.class, 20, MINUTES, 5, MINUTES)
+        //PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(PeriodicShutterWork.class, 15, MINUTES)
+                .setConstraints(constraints)
+                .build();
+
+        WorkManager.getInstance().enqueueUniquePeriodicWork(getString(R.string.uniquePeriodicRequestWorkName), ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+
+        /*WorkManager.getInstance().getWorkInfosForUniqueWorkLiveData(getString(R.string.uniquePeriodicRequestWorkName))
+                .observeForever(new Observer<List<WorkInfo>>() {
+                    @Override
+                    public void onChanged(List<WorkInfo> workInfos) {
+                        for (WorkInfo workInfo : workInfos) {
+                            Log.i("DEBUG", "State: " + workInfo.getState());
+                        }
+                    }
+                });*/
     }
 }

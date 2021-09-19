@@ -48,4 +48,10 @@
     <string name="positionFound">Pozíció megkeresve: %1$S%%</string>
     <string name="scheduleUpdated">Ütemezések frissítve!</string>
     <string name="unknownEvent">Ismeretlen esemény: %1$S - %2$S - %3$S</string>
+
+    <string name="uniquePeriodicRequestWorkName">ShutterPeriodicRequestWork</string>
+
+    <string name="notificationChannelID">ShutterAuto</string>
+    <string name="notificationChannelName">Automatikus időzítés</string>
+    <string name="notificationChannelDescription">Értesítés az automatikusan beállított pozíciókról</string>
 </resources>

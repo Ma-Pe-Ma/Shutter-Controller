@@ -20,9 +20,14 @@ import org.json.JSONObject;
 
 import android.os.Handler;
 
+import androidx.core.app.NotificationCompat;
+
+import static androidx.core.app.NotificationCompat.PRIORITY_DEFAULT;
+import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
+
 public class RequestDispatcher {
 
-    final String URL = "https://shuttermpm.duckdns.org";
+    final String URL = BuildConfig.SERVER_URL;
 
     final private List<ActivityNotifier> activityNotifiers = new ArrayList<>();
 
@@ -137,7 +142,7 @@ public class RequestDispatcher {
         requestQueue.add(jsonObjectRequest);
     }
 
-    public void getState() {
+    public void getState(boolean backgroundRequest) {
         String customURL = URL + "/S";
 
         notifySynchronisation();
@@ -146,7 +151,12 @@ public class RequestDispatcher {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        if (backgroundRequest) {
+                            handleBackgroundRequestResponse(response);
+                        }
+                        else {
                             handleGenericResponse(response);
+                        }
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -254,6 +264,36 @@ public class RequestDispatcher {
         requestQueue.add(jsonObjectRequest);
     }
 
+    private void handleBackgroundRequestResponse(JSONObject responseObject) {
+        try {
+            //time
+            int time = (int) responseObject.get("T");
+
+            if (time > 0) {
+                stateHandler.postDelayed(notificationDelayer, (int) (time * 1000));
+                return;
+            }
+
+            JSONObject newMessagesObject = (JSONObject) responseObject.get("M");
+
+            //Messages
+            JSONObject genericMessages = (JSONObject) newMessagesObject.get("M");
+            MessageContainer.getMessageContainer().updateMessages(genericMessages);
+
+            String startDate = (String) newMessagesObject.get("S");
+            MessageContainer.getMessageContainer().setStartupTime(startDate);
+
+            int count = (int) newMessagesObject.get("C");
+
+            if (count > 0) {
+                AppContext.createNotification();
+            }
+        }
+        catch (JSONException e) {
+
+        }
+    }
+
     public void handleGenericResponse(JSONObject responseObject) {
         try {
             //time
@@ -264,9 +304,8 @@ public class RequestDispatcher {
                 stateHandler.postDelayed(shortStateChecker, (int) (time * 1000));
                 return;
             }
-            else {
-                notifyEnableGUI();
-            }
+
+            notifyEnableGUI();
 
             JSONObject newMessagesObject = (JSONObject) responseObject.get("M");
 
@@ -278,11 +317,11 @@ public class RequestDispatcher {
             String startDate = (String) newMessagesObject.get("S");
             MessageContainer.getMessageContainer().setStartupTime(startDate);
 
-           notifyMessage(MessageContainer.getMessageContainer().numberOfMessages);
+            notifyMessage(MessageContainer.getMessageContainer().numberOfMessages);
 
             //value
-           int value = responseObject.getInt("V");
-           notifyNewValue(value);
+            int value = responseObject.getInt("V");
+            notifyNewValue(value);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -310,7 +349,7 @@ public class RequestDispatcher {
     private Runnable longStateChecker =  new Runnable () {
         @Override
         public void run() {
-            getState();
+            getState(false);
             stateHandler.postDelayed(this, 30000);
         }
     };
@@ -318,7 +357,14 @@ public class RequestDispatcher {
     private Runnable shortStateChecker =  new Runnable () {
         @Override
         public void run() {
-            getState();
+            getState(false);
+        }
+    };
+
+    private Runnable notificationDelayer =  new Runnable () {
+        @Override
+        public void run() {
+            getState(true);
         }
     };
 
