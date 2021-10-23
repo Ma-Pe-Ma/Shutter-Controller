@@ -1,4 +1,4 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 public interface FragmentNotifier {
     void notifySelectorAboutNewTiming(int position, Timing timing);

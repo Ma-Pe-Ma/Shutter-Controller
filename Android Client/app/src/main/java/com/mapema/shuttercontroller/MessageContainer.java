@@ -1,13 +1,11 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MessageContainer {
@@ -40,7 +38,7 @@ public class MessageContainer {
     public void updateMessages(JSONObject messagesObject) {
         for (int i = 0; i < numberOfMessages; i++) {
             try {
-                JSONObject value = (JSONObject) messagesObject.get(String.valueOf(i));
+                JSONObject value = messagesObject.getJSONObject(String.valueOf(i));
                 Message newMessage = processJSONMessage(i, value);
                 messages[i] = newMessage;
             } catch (JSONException e) {

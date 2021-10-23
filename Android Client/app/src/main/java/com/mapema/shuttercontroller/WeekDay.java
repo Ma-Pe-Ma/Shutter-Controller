@@ -1,4 +1,4 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 public enum WeekDay {
     MONDAY,

@@ -1,8 +1,8 @@
-package com.example.rednykapcsol.fragments;
+package com.mapema.shuttercontroller.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -19,12 +19,12 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.rednykapcsol.ActivityNotifier;
-import com.example.rednykapcsol.FragmentNotifier;
-import com.example.rednykapcsol.R;
-import com.example.rednykapcsol.RequestDispatcher;
-import com.example.rednykapcsol.Timing;
-import com.example.rednykapcsol.activities.MainActivity;
+import com.mapema.shuttercontroller.ActivityNotifier;
+import com.mapema.shuttercontroller.FragmentNotifier;
+import com.mapema.shuttercontroller.R;
+import com.mapema.shuttercontroller.RequestDispatcher;
+import com.mapema.shuttercontroller.Timing;
+import com.mapema.shuttercontroller.activities.MainActivity;
 
 import org.json.JSONObject;
 
@@ -35,7 +35,7 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
     private ListView listView;
     //private TextView valueText;
     private ActivityNotifier activityNotifier;
-    private final String configTag = "config";
+    public static final String configTag = "config";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,8 +80,13 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
 
         Timing.updateBuffer();
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = (int) (displayMetrics.heightPixels * 0.8f);
+        int width = (int) (displayMetrics.widthPixels * 0.8f);
+
         ((MainActivity) getActivity()).subscribeToFragmentNotifications(this);
-        getDialog().getWindow().setLayout(700, 1100);
+        getDialog().getWindow().setLayout(width, height);
     }
 
     @Override

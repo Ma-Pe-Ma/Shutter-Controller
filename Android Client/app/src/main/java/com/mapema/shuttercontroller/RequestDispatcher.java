@@ -1,4 +1,4 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 import android.content.Context;
 import android.util.Log;
@@ -20,14 +20,10 @@ import org.json.JSONObject;
 
 import android.os.Handler;
 
-import androidx.core.app.NotificationCompat;
-
-import static androidx.core.app.NotificationCompat.PRIORITY_DEFAULT;
-import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
-
 public class RequestDispatcher {
 
-    final String URL = BuildConfig.SERVER_URL;
+    final String URL = "https://" + BuildConfig.SERVER_URL;
+    final String arguments = "?username=" + BuildConfig.USER_NAME + "&password=" + BuildConfig.PASSWORD;
 
     final private List<ActivityNotifier> activityNotifiers = new ArrayList<>();
 
@@ -117,8 +113,7 @@ public class RequestDispatcher {
     public void getDump() {
         notifyDisableGUI();
         notifySynchronisation();
-        String customURL = URL + "/D";
-        Log.i("DEBUG", "GET DUMP!");
+        String customURL = URL + "/D" + arguments;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, customURL, null,
                 new Response.Listener<JSONObject>() {
@@ -143,7 +138,7 @@ public class RequestDispatcher {
     }
 
     public void getState(boolean backgroundRequest) {
-        String customURL = URL + "/S";
+        String customURL = URL + "/S" + arguments;
 
         notifySynchronisation();
 
@@ -175,7 +170,7 @@ public class RequestDispatcher {
 
     public void postZeroState(ZeroState zeroState) {
         notifyDisableGUI();
-        String customURL = URL + "/Z";
+        String customURL = URL + "/Z" + arguments;
         notifySynchronisation();
 
         try {
@@ -195,7 +190,7 @@ public class RequestDispatcher {
             });
 
             jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
-                    DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                    10000,
                     DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                     DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
@@ -207,7 +202,7 @@ public class RequestDispatcher {
 
     public void postNewValue(int valueInt) {
         notifyDisableGUI();
-        String customURL = URL + "/V";
+        String customURL = URL + "/V" + arguments;
         notifySynchronisation();
 
         try {
@@ -241,7 +236,7 @@ public class RequestDispatcher {
     public void postTimings(JSONObject timingObject) {
         notifySynchronisation();
         notifyDisableGUI();
-        String customURL = URL + "/T";
+        String customURL = URL + "/T" + arguments;
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, customURL, timingObject, new Response.Listener<JSONObject>() {
             @Override
@@ -257,7 +252,7 @@ public class RequestDispatcher {
         });
 
         jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
-                DefaultRetryPolicy.DEFAULT_TIMEOUT_MS * 2,
+                10000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
