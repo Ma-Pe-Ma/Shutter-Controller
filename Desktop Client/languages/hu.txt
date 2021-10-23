@@ -30,3 +30,5 @@ setShutter Állítsa be a redőny pozicióját!
 setButton Beállít
 automatic Automatikus
 zeroQuestion Hogyan szeretne nullázni?
+nullUp A redőny nullázva: fent!
+nullDown A redőny nullázva: lent!

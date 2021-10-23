@@ -41,8 +41,8 @@ void Timing::parseTimings(json timingObject) {
         int ID = std::stoi(item.key());
         Timing* timing = Timing::getTiming(ID);
 
-        int hour = item.value()["H"].get<int>();
-        int minute = item.value()["M"].get<int>();
+        int hour = item.value()["H"].get<int>() < 0 ? 0 : item.value()["H"].get<int>();
+        int minute = item.value()["M"].get<int>() < 0 ? 0 : item.value()["M"].get<int>();
         bool active = item.value()["A"].get<bool>();
         std::string days = item.value()["D"].get<std::string>();
         int value = item.value()["V"].get<int>();

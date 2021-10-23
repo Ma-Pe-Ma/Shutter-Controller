@@ -4,7 +4,7 @@
 TimingItemWidget::TimingItemWidget(int ID, QWidget *parent) : QWidget(parent) {
     this->ID = ID;
 
-    setGeometry(0,0,200,200);
+    setGeometry(0, 0, 200, 200);
 
     QHBoxLayout* horizontalLayout = new QHBoxLayout(this);
 
@@ -58,12 +58,6 @@ TimingItemWidget::TimingItemWidget(int ID, QWidget *parent) : QWidget(parent) {
     toggleSwitch = new ToggleSwitch(this);
     horizontalLayout->addWidget(toggleSwitch);
     horizontalLayout->setAlignment(toggleSwitch, Qt::AlignVCenter);
-
-    this->setLayout(horizontalLayout);
-
-    //setStyleSheet("background-color:green;");
-
-   // qInfo()<<"ITEM HEIGHT: "<<itemHeight;
 }
 
 void TimingItemWidget::updateTimingItemWidget() {
@@ -113,5 +107,5 @@ int TimingItemWidget::getValue() {
 }
 
 void TimingItemWidget::sliderChanged(int value) {
-    setterValueLabel->setText(QString::number(value)+"%");
+    setterValueLabel->setText(QString::number(value) + "%");
 }

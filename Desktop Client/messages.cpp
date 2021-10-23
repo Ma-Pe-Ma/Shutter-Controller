@@ -19,6 +19,8 @@ QString Messages::getDate(int messageID) {
 }
 
 void Messages::parseGenericResponse(json genericResponse) {
+   // qInfo()<<"Generic response: "<<genericResponse.dump().c_str();
+
     int restartTime = genericResponse["T"].get<int>();
     Timing::setRestartTime(restartTime);
 
@@ -63,7 +65,7 @@ void Messages::parseGenericResponse(json genericResponse) {
     }
 }
 
-QString Messages::processMessage(std::string type, std::string res, std::string add) {
+QString Messages::processMessage(std::string type, std::string res, std::string add) {    
     if (type == "E") {
         return "-";
     }

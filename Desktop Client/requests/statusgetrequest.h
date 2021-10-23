@@ -1,8 +1,7 @@
 #ifndef STATUSGETREQUEST_H
 #define STATUSGETREQUEST_H
 
-#include "httplib.h"
-#include <QThread>
+#include "request.h"
 #include <json.hpp>
 #include <QApplication>
 
@@ -11,17 +10,10 @@
 
 using json = nlohmann::json;
 
-class StatusGetRequest : public QThread {
+class StatusGetRequest : public Request {
     Q_OBJECT
 public:
     StatusGetRequest();
-    void run() override;
-signals:
-    void processResponseSignal(std::string);
-    void statusGetEnd(bool);
-
-public slots:
-    void processResponse(std::string);
 };
 
 #endif // STATUSGETREQUEST_H
