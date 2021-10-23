@@ -1,0 +1,34 @@
+appName Shutter Controller
+syncing Synchronisation in progress....
+startTime Server start time: %s
+up Up
+down Down
+setPos Set
+timings Timings
+nulling Null
+messages Messages:
+startEvent Server start
+jsonError JSON error (%s, %s)
+nullFail Zeroing failed, shutter is busy
+timingEvent %s. timing executed: %s%%
+manualSet Manual set: %s%%
+positionFound Position found: %s%%
+timingsSet Timings set
+unknown Unknown event: %s - %s - %s
+w0 M
+w1 Tu
+w2 W
+w3 Th
+w4 F
+w5 Sat
+w6 Sun
+serverUnavailable The server is down!
+serverAvailable The server is up!
+eventLabel Event
+dateLabel Date
+setShutter Set the position of the shutter!
+setButton Set
+automatic Automatic
+zeroQuestion How to zero the position?
+nullUp Shutter position zeroed: up!
+nullDown Shutter position zeroed: down!

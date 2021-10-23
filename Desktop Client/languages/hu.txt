@@ -1,0 +1,34 @@
+appName Redőnykapcsoló
+syncing Szinkronizálás folyamatban...
+startTime Indítás dátuma: %s
+up Fel
+down Le
+setPos Beállít
+timings Időzítések
+nulling Nulla
+messages Üzenetek:
+startEvent Szerverindítás
+jsonError JSON hiba (%s, %s)
+nullFail Nullázás sikertelen, beállítás folyamatban
+timingEvent %s. ütemezés végrehajtva: %s%%
+manualSet Kézi beállítás: %s%%
+positionFound Pozició megkeresve: %s%%
+timingsSet Ütemezések beállítva
+unknown Ismeretlen esemény: %s - %s - %s
+w0 H
+w1 K
+w2 Sze
+w3 Cs
+w4 P
+w5 Szo
+w6 V
+serverUnavailable A szerver nem elérhető!
+serverAvailable A szerver elérhető!
+eventLabel Esemény
+dateLabel Dátum
+setShutter Állítsa be a redőny pozicióját!
+setButton Beállít
+automatic Automatikus
+zeroQuestion Hogyan szeretne nullázni?
+nullUp A redőny nullázva: fent!
+nullDown A redőny nullázva: lent!

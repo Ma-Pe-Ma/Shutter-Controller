@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/app">
+        <file alias="checked">images/checked.png</file>
+		<file alias="checked128">images/checked128.png</file>
+		<file alias="switchOn">images/switch-on-c.png</file>
+		<file alias="switchOff">images/switch-off-c.png</file>
+		<file alias="appIcon">images/shutter_logo128.png</file>
+		<file>cert.pem</file>
+		<file lang="en">languages/en.txt</file>
+		<file lang="hu">languages/hu.txt</file>
+    </qresource>
+
+</RCC>
