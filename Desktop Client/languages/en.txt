@@ -30,3 +30,5 @@ setShutter Set the position of the shutter!
 setButton Set
 automatic Automatic
 zeroQuestion How to zero the position?
+nullUp Shutter position zeroed: up!
+nullDown Shutter position zeroed: down!

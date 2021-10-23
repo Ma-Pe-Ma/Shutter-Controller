@@ -19,7 +19,7 @@ ZeroDialog::ZeroDialog(QWidget* parent) : QDialog(parent) {
     horizontalLayout->addWidget(automaticButton);
 
     downButton = new QPushButton(this);
-    std::string downString = Languages::getFormattedStringByID(Languages::StringResource::up);
+    std::string downString = Languages::getFormattedStringByID(Languages::StringResource::down);
     downButton->setText(downString.c_str());
     horizontalLayout->addWidget(downButton);
 

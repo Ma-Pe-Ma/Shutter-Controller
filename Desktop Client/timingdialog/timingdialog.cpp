@@ -74,8 +74,6 @@ void TimingDialog::showEvent(QShowEvent* event) {
         timingItemWidgets[i]->updateTimingItemWidget();
     }
 
-    json timings = createTimingObject();
-
     QWidget::showEvent(event);
 }
 

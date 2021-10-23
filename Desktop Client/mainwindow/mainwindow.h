@@ -5,12 +5,6 @@
 #include <QPushButton>
 #include <QProgressBar>
 
-#include "requests/dumpgetrequest.h"
-#include "requests/timingpostrequest.h"
-#include "requests/statusgetrequest.h"
-#include "requests/setpostrequest.h"
-#include "requests/zeropostrequest.h"
-
 #include "messagelist.h"
 
 #include "timingdialog/timingdialog.h"
@@ -30,12 +24,7 @@ public:
 
 private:
     QWidget* central;
-    DumpGetRequest* dumpGetRequest = nullptr;
-    StatusGetRequest* statusGetRequest = nullptr;
-    TimingPostRequest* timingPostRequest = nullptr;
-    SetPostRequest* setPostRequest = nullptr;
-    ZeroPostRequest* zeroPostRequest = nullptr;
-    StatusGetRequest* shortStatusGetRequest = nullptr;
+    bool initialized = false;
 
     QTimer* statusTimer = nullptr;
 
@@ -68,24 +57,16 @@ signals:
 private slots:
     void dumpGetRequestStart();
     void statusGetRequestStart();
-    void statusGetRequestEnd(bool);
-    void dumpGetRequestEnd(bool);
-
     void zeroPostRequestStart(Zero);
-    void zeroPostRequestEnd(bool);
+    void setPostRequestStart(int);
+    void timingPostRequestStart(QString);
+
+    void notifyMessage(std::string);
+    void updateTimings();
 
     void sendUp();
     void sendDown();
-
-    void setPostRequestStart(int);
-    void setPostRequestEnd(bool);
-
-    void shortStatusGetRequestStart();
-
 public slots:
-    void timingPostRequestStart(QString);
-    void timingPostRequestEnd(bool);
-    //void genericResponseReceived(QString);
-    void shortStatusGetRequestEnd(bool);
+
 };
 #endif // MAINWINDOW_H

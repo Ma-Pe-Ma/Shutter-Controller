@@ -15,6 +15,15 @@
 
 #include <languages/languages.h>
 
+#include "requests/request.h"
+#include "requests/requestqueue.h"
+
+#include "requests/dumpgetrequest.h"
+#include "requests/timingpostrequest.h"
+#include "requests/statusgetrequest.h"
+#include "requests/setpostrequest.h"
+#include "requests/zeropostrequest.h"
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
@@ -90,8 +99,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     std::string timingsString = Languages::getFormattedStringByID(Languages::StringResource::timings);
     timingButton = new QPushButton(timingsString.c_str(), this);
-    timingButton->setFixedSize(80,30);
-    timingButton->setAutoFillBackground(true);
+    //timingButton->setFixedSize(80,30);
+    //timingButton->setAutoFillBackground(true);
     //QPalette pal = timingButton->palette();
     //pal.setColor(QPalette::Button, QColor(Qt::blue));
     //timingButton->setPalette(pal);
@@ -134,6 +143,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     mainBox->addLayout(messageBox);
     central->setLayout(mainBox);
 
+    connect(&Request::requestQueue, &RequestQueue::notifyMessage, this, &MainWindow::notifyMessage);
+
     //get dump and set up periodic update
     dumpGetRequestStart();
 }
@@ -157,7 +168,6 @@ void MainWindow::enableGUI() {
 void MainWindow::disableGUI() {
     central->setEnabled(false);
     std::string sync = Languages::getFormattedStringByID(Languages::StringResource::syncing);
-    qInfo()<<"sync: "<<sync.length();
     currentStateLabel->setText(sync.c_str());
 }
 
@@ -165,203 +175,50 @@ void MainWindow::disableGUI() {
 
 void MainWindow::dumpGetRequestStart() {
     disableGUI();
-
-    if (dumpGetRequest != nullptr) {
-        return;
-    }
-
-    dumpGetRequest = new DumpGetRequest;
-    connect(dumpGetRequest, &DumpGetRequest::dumpGetEnd, this, &MainWindow::dumpGetRequestEnd);
-    dumpGetRequest->start();
-}
-
-void MainWindow::dumpGetRequestEnd(bool success) {
-    if (dumpGetRequest != nullptr) {
-        while(dumpGetRequest->isRunning());
-        disconnect(dumpGetRequest, &DumpGetRequest::dumpGetEnd, this, &MainWindow::dumpGetRequestEnd);
-        delete dumpGetRequest;
-        dumpGetRequest = nullptr;
-    }
-
-    if (success) {
-        processGenericResponse();
-
-        if (statusTimer == nullptr) {
-            statusTimer = new QTimer(this);
-            connect(statusTimer, &QTimer::timeout, this, &MainWindow::statusGetRequestStart);
-            statusTimer->start(30000);
-        }
-
-        failureCounter = 0;
-        std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::serverAvailable);
-        currentStateLabel->setText(serverAvailableString.c_str());
-    }
-    else {
-        if (failureCounter++ == 3) {
-            QCoreApplication::quit();
-        }
-
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
-
-        QTimer::singleShot(10000, this, SLOT(dumpGetRequestStart()));
-        return;
-    }
+    Request::requestQueue.enqueueRequest(new DumpGetRequest);
 }
 
 //------STATUS GET------
 
 void MainWindow::statusGetRequestStart() {
-    if (statusGetRequest == nullptr && dumpGetRequest == nullptr && setPostRequest == nullptr &&
-            timingPostRequest == nullptr && shortStatusGetRequest == nullptr && zeroPostRequest == nullptr) {
-        statusGetRequest = new StatusGetRequest;
-        connect(statusGetRequest, &StatusGetRequest::statusGetEnd, this, &MainWindow::statusGetRequestEnd);
-        statusGetRequest->start();
-        failureCounter = 0;
+    bool empty = true;
+    Request::requestQueue.isEmpty(empty);
+
+    if (empty) {
+        Request::requestQueue.enqueueRequest(new StatusGetRequest);
+        //failureCounter = 0;
         std::string syncString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
         currentStateLabel->setText(syncString.c_str());
-    }
-    else {
-
-    }
-}
-
-void MainWindow::statusGetRequestEnd(bool success) {
-    if (statusGetRequest != nullptr) {
-        disconnect(statusGetRequest, &StatusGetRequest::statusGetEnd, this, &MainWindow::statusGetRequestEnd);
-        delete statusGetRequest;
-        statusGetRequest = nullptr;
-    }
-
-    if (success) {
-        processGenericResponse();
-    }
-    else {
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
     }
 }
 
 //------SET POST------
 
 void MainWindow::setPostRequestStart(int value) { 
-    if (setPostRequest == nullptr) {
-        setPostRequest = new SetPostRequest(value);
-        connect(setPostRequest, &SetPostRequest::setPostEnd, this, &MainWindow::setPostRequestEnd);
-        setPostRequest->start();
-        disableGUI();
-    }
-    else {
-        return;
-    }
-}
-
-void MainWindow::setPostRequestEnd(bool success) {
-    if (setPostRequest != nullptr) {
-        disconnect(setPostRequest, &SetPostRequest::setPostEnd, this, &MainWindow::setPostRequestEnd);
-        delete setPostRequest;
-        setPostRequest = nullptr;
-    }
-
-    if (success) {
-        processGenericResponse();
-    }
-    else {
-
-    }
+    Request::requestQueue.enqueueRequest(new SetPostRequest(value));
+    disableGUI();
 }
 
 //------TIMING POST------
 
 void MainWindow::timingPostRequestStart(QString timingString) {
     json timingObject = json::parse(timingString.toUtf8().constData());
+    TimingPostRequest* tpr = new TimingPostRequest(timingObject);
+    connect(tpr, &Request::customSignal, this, &MainWindow::updateTimings);
+    Request::requestQueue.enqueueRequest(tpr);
 
-    if (timingPostRequest == nullptr) {
-        timingPostRequest = new TimingPostRequest(timingObject);
-        connect(timingPostRequest, &TimingPostRequest::timingPostEnd, this, &MainWindow::timingPostRequestEnd);
-        timingPostRequest->start();
-        disableGUI();
-    }
-    else {
-        return;
-    }
+    disableGUI();
 }
 
-void MainWindow::timingPostRequestEnd(bool success) {
-    if (timingPostRequest != nullptr) {
-        disconnect(timingPostRequest, &TimingPostRequest::timingPostEnd, this, &MainWindow::timingPostRequestEnd);
-        delete timingPostRequest;
-        timingPostRequest = nullptr;
-    }
-
-    if (success) {
-        timingDialog->updateTimingsFromGui();
-        processGenericResponse();
-    }
-    else {
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
-    }
+void MainWindow::updateTimings() {
+    timingDialog->updateTimingsFromGui();
 }
 
 //------ZERO POST------
 
 void MainWindow::zeroPostRequestStart(Zero zero) {
-    if (zeroPostRequest == nullptr) {
-        zeroPostRequest = new ZeroPostRequest(zero);
-        connect(zeroPostRequest, &ZeroPostRequest::zeroPostEnd, this, &MainWindow::zeroPostRequestEnd);
-        zeroPostRequest->start();
-        disableGUI();
-    }
-    else {
-        return;
-    }
-}
-
-void MainWindow::zeroPostRequestEnd(bool success) {
-    if (zeroPostRequest != nullptr) {
-        disconnect(zeroPostRequest, &ZeroPostRequest::zeroPostEnd, this, &MainWindow::zeroPostRequestEnd);
-        delete zeroPostRequest;
-        zeroPostRequest = nullptr;
-    }
-
-    if (success) {
-        processGenericResponse();
-    }
-    else {
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
-    }
-}
-
-//------SHORT STATUS POST------
-
-void MainWindow::shortStatusGetRequestStart() {
-    if (shortStatusGetRequest == nullptr) {
-        shortStatusGetRequest = new StatusGetRequest();
-        connect(shortStatusGetRequest, &StatusGetRequest::statusGetEnd, this, &MainWindow::shortStatusGetRequestEnd);
-        shortStatusGetRequest->start();
-        disableGUI();
-    }
-    else {
-        return;
-    }
-}
-
-void MainWindow::shortStatusGetRequestEnd(bool success) {
-    if (shortStatusGetRequest != nullptr) {
-        disconnect(shortStatusGetRequest, &StatusGetRequest::statusGetEnd, this, &MainWindow::shortStatusGetRequestEnd);
-        delete shortStatusGetRequest;
-        shortStatusGetRequest = nullptr;
-    }
-
-    if (success) {
-        processGenericResponse();
-    }
-    else {
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
-    }
+    Request::requestQueue.enqueueRequest(new ZeroPostRequest(zero));
+    disableGUI();
 }
 
 //------GENERCIC RESPONSE------
@@ -385,11 +242,53 @@ void MainWindow::processGenericResponse() {
     progressLabel->setText(progressText);
 
     if (restartTime > 0) {
-        QTimer::singleShot(restartTime * 1000, this, SLOT(shortStatusGetRequestStart()));
+        QTimer::singleShot(restartTime * 1000, this, SLOT(statusGetRequestStart()));
+        std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
     }
     else {
         std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::serverAvailable);
         currentStateLabel->setText(serverAvailableString.c_str());
         enableGUI();
+    }
+}
+
+void MainWindow::notifyMessage(std::string response) {
+    if (response == "") {
+        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
+        currentStateLabel->setText(serverUnavailableString.c_str());
+
+        if (failureCounter++ == 5) {
+            QCoreApplication::quit();
+        }
+
+        if (!initialized) {
+            QTimer::singleShot(10000, this, SLOT(dumpGetRequestStart()));
+        }
+    }
+    else {
+        failureCounter = 0;
+
+        json responseObject = json::parse(response);
+        bool isDump = responseObject.contains("G");
+
+        if (isDump) {
+            initialized = true;
+            json timingObject = responseObject["T"].get<json>();
+            json genericResponse = responseObject["G"].get<json>();
+
+            Timing::parseTimings(timingObject);
+            Messages::parseGenericResponse(genericResponse);
+
+            if (statusTimer == nullptr) {
+                statusTimer = new QTimer(this);
+                connect(statusTimer, &QTimer::timeout, this, &MainWindow::statusGetRequestStart);
+                statusTimer->start(30000);
+            }
+        }
+        else {
+            Messages::parseGenericResponse(responseObject);
+        }
+
+        processGenericResponse();
     }
 }

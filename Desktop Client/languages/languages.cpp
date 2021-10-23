@@ -25,7 +25,7 @@ namespace Languages {
         {"nullUp", Languages::StringResource::nullUp},
         {"nullDown", Languages::StringResource::nullDown},
         {"timingEvent", Languages::StringResource::timingEvent},
-        {"manaulSet", Languages::StringResource::manualSet},
+        {"manualSet", Languages::StringResource::manualSet},
         {"positionFound", Languages::StringResource::positionFound},
         {"timingsSet", Languages::StringResource::timingsSet},
         {"unknown", Languages::StringResource::unknown},
@@ -79,6 +79,8 @@ namespace Languages {
 
                 std::string key = line.substr(0, line.find(' '));
                 std::string value = line.substr(line.find(' ') + 1);
+
+                //qInfo() << "Key: "<< key.c_str() << "val: " << value.c_str();
 
                 Languages::StringResource stringResource = variableMap[key];
                 languageMap.insert(std::pair<StringResource, std::string>(stringResource, value));

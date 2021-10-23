@@ -13,6 +13,8 @@ SOURCES += \
     mainwindow/messagewidget.cpp \
     messages.cpp \
     requests/dumpgetrequest.cpp \
+    requests/request.cpp \
+    requests/requestqueue.cpp \
     requests/setpostrequest.cpp \
     requests/statusgetrequest.cpp \
     requests/timingpostrequest.cpp \
@@ -34,6 +36,8 @@ HEADERS += \
     mainwindow/messagewidget.h \
     messages.h \
     requests/dumpgetrequest.h \
+    requests/request.h \
+    requests/requestqueue.h \
     requests/setpostrequest.h \
     requests/statusgetrequest.h \
     requests/timingpostrequest.h \
@@ -56,7 +60,9 @@ FORMS += \
 
 DEFINES += SERVER_URI='\\"https://your.uri\\"' \
     CPPHTTPLIB_OPENSSL_SUPPORT
-
+    USER_NAME='\\"USER_NAME\\"' \
+    PASSWORD='\\"PASSWORD\\"'
+	
 OPEN_SSL_PATH=C:/Path/To/OpenSSL
 
 LIBS += -lws2_32 \
