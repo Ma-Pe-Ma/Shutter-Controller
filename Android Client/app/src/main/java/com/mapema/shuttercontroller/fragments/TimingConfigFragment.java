@@ -1,9 +1,9 @@
-package com.example.rednykapcsol.fragments;
+package com.mapema.shuttercontroller.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +19,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.rednykapcsol.ActivityNotifier;
-import com.example.rednykapcsol.R;
-import com.example.rednykapcsol.Timing;
-import com.example.rednykapcsol.WeekDay;
-import com.example.rednykapcsol.activities.MainActivity;
+import com.mapema.shuttercontroller.ActivityNotifier;
+import com.mapema.shuttercontroller.R;
+import com.mapema.shuttercontroller.Timing;
+import com.mapema.shuttercontroller.WeekDay;
+import com.mapema.shuttercontroller.activities.MainActivity;
 
 import org.joda.time.LocalTime;
 
@@ -89,6 +89,13 @@ public class TimingConfigFragment extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = (int) (displayMetrics.heightPixels * 0.85f);
+        int width = (int) (displayMetrics.widthPixels * 0.85f);
+
+        getDialog().getWindow().setLayout(width, height);
     }
 
     private void setupPicker(View timingConfig) {

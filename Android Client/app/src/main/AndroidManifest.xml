@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.rednykapcsol">
+    package="com.mapema.shuttercontroller">
 
     <uses-permission android:name="android.permission.INTERNET" >
     </uses-permission>
@@ -15,8 +15,8 @@
         android:roundIcon="@mipmap/shutter_72x72_rounded"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name="com.example.rednykapcsol.AppContext">
-        <activity android:name=".activities.MainActivity"
+        android:name="com.mapema.shuttercontroller.AppContext">
+        <activity android:name="com.mapema.shuttercontroller.activities.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
