@@ -11,16 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageHolder> {
+    public MessageAdapter() {
 
-    List<String> messages;
-
-    public MessageAdapter(List<String> messages) {
-        this.messages = messages;
-        Log.i("DEBUG", "Message s: "+messages.size());
     }
 
     @Override
@@ -33,30 +30,33 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageH
     public MessageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(viewType, parent, false);
-
-        Log.i("DEBUG", "inflating row");
-
         return new MessageHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageHolder holder, int position) {
-        holder.message.setText(messages.get(position));
+        Message message = MessageContainer.getMessageContainer().getMessage(position);
+
+        holder.message.setText(message.getEvent());
+        holder.dateText.setText(message.getDate());
+        holder.idText.setText(String.valueOf(message.getID()));
     }
 
     @Override
     public int getItemCount() {
-        Log.i("DEBUG", "Message s2: "+messages.size());
-        return messages.size();
+        return MessageContainer.getMessageContainer().numberOfMessages;
     }
 
     public static class MessageHolder extends RecyclerView.ViewHolder {
-
         public TextView message;
+        public TextView idText;
+        public TextView dateText;
 
         public MessageHolder(@NonNull View itemView) {
             super(itemView);
             message = itemView.findViewById(R.id.messageRowText);
+            idText = itemView.findViewById(R.id.messageRowID);
+            dateText = itemView.findViewById(R.id.messageRowDate);
         }
     }
 }

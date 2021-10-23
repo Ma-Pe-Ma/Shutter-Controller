@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
 
+import com.example.rednykapcsol.R;
 import com.example.rednykapcsol.RequestDispatcher;
 import com.example.rednykapcsol.ZeroState;
 
@@ -16,26 +17,26 @@ public class ZeroChoose extends DialogFragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        builder.setTitle("Hol található a redőny?")
-                .setPositiveButton("Fent", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.nullQuestion))
+                .setPositiveButton(getString(R.string.up), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         RequestDispatcher.getRequestDispatcher().postZeroState(ZeroState.up);
                         dismiss();
                     }
                 })
-                .setNegativeButton("Lent", new DialogInterface.OnClickListener() {
+                .setNegativeButton(getString(R.string.down), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         RequestDispatcher.getRequestDispatcher().postZeroState(ZeroState.down);
                         dismiss();
                     }
                 })
-                .setNeutralButton("Nem tudom", new DialogInterface.OnClickListener() {
+                .setNeutralButton(getString(R.string.current), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ZeroAutomatic zeroAutomatic = new ZeroAutomatic();
-                        zeroAutomatic.show(getParentFragmentManager(), "ZEROAU");
+                        RequestDispatcher.getRequestDispatcher().postZeroState(ZeroState.find);
+                        dismiss();
                     }
                 });
 
@@ -45,7 +46,5 @@ public class ZeroChoose extends DialogFragment {
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         super.onCancel(dialogInterface);
-        ZeroAutomatic zeroAutomatic = new ZeroAutomatic();
-        zeroAutomatic.show(getParentFragmentManager(), "ZEROAU");
     }
 }

@@ -8,12 +8,12 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginTop="20dp"
         android:layout_marginStart="20dp"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:id="@+id/barParent">
 
             <ImageButton
@@ -28,20 +28,22 @@
                 android:id="@+id/vertical_progressbar"
                 android:layout_width="20dip"
                 android:layout_height="300dip"
+                android:layout_marginTop="15dp"
+                android:layout_marginStart="20dp"
                 android:progress="50"
                 app:layout_constraintLeft_toLeftOf="@id/upMax"
-                app:layout_constraintRight_toRightOf="@+id/upMax"
                 app:layout_constraintTop_toBottomOf="@id/upMax"
                 style="@style/Widget.ProgressBar.Vertical" />
 
             <ImageButton
+                android:id="@+id/downMax"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/downMax"
                 android:src="@drawable/down_arrow_50"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/vertical_progressbar"
-                app:layout_constraintBottom_toBottomOf="parent" />
+                android:layout_marginTop="15dp"
+                app:layout_constraintLeft_toLeftOf="@id/upMax"
+                app:layout_constraintRight_toRightOf="@id/upMax"
+                app:layout_constraintTop_toBottomOf="@id/vertical_progressbar"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -56,37 +58,53 @@
             android:layout_marginStart="10dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:orientation="vertical"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/barParent"
+        app:layout_constraintTop_toTopOf="@id/barParent"
         app:layout_constraintBottom_toBottomOf="@id/barParent"
-        android:layout_marginEnd="12dp">
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp">
 
-        <!--ImageButton
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/up"
-            android:src="@drawable/upload_circular_button"
-            android:background="@null" />
+            android:id="@+id/stateText"
+            android:text="@string/syncInProgress"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-        <ImageButton
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/down"
-            android:src="@drawable/download_circular_button"
-            android:background="@null" /-->
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/stateText"
+            android:id="@+id/messageTitle"
+            android:text="@string/messagesTitle"
+            android:textSize="20sp"/>
 
-        <ImageButton
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:id="@+id/messageRecyclerView"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/messageTitle"
+            app:layout_constraintBottom_toTopOf="@id/startDateText"/>
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/infoButton"
-            android:src="@drawable/information_50" />
+            android:id="@+id/startDateText"
+            android:text="@string/startDate"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -95,7 +113,7 @@
         app:layout_constraintLeft_toLeftOf="@id/barParent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barParent"
-        android:layout_marginTop="30dp">
+        android:layout_marginTop="10dp">
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -104,19 +122,17 @@
             app:layout_constraintLeft_toLeftOf="parent"
             android:src="@drawable/clock50"
             android:id="@+id/clock"
-
             android:layout_marginStart="20dp"/>
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/clock"
+            app:layout_constraintBottom_toBottomOf="@id/clock"
             app:layout_constraintRight_toRightOf="parent"
             android:src="@drawable/zero_50"
             android:id="@+id/zero"
-
-            android:layout_marginEnd="12dp"
-            />
+            android:layout_marginEnd="12dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

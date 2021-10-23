@@ -1,31 +1,26 @@
 package com.example.rednykapcsol.activities;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.rednykapcsol.ActivityNotifier;
 import com.example.rednykapcsol.FragmentNotifier;
+import com.example.rednykapcsol.MessageAdapter;
 import com.example.rednykapcsol.MessageContainer;
 import com.example.rednykapcsol.R;
 import com.example.rednykapcsol.RequestDispatcher;
 import com.example.rednykapcsol.Timing;
-import com.example.rednykapcsol.fragments.InfoDialogFragment;
 import com.example.rednykapcsol.fragments.SeekbarFragment;
-import com.example.rednykapcsol.fragments.TimeoutDialogFragment;
 import com.example.rednykapcsol.fragments.TimingSelectorFragment;
-import com.example.rednykapcsol.fragments.ZeroQuestion;
+import com.example.rednykapcsol.fragments.ZeroChoose;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +32,8 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
     private ImageButton upMax;
     private ImageButton downMax;
 
-    private ImageButton infoButton;
+    private TextView startDateText;
+    private TextView stateText;
 
     private ProgressBar progressBar;
     private TextView progressText;
@@ -47,20 +43,8 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
     private final String selectorTag = "selector";
     private final String configTag = "config";
 
-    //Working mechanism
-    //TODO: BLACKOUT ZEROING?
-    //TODO: AUTOMATIC ZERO AT MIDNIGHT?
-
-    //GUI
-    //TODO: GUI cleanup
-    //TODO: ACTIVE/NON-ACTIVE IMAGE BUTTON
-    //TODO: NOTIFICATION DIALOGS
-    //TODO: MESSAGE PROCESSINMG
-
-    //SERVER
-    //TODO: ESP SERVER CONFIGURATION, SSH + user credidentials, easyddns?
-    //TODO: ESP JSON PARSER MEMORY MANEGEMENT?
-    //TODO: újraindítási figyelmeztetés az utolsó 10 napban/ ESP 64bit timing?
+    RecyclerView recyclerView;
+    MessageAdapter messageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,13 +56,24 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
 
         Timing.initialize(this);
 
-        inactiveColor = ContextCompat.getColor(MainActivity.this,R.color.colorGray);
-        activeColor = ContextCompat.getColor(MainActivity.this,R.color.colorGreen);
+        inactiveColor = ContextCompat.getColor(MainActivity.this, R.color.colorGray);
+        activeColor = ContextCompat.getColor(MainActivity.this, R.color.colorGreen);
+
+        recyclerView = findViewById(R.id.messageRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        messageAdapter = new MessageAdapter();
+        recyclerView.setAdapter(messageAdapter);
+
+        startDateText = findViewById(R.id.startDateText);
+        startDateText.setText(getString(R.string.startDate, getString(R.string.hyphen)));
+
+        stateText = findViewById(R.id.stateText);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        RequestDispatcher.getRequestDispatcher().createRequestQueue(this);
         RequestDispatcher.getRequestDispatcher().subscribe(this);
         RequestDispatcher.getRequestDispatcher().getDump();
     }
@@ -118,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
 
         progressText = findViewById(R.id.progressText);
 
-        progressText.setText("50%");
+        progressText.setText(getString(R.string.percentage, 50));
         progressText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,20 +124,12 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
     }
 
     private void setupButtons() {
-        infoButton = findViewById(R.id.infoButton);
-        infoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showMessageWindow(0);
-            }
-        });
-
         zeroButton = findViewById(R.id.zero);
         zeroButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ZeroQuestion zeroQuestion = new ZeroQuestion();
-                zeroQuestion.show(getSupportFragmentManager(), "ZEROQ");
+                ZeroChoose zeroChoose = new ZeroChoose();
+                zeroChoose.show(getSupportFragmentManager(), "ZERO");
             }
         });
 
@@ -154,20 +141,6 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
                 timingSelectorFragment.show(getSupportFragmentManager(), selectorTag);
             }
         });
-    }
-
-    public void showMessageWindow(int size) {
-        InfoDialogFragment infoDialogFragment = (InfoDialogFragment) getSupportFragmentManager().findFragmentByTag("INFO");
-
-        if (infoDialogFragment != null) {
-            infoDialogFragment.dismiss();
-            getSupportFragmentManager().beginTransaction();
-        }
-
-        List<String> filteredMessages = MessageContainer.getMessageContainer().getFilteredMessages(this, size);
-
-        infoDialogFragment = new InfoDialogFragment(filteredMessages);
-        infoDialogFragment.show(getSupportFragmentManager(), "INFO");
     }
 
     public ProgressBar getProgressBar() {
@@ -200,7 +173,9 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
 
     @Override
     public void notifyMessage(int size) {
-        showMessageWindow(size);
+        messageAdapter.notifyDataSetChanged();
+        String startString = getString(R.string.startDate, MessageContainer.getMessageContainer().getStartupTime());
+        startDateText.setText(startString);
     }
 
     @Override
@@ -209,16 +184,20 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
     }
 
     @Override
-    public void notifyTimeout() {
-        TimeoutDialogFragment timeoutDialogFragment = new TimeoutDialogFragment();
-        timeoutDialogFragment.show(getSupportFragmentManager(), "TIMEOUT");
+    public void notifySynchronisation() {
+        stateText.setText(getString(R.string.serverState, getString(R.string.syncInProgress)));
     }
 
     @Override
-    public void notifyNewValue(float newValue) {
-        int newValueInt = (int) (newValue * 100);
-        progressBar.setProgress(newValueInt);
-        progressText.setText("" + newValueInt + "%");
+    public void notifyTimeout() {
+        notifyDisableGUI();
+        stateText.setText(getString(R.string.serverState, getString(R.string.serverUnavailable)));
+    }
+
+    @Override
+    public void notifyNewValue(int newValue) {
+        progressBar.setProgress(newValue);
+        progressText.setText(getString(R.string.percentage, newValue));
     }
 
     @Override
@@ -229,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
         downMax.setEnabled(true);
         zeroButton.setEnabled(true);
         progressText.setEnabled(true);
+        stateText.setText(getString(R.string.serverUnavailable));
     }
 
     @Override
@@ -239,7 +219,5 @@ public class MainActivity extends AppCompatActivity implements ActivityNotifier 
         downMax.setEnabled(false);
         zeroButton.setEnabled(false);
         progressText.setEnabled(false);
-
-        //TODO: message about disabled gui?
     }
 }
