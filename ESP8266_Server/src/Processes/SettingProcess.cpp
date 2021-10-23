@@ -1,8 +1,15 @@
 #include "SettingProcess.h"
+#include "../TimeCalibration.h"
+#include "../LittleFSHelper.h"
+#include "ZeroProcess.h"
 
-float SettingProcess::currentValue = 0;
-float SettingProcess::upSpeed = UP;
-float SettingProcess::downSpeed = DOWN;
+float SettingProcess::currentValue = -1.0f;
+const float SettingProcess::upSpeed = UP_SPEED;
+const float SettingProcess::downSpeed = DOWN_SPEED;
+
+int8_t SettingProcess::lastSetHour = -1;
+int8_t SettingProcess::lastSetMin = -1;
+int8_t SettingProcess::lastSetDay = -1;
 
 SettingProcess SettingProcess::currentSettingByClient;
 SettingProcess* SettingProcess::currentProcess = nullptr;
@@ -11,55 +18,95 @@ ArduinoQueue<SettingProcess*> SettingProcess::settingQueue = ArduinoQueue<Settin
 
 void SettingProcess::start() {
     processStartTime = millis();
+    processTime = 0;
 
-    if (value > currentValue) {
-        processTime = (value - currentValue) / upSpeed;
-        digitalWrite(0, HIGH);
+    Serial.println("Target value: " + String(targetValue) + ", current: " + String(currentValue));
+
+    if (targetValue > currentValue) {
+        processTime = (targetValue - currentValue) / upSpeed;
+
+        Serial.println("ProcessTime: "+String(processTime));
 
         //Zeroing
-        if (value == 1.0f) {
+        if (targetValue == 1.0f) {
             processTime += 3;
         }
+
+        digitalWrite(UP_PIN, HIGH);
     }
     
-    if (value < currentValue) {
-        processTime = (currentValue - value) / downSpeed;
+    if (targetValue < currentValue) {
+        processTime = (currentValue - targetValue) / downSpeed;
  
         //Zeroing
-        if (value == 0) {
+        if (targetValue == 0) {
             processTime += 3;
         }
 
-        digitalWrite(2, HIGH);
+        digitalWrite(DOWN_PIN, HIGH);
     }
-}
 
+    Serial.println("Generic Process started: "+String(processTime));
+}
 
 bool SettingProcess::checkFinished() {
     unsigned long curMillis = millis();
 
-    if (value == currentValue) {
+    if (targetValue == currentValue) {
+        TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+        Serial.println("Setting finished, unchanged: " + String(currentValue));
         return true;
     }
-    else if (curMillis - processStartTime > processTime) {
-        digitalWrite(0, LOW);
-        digitalWrite(2, LOW);
-        currentValue = value;   
+    else if (curMillis - processStartTime > processTime * 1000) {
+        digitalWrite(UP_PIN, LOW);
+        digitalWrite(DOWN_PIN, LOW);
+        currentValue = targetValue;
+
+        TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+
+        Serial.println("Setting finished: " + String(currentValue));
+
         return true;
     }
 
     return false;
 }
 
-void SettingProcess::processQueue() {
+void SettingProcess::initialize() {
+    SettingProcess::settingQueue = ArduinoQueue<SettingProcess*>(10);
+
+    //Load state from before blackout, else zero to middle!
+    loadCurrentStateFromFlash();
+
+    Serial.println("Queue size: "+String(SettingProcess::settingQueue.itemSize())+", count: "+String(SettingProcess::settingQueue.itemCount()));
+}
+
+int8_t SettingProcess::getLastSetHour() {
+    return lastSetHour;
+}
+
+int8_t SettingProcess::getLastSetMin() {
+    return lastSetMin;
+}
+
+int8_t SettingProcess::getLastSetDay() {
+    return lastSetDay;
+}
+
+void SettingProcess::processQueue() { 
     if (currentProcess == nullptr && !settingQueue.isEmpty()) {
         currentProcess = settingQueue.dequeue();
         currentProcess -> start();
+        Serial.println("New process dequeud!");      
     }
     else if (currentProcess != nullptr) {
+        //Serial.println("In progress....");
+    
         if (currentProcess -> checkFinished()) {
+            currentProcess->saveCurrentStateToFlash();
             currentProcess->generateMessage();
             currentProcess = nullptr;
+            Serial.println("Process finished!");
         }
     }
 }
@@ -76,15 +123,54 @@ float SettingProcess::getCurrentValue() {
     return currentValue;
 }
 
-void SettingProcess::setClientValue(float value) {
-    currentSettingByClient.setValue(value);
+void SettingProcess::setCurrentValue(float currentValue) {
+    SettingProcess::currentValue = currentValue;
+}
+
+void SettingProcess::setClientValue(float targetValue) {
+    currentSettingByClient.setTargetValue(targetValue);
     addSettingToQueue(&currentSettingByClient);
 }
 
-void SettingProcess::generateMessage() {
-    StaticJsonDocument<2048> doc;
+int SettingProcess::getQueueCount() {
+    if (currentProcess != nullptr) {
+        return 1;
+    }
 
-    String message = "";
-    serializeJson(doc, message);
-    MessageHandler::AddNewMessage(message);
+    return settingQueue.itemCount();
+}
+
+void SettingProcess::generateMessage() {
+    int intCurrent = (int) (currentValue * 100);
+    MessageHandler::AddNewMessage("S", "M", String(intCurrent));
+}
+
+void SettingProcess::saveCurrentStateToFlash() {
+    StaticJsonDocument<2048> doc;
+    doc["V"] = currentValue;
+    doc["D"] = lastSetDay;
+    doc["H"] = lastSetHour;
+    doc["M"] = lastSetMin;
+
+    String out = "";
+    serializeJson(doc, out);
+    LittleFSHelper::writeFile("state.txt", out);
+}
+
+void SettingProcess::loadCurrentStateFromFlash() {
+    String currentState = LittleFSHelper::readFile("state.txt");
+
+    if (currentState != "") {
+        StaticJsonDocument<2048> doc;
+        deserializeJson(doc, currentState);
+ 
+        currentValue =  doc["V"].as<float>();
+        lastSetDay = doc["D"].as<int8_t>();
+        lastSetHour = doc["H"].as<int8_t>();
+        lastSetMin = doc["M"].as<int8_t>();
+    }
+    else {
+        SettingProcess::setCurrentValue(0.5f);
+        ZeroProcess::processNull(ZeroState::find);
+    }
 }

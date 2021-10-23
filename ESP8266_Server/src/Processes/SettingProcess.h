@@ -1,12 +1,9 @@
 #ifndef SETTINGPROCESS_H
 #define SETTINGPROCESS_H
 
-#define NR_OF_TIMINGS 6
-#define UP 0.1f
-#define DOWN 0.1f
-
 #include <ArduinoQueue.h>
-#include "MessageHandler.h"
+#include "../MessageHandler.h"
+#include "../../Configuration.h"
 
 class SettingProcess {
     static SettingProcess currentSettingByClient;
@@ -14,25 +11,39 @@ class SettingProcess {
 
 protected:
     static float currentValue;
-    static float upSpeed;
-    static float downSpeed;
+    const static float upSpeed;
+    const static float downSpeed;
     static ArduinoQueue<SettingProcess*> settingQueue;
 
     virtual void start();
     virtual bool checkFinished();
-    float value = 0;
+    float targetValue = 0;
 
     unsigned long processStartTime = 0;
     unsigned long processTime = 0;
 
+    static int8_t lastSetHour;
+    static int8_t lastSetMin;
+    static int8_t lastSetDay;
+
 public:
+    static int getQueueCount();
+    void setTargetValue(float targetValue) {this->targetValue = targetValue;}
+    virtual void generateMessage();
+
     static void processQueue();
     static void addSettingToQueue(SettingProcess* newSetting);
-    void setValue(float value) {this->value = value;}
     static SettingProcess* getCurrentSettingProcess();
     static float getCurrentValue();
+    static void setCurrentValue(float);
     static void setClientValue(float value);
-    virtual void generateMessage();
+
+    static void initialize();
+    static int8_t getLastSetHour();
+    static int8_t getLastSetMin();
+    static int8_t getLastSetDay();
+    static void saveCurrentStateToFlash();
+    static void loadCurrentStateFromFlash();
 };
 
 #endif
