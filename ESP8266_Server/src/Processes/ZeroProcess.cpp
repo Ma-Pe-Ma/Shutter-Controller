@@ -1,67 +1,73 @@
-#include "NullProcess.h"
+#include "ZeroProcess.h"
 
-NullProcess NullProcess::nullProcess;
+ZeroProcess ZeroProcess::zeroProcess;
 
-void NullProcess::processNull(NullState nullState) {
-    switch (nullState) {
+void ZeroProcess::processNull(ZeroState zeroState) {
+    zeroProcess.zeroState = zeroState;
+
+    switch (zeroState) {
         case up:
             currentValue = 1.0f;
             break;
-        
         case down:
             currentValue = 0.0f;
             break;
-
-        case find:
-            settingQueue.enqueue(&nullProcess);
-            break;
         default:
+            settingQueue.enqueue(&zeroProcess);
             break;
-    }
+    }    
 }
 
-void NullProcess::start() {
+void ZeroProcess::start() {
     processStartTime = millis();
+    digitalWrite(UP_PIN, LOW);
+    digitalWrite(DOWN_PIN, LOW);
+
     zeroFound = false;
+    targetValue = currentValue;
 
     if (currentValue < 0.5f) {
-        digitalWrite(2, HIGH);
         processTime = 1.0f / downSpeed;
+        digitalWrite(DOWN_PIN, HIGH);   
     }
     else {
-        digitalWrite(0, HIGH);
         processTime = 1.0f / upSpeed;
+        digitalWrite(UP_PIN, HIGH);
     }
+
+    processTime += 3.0f;
+
+    Serial.println("Zero process started, process time: " + String(processTime));
 }
     
-bool NullProcess::checkFinished() {
-
+bool ZeroProcess::checkFinished() {
     if (!zeroFound) {
-
-        if (millis() - processStartTime > processTime) {
-            
-            if (currentValue < 0.5f) {
-                digitalWrite(2, LOW);
-                digitalWrite(0, HIGH);
-                processTime = value / upSpeed;
+        if (millis() - processStartTime > processTime * 1000) {   
+            if (targetValue < 0.5f) {
+                digitalWrite(DOWN_PIN, LOW);
+                digitalWrite(UP_PIN, HIGH);
+                processTime = targetValue / upSpeed;
             }
             else {
-                digitalWrite(0, LOW);
-                digitalWrite(2, HIGH);
-                processTime = (1.0f - value) / downSpeed;
+                digitalWrite(DOWN_PIN, HIGH);
+                digitalWrite(UP_PIN, LOW);
+                processTime = (1.0f - targetValue) / downSpeed;
             }
 
-            processStartTime = millis();
             zeroFound = true;
+            processStartTime = millis(); 
+
+            Serial.println("Zeroing half, new processs time: " + String(processTime));
         }
     }
     else {
-         if (millis() - processStartTime > processTime) {
-            
-            digitalWrite(0, LOW);
-            digitalWrite(2, LOW);
+         if (millis() - processStartTime > processTime * 1000) {
+            digitalWrite(UP_PIN, LOW);
+            digitalWrite(DOWN_PIN, LOW);
 
-            currentValue = value;
+            currentValue = targetValue;
+
+            Serial.println("Zeroing finished: " + String(currentValue));
             return true;
          }
     }
@@ -69,10 +75,7 @@ bool NullProcess::checkFinished() {
     return false;
 }
 
-void NullProcess::generateMessage() {
-    StaticJsonDocument<2048> doc;
-
-    String message = "";
-    serializeJson(doc, message);
-    MessageHandler::AddNewMessage(message);
+void ZeroProcess::generateMessage() {
+    int intCurrent = (int) (currentValue * 100);
+    MessageHandler::AddNewMessage("S", "Z", String(intCurrent));
 }

@@ -3,18 +3,24 @@
 
 #include "Arduino.h"
 #include <ArduinoJson.h>
+#include "LittleFSHelper.h"
 
 #define NR_OF_MESSAGES 10
 
 namespace MessageHandler {
     extern String messages[];
-    extern int unseenNr;
+    extern unsigned int unseenNr;
+    extern String startupMessage;
 
     void Initialize();
-    void AddNewMessage(String);
-    String* GetUnseenMessage();
-    String GetUnseenMessageDump();
     String GetEveryMessage();
+    void AddNewMessage(String, String, String);
+    String CreateNewMessage(String, String, String);
+    void ResetUnseenCounter();
+
+    void saveMessagesToFlash(String&);
+    void loadMessagesFromFlash();
+    String readMessagesFromFlash();
 }
 
 #endif

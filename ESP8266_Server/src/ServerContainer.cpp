@@ -1,186 +1,279 @@
 #include "ServerContainer.h"
+#include "../Configuration.h"
 
-const char serverCert[] /*PROGMEM*/ = R"EOF(
-    paste here content of "cert.txt"
-    )EOF";
-const char serverKey[] /*PROGMEM*/ =  R"EOF(
-    paste here content of "key.txt"
-    )EOF";
+namespace ServerContainer {
+    BearSSL::ESP8266WebServerSecure secureServer(HTTPS_PORT);
+    ESP8266WebServer server(HTTP_PORT);
+    String secureAddress = "https://" + String(DDNS_DOMAIN);
 
-namespace ServerContainer{
+    StaticJsonDocument<2048> docOut;
+    StaticJsonDocument<768> docIn;
+    String response;
 
-    bool blackout = true;
-
-    BearSSL::ESP8266WebServerSecure secureServer(443);
-
-    void Initialize() {
-        
+    void initialize() {
         secureServer.getServer().setRSACert(new BearSSL::X509List(serverCert), new BearSSL::PrivateKey(serverKey));
+        //Serial.print(serverCert);
+        //Serial.println();
 
-        secureServer.on("/", HTTP_GET, handleRoot);     // Call the 'handleRoot' function when a client requests URI "/"
-        secureServer.on("/DUMP", HTTP_GET, handleDump);
-        secureServer.on("/STAT", HTTP_GET, handleStatus);
+        secureServer.on("/", HTTP_GET, handleRoot);
+        secureServer.on("/S", HTTP_GET, handleStatus);
+        secureServer.on("/D", HTTP_GET, handleGetDump); 
 
-        secureServer.on("/SCH", HTTP_POST, handleScheduling);
-        secureServer.on("/SET", HTTP_POST, handleSetting);
-        secureServer.on("/NUL", HTTP_POST, handleZero);
+        secureServer.on("/V", HTTP_POST, handlePostSetting);
+        secureServer.on("/T", HTTP_POST, handlePostTiming);  
+        secureServer.on("/Z", HTTP_POST, handlePostZero);
         
-        secureServer.onNotFound(handleUnknown); 
+        secureServer.onNotFound(handleRedirectSecure); 
+
+        secureServer.begin();
+
+        server.on("/", HTTP_GET, handleRedirect);
+        server.onNotFound(handleRedirect);
+        server.begin();
+    }
+
+    void handleRedirect() {
+        server.sendHeader("Location", secureAddress, true);
+        server.send(302, "text/plain", "");
+        Serial.println("Redirect to secure!");
+    }
+
+    void handleRedirectSecure() {
+        secureServer.sendHeader("Location", String("/"), true);
+        secureServer.send(302, "text/plain", "");
+        Serial.println("Redirect to root secure!");
     }
 
     void handleRoot() {
-        
+        secureServer.send(200, "text/html", DEFAULT_PAGE);
+        Serial.println("Root was sent!")
     }
 
     void handleStatus() {
+        docOut.clear();
+
+        if (!authenticationCheck()) {
+            handleRedirectSecure();
+            return;
+        }
+
         if (SettingProcess::getCurrentSettingProcess() != nullptr) {
-            SendResponse(WAIT);
+            createGenericResponse(3);
         }
         else {
-            SendResponse(OK);
+            createGenericResponse(0);
         }
+
+        serializeJson(docOut, response);
+        docOut.clear();
+
+        secureServer.send(200, "text/plain", response);
+        response = "";
+
+        println("Status was sent!")
     }
 
-    void handleSetting() {
-        String body = secureServer.arg("body");
-        StaticJsonDocument<2048> in;
+    void handleGetDump() {
+        docOut.clear();
 
-        DeserializationError err = deserializeJson(in, body);
+        if (!authenticationCheck()) {
+            handleRedirectSecure();
+            return;
+        }
+
+        docOut["T"] = serialized(Timing::readTimingsFromFlash());
+        
+        if (SettingProcess::getCurrentSettingProcess() != nullptr) {
+            createGenericResponse(3, true);
+        }
+        else {
+            createGenericResponse(0, true);
+        }
+    
+	    serializeJson(docOut, response);
+        docOut.clear();
+
+        secureServer.send(200, "text/plain", response);
+        response = "";
+        Serial.println("Dump sent back!");
+    }
+
+    void handlePostSetting() {
+        docOut.clear();
+        docIn.clear();
+
+        if (!authenticationCheck()) {
+            handleRedirectSecure();
+            return;
+        }
+
+        DeserializationError err = deserializeJson(docIn, secureServer.arg("plain"));
+
+        int wait = 0;
+        int intValue = -1;
+
         if (err == DeserializationError::Ok) {
-            JsonObject setting = in.as<JsonObject>();
-            float newValue = setting["VALUE"].as<float>();
+            JsonObject setting = docIn.as<JsonObject>();
+            intValue = setting["V"].as<int>();
+            float newValue = 1.0f * intValue / 100;
             SettingProcess::setClientValue(newValue);
-
-            SendResponse(WAIT);
+            wait = 3;
         }
         else {
-            String newMessage = CreateNewMessage("SET","JSON", err.c_str());
-
-            MessageHandler::AddNewMessage(newMessage);
-            SendResponse(OK);
+            MessageHandler::AddNewMessage("J","S", err.c_str()); 
+            wait = 0;
         }
+
+        docIn.clear();
+
+        createGenericResponse(wait);
+
+        serializeJson(docOut, response);
+        docOut.clear();
+
+        secureServer.send(200, "text/plain", response);
+        response = "";
+
+        Serial.println("New value was posted: " + String(intValue));
     }
 
-    void handleScheduling() {
-        String body = secureServer.arg("body");
-        StaticJsonDocument<2048> doc;
+    void handlePostTiming() {
+        docOut.clear();
+        docIn.clear();
 
-        DeserializationError err = deserializeJson(doc, body);
+        if (!authenticationCheck()) {
+            handleRedirectSecure();
+            return;
+        }
+
+        String body = secureServer.arg("plain");
+
+        DeserializationError err = deserializeJson(docIn, body);
+
+        for (int i = 0; i < secureServer.args(); i++) {
+            Serial.println(String(i) + ". arg: " + secureServer.argName(i) + " - " + secureServer.arg(i));
+        }
 
         if (err == DeserializationError::Ok) {
-            JsonObject timingConfig = doc.as<JsonObject>();
-            TimingSetter::timingSetter.processMessage(timingConfig);
-
-            SendResponse(WAIT);
+            JsonObject timingConfig = docIn.as<JsonObject>();
+            Timing::parseTimings(timingConfig);
+            Timing::disableEarlierSettings();
+            MessageHandler::AddNewMessage("S","T", "O");
         } 
         else {
-            String newMessage = CreateNewMessage("SET","JSON", err.c_str());
-            MessageHandler::AddNewMessage(newMessage);
-            SendResponse(OK);
+            MessageHandler::AddNewMessage("J","T", err.c_str());
         }
+        docIn.clear();
+
+        createGenericResponse(0);
+
+        serializeJson(docOut, response);
+        docOut.clear();
+
+        secureServer.send(200, "text/plain", response);
+        response = "";
+
+        Timing::saveTimingsToFlash(body);
+        Serial.println("Timings were updated!");
     }
 
-    void handleZero() {
-        String body = secureServer.arg("body");
-        StaticJsonDocument<2048> doc;
+    void handlePostZero() {
+        docOut.clear();
+        docIn.clear();
 
-        DeserializationError err = deserializeJson(doc, body);
+        if (!authenticationCheck()) {
+            handleRedirectSecure();
+            return;
+        }
+
+        int8_t retryTime = 0;
+
+        String zeroState = "";
+
+        DeserializationError err = deserializeJson(docIn, secureServer.arg("plain"));
         if (err == DeserializationError::Ok) {
-            JsonObject zeroObject = doc.as<JsonObject>();
-            String zeroState = zeroObject["STATE"];
+            JsonObject zeroObject = docIn.as<JsonObject>();
+            zeroState = zeroObject["Z"];
 
             if (zeroState == "find") {
-                NullProcess::nullProcess.processNull(find);
-                SendResponse(WAIT);
+                ZeroProcess::zeroProcess.processNull(find);
+                retryTime = 3;
             }
             else {
                 if (SettingProcess::getCurrentSettingProcess() != nullptr) {
-                    NullProcess::nullProcess.processNull(up);
-                    String newMessage = CreateNewMessage("NUL","FAIL", "BUSY");
-                    MessageHandler::AddNewMessage(newMessage);
-                    SendResponse(OK);
+                    MessageHandler::AddNewMessage("Z","F", "B");
+                    retryTime = 3;
                 }
                 else {
                     if(zeroState == "up") {
-                        NullProcess::nullProcess.processNull(up);
-                        String newMessage = CreateNewMessage("NUL","OK", "UP");
-                        MessageHandler::AddNewMessage(newMessage);
-                        SendResponse(OK);
+                        ZeroProcess::zeroProcess.processNull(up);
+                        MessageHandler::AddNewMessage("Z","O", "U");
+                        retryTime = 0;
                     }
 
                     if(zeroState == "down") {
-                        NullProcess::nullProcess.processNull(down);
-                        String newMessage = CreateNewMessage("NUL","OK", "DOWN");
-                        MessageHandler::AddNewMessage(newMessage);
-                        SendResponse(OK);
+                        ZeroProcess::zeroProcess.processNull(down);
+                        MessageHandler::AddNewMessage("Z","O", "D");
+                        retryTime = 0;
                     }
                 }
             }
         }
         else {
-            String newMessage = CreateNewMessage("NUL","JSON", err.c_str());
-            MessageHandler::AddNewMessage(newMessage);
-            SendResponse(OK);
+            MessageHandler::AddNewMessage("J","Z", err.c_str());
+            retryTime = 0;
         }
+
+        docIn.clear();
+
+        createGenericResponse(retryTime);
+
+        serializeJson(docOut, response);
+        docOut.clear();
+
+        secureServer.send(200, "text/plain", response);
+        response = "";
+
+        Serial.println("Zeroing was set: " + zeroState);
     }
 
-    void handleDump() {
-        StaticJsonDocument<2048> doc;
-
-        if (blackout) {
-            doc["BO"] = true;
-            blackout = false;
+    void createGenericResponse(int waitTime, bool root) {
+        JsonObject genericResponse;
+        
+        if (root) {
+            genericResponse = docOut.createNestedObject("G");
         }
         else {
-	        doc["BO"] = false;
-            JsonObject timingConfig = doc.createNestedObject("TIM");
-            Timing::CreateJsonObject(timingConfig);
+            genericResponse = docOut.to<JsonObject>();
         }
-
-        doc["MC"] = MessageHandler::unseenNr;
-        doc["MES"] = MessageHandler::GetEveryMessage();
-        doc["VALUE"] = SettingProcess::getCurrentValue();
-
-        String message;
-	    serializeJson(doc, message);
-
-        secureServer.send(200, "text/plain", message);
-    }
-
-    void handleUnknown() {
         
+        if (waitTime > 0) {
+            genericResponse["T"] = waitTime;
+            return;
+        }
+      
+        genericResponse["M"] = serialized(MessageHandler::GetEveryMessage());
+        genericResponse["V"] = (int) (SettingProcess::getCurrentValue() * 100);
+        genericResponse["T"] = waitTime;
+
+        MessageHandler::ResetUnseenCounter();
     }
 
-    void SendResponse(ResponseType responseType) {
-        StaticJsonDocument<2048> out;
-        out["MES"] = MessageHandler::GetUnseenMessageDump();
-
-        switch (responseType) {
-            case OK:
-                out["TYPE"] = "OK";
-                break;
-            case WAIT:
-                out["TYPE"] = "WAIT";
-                out["TIME"] = 2;
-                break;
+    bool authenticationCheck() {
+        if (secureServer.args() < 2) {
+            return false;
         }
 
-        String message;
-        serializeJson(out, message);
+        bool usernameCheck = false;
+        if (secureServer.argName(0) == "username" && secureServer.arg(0) == USER_NAME) {
+            usernameCheck = true;
+        }
 
-        secureServer.send(200, "text/plain", message);
-    }
+        bool passwordCheck = false;
+        if (secureServer.argName(1) == "password" && secureServer.arg(1) == PASSWORD) {
+            passwordCheck = true;
+        }
 
-    String CreateNewMessage(String type, String result, String additional) {
-        StaticJsonDocument<2048> messageDoc;
-        messageDoc["TYPE"] = type;
-        messageDoc["DATE"] = TimeCalibration::GetFormattedString();
-        messageDoc["RESULT"] = result;
-        messageDoc["ADD"] = additional;
-
-        String newMessage = "";
-        serializeJson(messageDoc, newMessage);
-
-        return newMessage;
+        return usernameCheck && passwordCheck;
     }
 }

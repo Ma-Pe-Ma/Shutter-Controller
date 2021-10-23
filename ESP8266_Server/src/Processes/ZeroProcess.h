@@ -3,16 +3,17 @@
 
 #include "SettingProcess.h"
 
-enum NullState{
+enum ZeroState{
     up,
     down,
     find
 };
 
-class NullProcess : public SettingProcess {
+class ZeroProcess : public SettingProcess {
 public:
-    static NullProcess nullProcess;
-    static void processNull(NullState);
+    static ZeroProcess zeroProcess;
+    static void processNull(ZeroState);
+    ZeroState zeroState;
 
     bool zeroFound = false;
     void start();

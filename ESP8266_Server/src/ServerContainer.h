@@ -5,35 +5,27 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WebServerSecure.h>
 #include <ArduinoJson.h>
-#include "TimingSetter.h"
-#include "NullProcess.h"
+#include "Processes/ZeroProcess.h"
 #include "MessageHandler.h"
 #include "TimeCalibration.h"
 
-extern const char serverCert[];
-extern const char serverKey[];
-
 namespace ServerContainer {
-    enum ResponseType {
-        OK,
-        WAIT,
-        ERROR
-    };
-
-    extern bool blackout;
-
     void handleRoot();
+    void handleRedirect();
+    void handleRedirectSecure();
+    
     void handleStatus();
-    void handleSetting();
-    void handleScheduling();
-    void handleUnknown();
-    void handleZero();
-    void handleDump();
+    void handleGetDump();
+
+    void handlePostSetting();    
+    void handlePostTiming();
+    void handlePostZero();
  
     extern BearSSL::ESP8266WebServerSecure secureServer;
-    void Initialize();
-    void SendResponse(ResponseType);
-    String CreateNewMessage(String, String, String);
+    extern ESP8266WebServer server;
+    void initialize();
+    void createGenericResponse(int retryTime, bool root = false);
+    bool authenticationCheck();
 }
 
 #endif
