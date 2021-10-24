@@ -2,56 +2,57 @@
     <string name="app_name">Redőnykapcsoló</string>
 
     <string name="percentage">%1$d %%</string>
-    <string name="scheduling">%1$d. ütemezés</string>
-    <string name="time">Időpont:</string>
-    <string name="value">Érték:</string>
-    <string name="timed_configs">Időzített állítások</string>
+    <string name="scheduling">%1$d. scheduling</string>
+    <string name="time">Time:</string>
+    <string name="value">Value:</string>
+    <string name="timed_configs">Scheduled settings</string>
 
-    <string name="monday_abb">H</string>
-    <string name="tuesday_abb">K</string>
-    <string name="wednesday_abb">Sze</string>
-    <string name="thursday_abb">Cs</string>
-    <string name="friday_abb">P</string>
-    <string name="saturday_abb">Szo</string>
-    <string name="sunday_abb">V</string>
-    <string name="days">Napok:</string>
+    <string name="monday_abb">M</string>
+    <string name="tuesday_abb">Tu</string>
+    <string name="wednesday_abb">w</string>
+    <string name="thursday_abb">Th</string>
+    <string name="friday_abb">F</string>
+    <string name="saturday_abb">Sa</string>
+    <string name="sunday_abb">Su</string>
+    <string name="days">Days</string>
     <string name="timing_pref">Timing String</string>
 
-    <string name="serverState">Állapot: %1$S</string>
-    <string name="noMessage">A szervertől nem kaptunk üzenetet</string>
-    <string name="syncInProgress">Szinkronizálás folyamatban</string>
-    <string name="nightZeroSwitchText">Pozíció nullázása éjszaka</string>
-    <string name="serverUnavailable" >A szerver nem elérhető</string>
-    <string name="connectionLost">Megszakadt a szerverrel a kapcsolat%</string>
-    <string name="serverStart">Szerverindítás</string>
+    <string name="serverState">State: %1$S</string>
+    <string name="noMessage">No message from the server</string>
+    <string name="syncInProgress">Syncing in progress</string>
+    <string name="nightZeroSwitchText">Zeroing position at night</string>
+    <string name="serverUnavailable">The server is unavailable</string>
+    <string name="serverAvailable">The server is available</string>
+    <string name="connectionLost">The connection was lost!</string>
+    <string name="serverStart">Server start time</string>
 
-    <string name="messagesTitle">Üzenetek:</string>
-    <string name="startDate">Indítás dátuma: %1$S</string>
+    <string name="messagesTitle">Messages</string>
+    <string name="startDate">Start datetime: %1$S</string>
 
-    <string name="requestingDay">Kérem adjon meg legalább egy napot!</string>
-    <string name="unsetTime">ÓÓ:pp</string>
+    <string name="requestingDay">Please add at least one day!</string>
+    <string name="unsetTime">HH:mm</string>
     <string name="hyphen">-</string>
-    <string name="yes">Igen</string>
-    <string name="exit">Kilép?</string>
+    <string name="yes">Yes</string>
+    <string name="exit">Exit?</string>
 
-    <string name="nullQuestion">Nullázni szeretne?</string>
-    <string name="up">Fent</string>
-    <string name="down">Lent</string>
-    <string name="current">Aktuális</string>
+    <string name="nullQuestion">Do you want to zero?</string>
+    <string name="up">Up</string>
+    <string name="down">Down</string>
+    <string name="current">Current</string>
 
-    <string name="jsonError">JSON hiba (%1$S %2$S)</string>
-    <string name="nullError">Nullázás sikertelen, beállítás folyamatban</string>
-    <string name="nullSuccessUp">Nullázás sikeres, fent!</string>
-    <string name="nullSuccessDown">Nullázás sikeres, lent!</string>
-    <string name="scheduleSuccess">%1$1S. ütemezés végrahajtva: %2$S%%;</string>
-    <string name="manualSet">Kézi beállítás: %1$S%%</string>
-    <string name="positionFound">Pozíció megkeresve: %1$S%%</string>
-    <string name="scheduleUpdated">Ütemezések frissítve!</string>
-    <string name="unknownEvent">Ismeretlen esemény: %1$S - %2$S - %3$S</string>
+    <string name="jsonError">JSON Error (%1$S %2$S)</string>
+    <string name="nullError">Zeroing failed, setting is in progress!</string>
+    <string name="nullSuccessUp">Zeroing success: up!</string>
+    <string name="nullSuccessDown">Zeroing success: down!</string>
+    <string name="scheduleSuccess">%1$1S. scheduling executed: %2$S%%;</string>
+    <string name="manualSet">Manual setting: %1$S%%</string>
+    <string name="positionFound">Position found: %1$S%%</string>
+    <string name="scheduleUpdated">Schedules updated!</string>
+    <string name="unknownEvent">Unknown event: %1$S - %2$S - %3$S</string>
 
     <string name="uniquePeriodicRequestWorkName">ShutterPeriodicRequestWork</string>
 
     <string name="notificationChannelID">ShutterAuto</string>
-    <string name="notificationChannelName">Automatikus időzítés</string>
-    <string name="notificationChannelDescription">Értesítés az automatikusan beállított pozíciókról</string>
+    <string name="notificationChannelName">Automatic noficiation</string>
+    <string name="notificationChannelDescription">Notification about scheduled settings</string>
 </resources>

@@ -1,6 +1,7 @@
-package com.example.rednykapcsol.fragments;
+package com.mapema.shuttercontroller.fragments;
 
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,17 +9,11 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 
-import com.example.rednykapcsol.R;
-import com.example.rednykapcsol.RequestDispatcher;
-import com.example.rednykapcsol.activities.MainActivity;
-
-import java.util.Objects;
+import com.mapema.shuttercontroller.R;
+import com.mapema.shuttercontroller.RequestDispatcher;
+import com.mapema.shuttercontroller.activities.MainActivity;
 
 public class SeekbarFragment extends DialogFragment {
     private TextView progressText;
@@ -71,8 +66,8 @@ public class SeekbarFragment extends DialogFragment {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            RequestDispatcher.getRequestDispatcher().postNewValue(currentProgress);
-            getDialog().dismiss();
+                RequestDispatcher.getRequestDispatcher().postNewValue(currentProgress);
+                getDialog().dismiss();
             }
         });
 
@@ -82,7 +77,13 @@ public class SeekbarFragment extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        getDialog().getWindow().setLayout(600, 400);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = (int) (displayMetrics.heightPixels * 0.25f);
+        int width = (int) (displayMetrics.widthPixels * 0.8f);
+
+        getDialog().getWindow().setLayout(width, height);
     }
 
     @Override
