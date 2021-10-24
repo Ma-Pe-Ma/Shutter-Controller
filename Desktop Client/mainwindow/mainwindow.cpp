@@ -47,10 +47,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     QHBoxLayout* mainBox = new QHBoxLayout;
     QVBoxLayout* progressBox = new QVBoxLayout;
 
+    int buttonWidth = 80;
+
     //setting up upButton and request
     upButton = new QPushButton(this);
     std::string upString = Languages::getFormattedStringByID(Languages::StringResource::up);
     upButton->setText(upString.c_str());
+    upButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(upButton);
     connect(upButton, &QPushButton::clicked, this, &MainWindow::setUp);
     connect(this, &MainWindow::setUp, this, &MainWindow::sendUp);
@@ -81,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     downButton = new QPushButton(this);
     std::string downString = Languages::getFormattedStringByID(Languages::StringResource::down);
     downButton->setText(downString.c_str());
+    downButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(downButton);
     connect(downButton, &QPushButton::clicked, this, &MainWindow::setDown);
     connect(this, &MainWindow::setDown, this, &MainWindow::sendDown);
@@ -88,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     //setting up setButton and setDialogpro
     setDialog = new SetDialog(this);
     setButton = new QPushButton(this);
+    setButton->setFixedWidth(buttonWidth);
     std::string setString = Languages::getFormattedStringByID(Languages::StringResource::setPos);
     setButton->setText(setString.c_str());
     progressBox->addWidget(setButton);
@@ -105,6 +110,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     //pal.setColor(QPalette::Button, QColor(Qt::blue));
     //timingButton->setPalette(pal);
     timingButton->update();
+    timingButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(timingButton);
 
     connect(timingButton, &QPushButton::clicked, timingDialog, &QDialog::exec);
@@ -114,6 +120,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     zeroButton = new QPushButton(this);
     std::string zeroString = Languages::getFormattedStringByID(Languages::StringResource::nulling);
     zeroButton->setText(zeroString.c_str());
+    zeroButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(zeroButton);
     zeroDialog = new ZeroDialog(this);
     connect(zeroButton, &QPushButton::clicked, zeroDialog, &QDialog::exec);
