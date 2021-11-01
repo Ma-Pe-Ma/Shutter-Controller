@@ -8,7 +8,7 @@ namespace MessageHandler {
     JsonObject genericMessages;
 
     //Whole doc
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<2048> doc;
     //new message
     StaticJsonDocument<128> newDoc;
     String buffer;
@@ -26,7 +26,7 @@ namespace MessageHandler {
     }
 
     void ResetUnseenCounter () {
-        if (unseenNr != 0){
+        if (unseenNr != 0) {
             doc["C"] = 0;
             unseenNr = 0;
 
@@ -38,7 +38,7 @@ namespace MessageHandler {
 
     void AddNewMessage(String type, String result, String additional) {
         for(int i = 0; i < NR_OF_MESSAGES - 1; i++) {
-            genericMessages[String(NR_OF_MESSAGES - 1 - i)] = genericMessages[String(NR_OF_MESSAGES - 1 - i - 1)];
+            genericMessages[String(NR_OF_MESSAGES - 1 - i)] = serialized(genericMessages[String(NR_OF_MESSAGES - 1 - i - 1)].as<String>());
         }
 
         genericMessages["0"] = serialized(CreateNewMessage(type, result, additional));
@@ -69,6 +69,7 @@ namespace MessageHandler {
 
     void loadMessagesFromFlash() {
         currentMessagesDump = LittleFSHelper::readFile("messages.txt");
+        Serial.println("Loaded message dump: " + currentMessagesDump);
         if (currentMessagesDump != "") {
             deserializeJson(doc, currentMessagesDump);
             unseenNr = doc["C"].as<unsigned int>();
@@ -91,6 +92,7 @@ namespace MessageHandler {
     }
 
     void saveMessagesToFlash(String& messagesString) {
+        //Serial.println("Savemessages:" + messagesString);
         LittleFSHelper::writeFile("messages.txt", messagesString);
     }
 

@@ -46,7 +46,7 @@ namespace ServerContainer {
 
     void handleRoot() {
         secureServer.send(200, "text/html", DEFAULT_PAGE);
-        Serial.println("Root was sent!")
+        Serial.println("Root was sent!");
     }
 
     void handleStatus() {
@@ -70,7 +70,7 @@ namespace ServerContainer {
         secureServer.send(200, "text/plain", response);
         response = "";
 
-        println("Status was sent!")
+        Serial.println("Status was sent!");
     }
 
     void handleGetDump() {
@@ -193,7 +193,7 @@ namespace ServerContainer {
         DeserializationError err = deserializeJson(docIn, secureServer.arg("plain"));
         if (err == DeserializationError::Ok) {
             JsonObject zeroObject = docIn.as<JsonObject>();
-            zeroState = zeroObject["Z"];
+            zeroState = zeroObject["Z"].as<String>();
 
             if (zeroState == "find") {
                 ZeroProcess::zeroProcess.processNull(find);

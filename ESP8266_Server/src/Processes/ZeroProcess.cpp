@@ -1,4 +1,5 @@
 #include "ZeroProcess.h"
+#include "../TimeCalibration.h"
 
 ZeroProcess ZeroProcess::zeroProcess;
 
@@ -8,9 +9,13 @@ void ZeroProcess::processNull(ZeroState zeroState) {
     switch (zeroState) {
         case up:
             currentValue = 1.0f;
+            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            saveCurrentStateToFlash();
             break;
         case down:
             currentValue = 0.0f;
+            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            saveCurrentStateToFlash();
             break;
         default:
             settingQueue.enqueue(&zeroProcess);
@@ -61,15 +66,17 @@ bool ZeroProcess::checkFinished() {
         }
     }
     else {
-         if (millis() - processStartTime > processTime * 1000) {
+        if (millis() - processStartTime > processTime * 1000) {
             digitalWrite(UP_PIN, LOW);
             digitalWrite(DOWN_PIN, LOW);
+
+            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
 
             currentValue = targetValue;
 
             Serial.println("Zeroing finished: " + String(currentValue));
             return true;
-         }
+        }
     }
 
     return false;
