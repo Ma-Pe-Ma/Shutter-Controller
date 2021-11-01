@@ -1,4 +1,4 @@
-package com.example.rednykapcsol.fragments;
+package com.mapema.shuttercontroller.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,9 +7,9 @@ import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
 
-import com.example.rednykapcsol.R;
-import com.example.rednykapcsol.RequestDispatcher;
-import com.example.rednykapcsol.ZeroState;
+import com.mapema.shuttercontroller.R;
+import com.mapema.shuttercontroller.RequestDispatcher;
+import com.mapema.shuttercontroller.ZeroState;
 
 public class ZeroChoose extends DialogFragment {
     @Override

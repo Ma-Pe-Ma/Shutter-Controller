@@ -47,7 +47,6 @@ private:
 
     QTime time;
     bool active = false;
-    //std::map<int, bool> daysMap;
     bool dayStates[7] = {};
     int value = 0;
 

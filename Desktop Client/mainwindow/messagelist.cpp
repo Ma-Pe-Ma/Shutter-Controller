@@ -31,7 +31,7 @@ MessageList::MessageList(QWidget *parent) : QListWidget(parent) {
     setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
     int listHeight = sizeHintForRow(0) * count() + 2 * frameWidth();
-    setFixedSize(600, listHeight);
+    setFixedSize(500, listHeight);
 
     updateList();
 }

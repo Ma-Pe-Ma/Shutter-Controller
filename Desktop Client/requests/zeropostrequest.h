@@ -2,8 +2,9 @@
 #define ZEROPOSTREQUEST_H
 
 #include <QThread>
-#include "httplib.h"
 #include <QApplication>
+
+#include "request.h"
 
 #include "json.hpp"
 #include "messages.h"
@@ -16,21 +17,13 @@ enum Zero {
     automatic
 };
 
-class ZeroPostRequest : public QThread {
+class ZeroPostRequest : public Request {
     Q_OBJECT
 private:
-    std::string zeroString;
 
 public:
     ZeroPostRequest(Zero);
     void run() override;
-
-signals:
-    void processResponseSignal(std::string);
-    void zeroPostEnd(bool);
-
-private slots:
-    void processResponse(std::string);
 };
 
 #endif // ZEROPOSTREQUEST_H

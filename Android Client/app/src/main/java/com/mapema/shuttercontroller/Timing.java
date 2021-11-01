@@ -1,8 +1,6 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import org.joda.time.LocalTime;

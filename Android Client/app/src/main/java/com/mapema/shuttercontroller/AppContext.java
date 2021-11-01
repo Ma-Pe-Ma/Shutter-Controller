@@ -1,4 +1,4 @@
-package com.example.rednykapcsol;
+package com.mapema.shuttercontroller;
 
 import android.app.Application;
 import android.app.NotificationChannel;
@@ -17,7 +17,7 @@ import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
-import com.example.rednykapcsol.activities.MainActivity;
+import com.mapema.shuttercontroller.activities.MainActivity;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_HIGH;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -32,7 +32,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
