@@ -5,15 +5,15 @@ namespace MessageHandler {
     unsigned int unseenNr = 0;
     String startupMessage;
 
-    JsonObject genericMessages;
-
     //Whole doc
-    StaticJsonDocument<2048> doc;
+    StaticJsonDocument<1024> doc;
+    String currentMessagesDump;
+
     //new message
     StaticJsonDocument<128> newDoc;
-    String buffer;
+    String newDump;
 
-    String currentMessagesDump;
+    String messages[NR_OF_MESSAGES];
 
     void Initialize() {
         startupMessage = TimeCalibration::GetFormattedString();
@@ -21,37 +21,45 @@ namespace MessageHandler {
         AddNewMessage("I", "I", "I");
     }
 
-    String GetEveryMessage() {      
+    String GetEveryMessage() {
         return currentMessagesDump;
     }
 
-    void ResetUnseenCounter () {
-        if (unseenNr != 0) {
-            doc["C"] = 0;
+    void ResetUnseenCounter() {
+        if (unseenNr > 0) {
             unseenNr = 0;
-
-            currentMessagesDump = "";
-            serializeJson(doc, currentMessagesDump);
-            saveMessagesToFlash(currentMessagesDump);
-        }        
+            SerializeMessages();
+        }
     }
 
-    void AddNewMessage(String type, String result, String additional) {
+    void AddNewMessage(String type, String result, String additional) {        
         for(int i = 0; i < NR_OF_MESSAGES - 1; i++) {
-            genericMessages[String(NR_OF_MESSAGES - 1 - i)] = serialized(genericMessages[String(NR_OF_MESSAGES - 1 - i - 1)].as<String>());
+            messages[NR_OF_MESSAGES - 1 - i] = serialized(messages[NR_OF_MESSAGES - 1 - i - 1]);
         }
 
-        genericMessages["0"] = serialized(CreateNewMessage(type, result, additional));
+        messages[0] = serialized(CreateNewMessage(type, result, additional));
 
         if (++unseenNr > 10) {
             unseenNr = 10;
         }
 
+        SerializeMessages();
+    }
+
+    void SerializeMessages() {
+        doc.clear();
         doc["C"] = unseenNr;
+        doc["S"] = startupMessage;
+        JsonObject genericMessages = doc.createNestedObject("M");
+
+        for(int i = 0; i < NR_OF_MESSAGES; i++) {
+            genericMessages[String(i)] = serialized(messages[i]);
+        }
 
         currentMessagesDump = "";
         serializeJson(doc, currentMessagesDump);
         saveMessagesToFlash(currentMessagesDump);
+        doc.clear();
     }
 
     String CreateNewMessage(String type, String result, String additional) {
@@ -60,11 +68,11 @@ namespace MessageHandler {
         newDoc["A"] = additional;
         newDoc["D"] = TimeCalibration::GetFormattedString();
 
-        buffer = "";
-        serializeJson(newDoc, buffer);
+        newDump = "";
+        serializeJson(newDoc, newDump);
         newDoc.clear();
 
-        return buffer;
+        return newDump;
     }
 
     void loadMessagesFromFlash() {
@@ -73,20 +81,17 @@ namespace MessageHandler {
         if (currentMessagesDump != "") {
             deserializeJson(doc, currentMessagesDump);
             unseenNr = doc["C"].as<unsigned int>();
-            doc["S"] = startupMessage;
-            genericMessages = doc["M"].as<JsonObject>();
-        }
-        else {
-            doc.clear();
-
-            doc["C"] = 0;
-            doc["S"] = startupMessage;
-
-            genericMessages = doc.createNestedObject("M");
+            JsonObject genericMessages =  doc["M"].as<JsonObject>();
 
             for (int i = 0; i < NR_OF_MESSAGES; i++) {
-                String messageID = String(i);
-                genericMessages[messageID] = serialized(CreateNewMessage("E", "E", "E"));
+                messages[i] = genericMessages[String(i)].as<String>();
+            }
+
+            doc.clear();
+        }
+        else {
+            for (int i = 0; i < NR_OF_MESSAGES; i++) {
+                messages[i] = serialized(CreateNewMessage("E", "E", "E"));
             }
         }
     }
