@@ -51,8 +51,10 @@ void Timing::saveTimingsToFlash(String timingsString) {
 void Timing::loadTimingsFromFlash() {
     String timingsSerialized = LittleFSHelper::readFile("timings.txt");
 
+    Serial.println("Loading timings: " + timingsSerialized);
+
     if (timingsSerialized != "") {
-        StaticJsonDocument<2048> doc;
+        StaticJsonDocument<1024> doc;
 
         deserializeJson(doc, timingsSerialized);
         JsonObject timingsObject = doc.to<JsonObject>();
@@ -100,12 +102,13 @@ void Timing::loadTimingsFromFlash() {
         }
     }
     else {
-        StaticJsonDocument<2048> doc;
+        StaticJsonDocument<1024> doc;
         JsonObject object = doc.to<JsonObject>();
         CreateJsonObject(object);
 
         String serialized;
         serializeJson(doc, serialized);
+        //Serial.println("Saving: " + serialized);
         saveTimingsToFlash(serialized);
         doc.clear();
         Serial.println("Timings saved to flash: "+serialized);

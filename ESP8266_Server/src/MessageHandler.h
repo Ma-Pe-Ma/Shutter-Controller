@@ -16,6 +16,7 @@ namespace MessageHandler {
     String GetEveryMessage();
     void AddNewMessage(String, String, String);
     String CreateNewMessage(String, String, String);
+    void SerializeMessages();
     void ResetUnseenCounter();
 
     void saveMessagesToFlash(String&);
