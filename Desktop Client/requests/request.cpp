@@ -3,7 +3,6 @@
 
 RequestQueue Request::requestQueue;
 
-
 Request::Request() {
 
 }
@@ -16,7 +15,9 @@ void Request::get() {
     httplib::Client cli(SERVER_URI);
     cli.set_ca_cert_path(path.c_str());
     cli.enable_server_certificate_verification(true);
-    cli.set_connection_timeout(timeout);
+    cli.set_connection_timeout(timeout * 1000);
+    cli.set_read_timeout(timeout, 0);
+    cli.set_write_timeout(timeout, 0);
 
     std::string sub = location + arguments;
     httplib::Result res = cli.Get(sub.c_str());
@@ -33,7 +34,9 @@ void Request::post() {
     httplib::Client cli(SERVER_URI);
     cli.set_ca_cert_path(path.c_str());
     cli.enable_server_certificate_verification(true);
-    cli.set_connection_timeout(timeout);
+    cli.set_connection_timeout(timeout * 1000);
+    cli.set_read_timeout(timeout, 0);
+    cli.set_write_timeout(timeout, 0);
 
     std::string sub = location + arguments;
     httplib::Result res = cli.Post(sub.c_str(), postString, "text/plain");

@@ -20,8 +20,8 @@ w1 Tu
 w2 W
 w3 Th
 w4 F
-w5 Sat
-w6 Sun
+w5 Sa
+w6 Su
 serverUnavailable The server is down!
 serverAvailable The server is up!
 eventLabel Event

@@ -2,7 +2,7 @@
 #include <QDebug>
 
 ZeroPostRequest::ZeroPostRequest(Zero zero) {
-    timeout = 10000;
+    timeout = 10;
     location = "/Z";
 
     std::string zeroString = "AUT";

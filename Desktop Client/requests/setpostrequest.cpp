@@ -3,7 +3,7 @@
 #include <QApplication>
 
 SetPostRequest::SetPostRequest(int value) {
-    timeout = 10000;
+    timeout = 10;
     location = "/V";
 
     json valueObject;

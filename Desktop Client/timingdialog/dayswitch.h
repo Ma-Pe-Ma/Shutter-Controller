@@ -11,12 +11,10 @@ class DaySwitch : public QWidget {
 public:
     explicit DaySwitch(QWidget *parent = nullptr);
     void setProperAbbreviation(QString abbr);
-    void setState(bool);
 
 private:
     QLabel* dayLabel = nullptr;
     QCheckBox* dayCheck = nullptr;
-
 
 signals:
 
