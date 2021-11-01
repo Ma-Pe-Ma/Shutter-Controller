@@ -25,7 +25,7 @@ ToggleSwitch::ToggleSwitch(QWidget* parent) : QCheckBox(parent) {
                         "width: %1px;"
                         "height: %1px;"
                         //"border: 3px solid #5A5A5A;"
-                        "background: cyan;"
+                        //"background: cyan;"
                         "}"
                         "QCheckBox::indicator:checked {"
                         "image: url(:/app/switchOn);"

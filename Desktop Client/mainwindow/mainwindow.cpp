@@ -74,11 +74,18 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     barBox->addWidget(progressBar);
     barBox->setAlignment(progressBar, Qt::AlignHCenter);
 
-    progressLabel = new QLabel(this);
-    barBox->addWidget(progressLabel);
-
     progressBox->addLayout(barBox);
     progressBox->setAlignment(barBox, Qt::AlignHCenter);
+
+    //setting up setButton and setDialog
+    setDialog = new SetDialog(this);
+    setButton = new QPushButton(this);
+    setButton->setFixedWidth(buttonWidth / 2);
+    std::string setString = "  0%";
+    setButton->setText(setString.c_str());
+    barBox->addWidget(setButton);
+    connect(setButton, &QPushButton::clicked, setDialog, &QDialog::exec);
+    connect(setDialog, &SetDialog::setPostRequstStart, this, &MainWindow::setPostRequestStart);
 
     //setting up downButton and request
     downButton = new QPushButton(this);
@@ -88,16 +95,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     progressBox->addWidget(downButton);
     connect(downButton, &QPushButton::clicked, this, &MainWindow::setDown);
     connect(this, &MainWindow::setDown, this, &MainWindow::sendDown);
-
-    //setting up setButton and setDialogpro
-    setDialog = new SetDialog(this);
-    setButton = new QPushButton(this);
-    setButton->setFixedWidth(buttonWidth);
-    std::string setString = Languages::getFormattedStringByID(Languages::StringResource::setPos);
-    setButton->setText(setString.c_str());
-    progressBox->addWidget(setButton);
-    connect(setButton, &QPushButton::clicked, setDialog, &QDialog::exec);
-    connect(setDialog, &SetDialog::setPostRequstStart, this, &MainWindow::setPostRequestStart);
 
     //setting up timingButton and timingDialog
     timingDialog = new TimingDialog(this);
@@ -246,11 +243,12 @@ void MainWindow::processGenericResponse() {
             progressText = "  " + progressText;
         }
     }
-    progressLabel->setText(progressText);
+    setButton->setText(progressText);
 
     if (restartTime > 0) {
         QTimer::singleShot(restartTime * 1000, this, SLOT(statusGetRequestStart()));
         std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
+        disableGUI();
     }
     else {
         std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::serverAvailable);

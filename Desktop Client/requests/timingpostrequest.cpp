@@ -3,7 +3,7 @@
 #include <QTime>
 
 TimingPostRequest::TimingPostRequest(json timingObject) {
-    timeout = 10000;
+    timeout = 10;
     location = "/T";
 
     postString = timingObject.dump();

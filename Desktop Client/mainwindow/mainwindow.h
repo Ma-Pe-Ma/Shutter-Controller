@@ -42,7 +42,6 @@ private:
     MessageList* messageList = nullptr;
     QLabel* startupDate = nullptr;
     QLabel* currentStateLabel = nullptr;
-    QLabel* progressLabel = nullptr;
 
     void disableGUI();
     void enableGUI();
