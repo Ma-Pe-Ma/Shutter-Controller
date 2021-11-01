@@ -25,7 +25,7 @@ void SettingProcess::start() {
     if (targetValue > currentValue) {
         processTime = (targetValue - currentValue) / upSpeed;
 
-        Serial.println("ProcessTime: "+String(processTime));
+        Serial.println("ProcessTime: " + String(processTime));
 
         //Zeroing
         if (targetValue == 1.0f) {
@@ -96,13 +96,13 @@ int8_t SettingProcess::getLastSetDay() {
 void SettingProcess::processQueue() { 
     if (currentProcess == nullptr && !settingQueue.isEmpty()) {
         currentProcess = settingQueue.dequeue();
-        currentProcess -> start();
+        currentProcess->start();
         Serial.println("New process dequeud!");      
     }
     else if (currentProcess != nullptr) {
         //Serial.println("In progress....");
     
-        if (currentProcess -> checkFinished()) {
+        if (currentProcess->checkFinished()) {
             currentProcess->saveCurrentStateToFlash();
             currentProcess->generateMessage();
             currentProcess = nullptr;
@@ -146,7 +146,7 @@ void SettingProcess::generateMessage() {
 }
 
 void SettingProcess::saveCurrentStateToFlash() {
-    StaticJsonDocument<2048> doc;
+    StaticJsonDocument<256> doc;
     doc["V"] = currentValue;
     doc["D"] = lastSetDay;
     doc["H"] = lastSetHour;
@@ -161,7 +161,7 @@ void SettingProcess::loadCurrentStateFromFlash() {
     String currentState = LittleFSHelper::readFile("state.txt");
 
     if (currentState != "") {
-        StaticJsonDocument<2048> doc;
+        StaticJsonDocument<256> doc;
         deserializeJson(doc, currentState);
  
         currentValue =  doc["V"].as<float>();

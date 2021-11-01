@@ -4,9 +4,9 @@
 namespace LittleFSHelper {
 
     void initialize() {
-        //LittleFS.format();
         LittleFS.begin();
         LittleFS.setTimeCallback(TimeCalibration::CustomTimeSetter); 
+        //LittleFS.format();
     }
 
     void writeFile(const char* path, String message) {
