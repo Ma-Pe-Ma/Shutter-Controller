@@ -1,15 +1,16 @@
 <resources>
-    <string name="app_name">Redőnykapcsoló</string>
+    <string name="app_name">Shutter Controller</string>
 
     <string name="percentage">%1$d %%</string>
     <string name="scheduling">%1$d. scheduling</string>
     <string name="time">Time:</string>
     <string name="value">Value:</string>
     <string name="timed_configs">Scheduled settings</string>
+    <string name="save">Save</string>
 
     <string name="monday_abb">M</string>
     <string name="tuesday_abb">Tu</string>
-    <string name="wednesday_abb">w</string>
+    <string name="wednesday_abb">W</string>
     <string name="thursday_abb">Th</string>
     <string name="friday_abb">F</string>
     <string name="saturday_abb">Sa</string>
@@ -27,7 +28,7 @@
     <string name="serverStart">Server start time</string>
 
     <string name="messagesTitle">Messages</string>
-    <string name="startDate">Start datetime: %1$S</string>
+    <string name="startDate">Server start time: %1$S</string>
 
     <string name="requestingDay">Please add at least one day!</string>
     <string name="unsetTime">HH:mm</string>

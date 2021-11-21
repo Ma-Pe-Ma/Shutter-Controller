@@ -7,6 +7,7 @@
     <string name="time">Időpont:</string>
     <string name="value">Érték:</string>
     <string name="timed_configs">Időzített állítások</string>
+    <string name="save">Mentés</string>
 
     <string name="monday_abb">H</string>
     <string name="tuesday_abb">K</string>
