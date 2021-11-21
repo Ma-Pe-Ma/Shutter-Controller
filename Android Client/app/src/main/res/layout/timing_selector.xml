@@ -14,25 +14,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             android:text="@string/timed_configs"
             android:layout_marginTop="20dp"
             android:layout_marginStart="20dp"
             android:textSize="24sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:id="@+id/titleText"/>
 
-        <ImageButton
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleText"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="12dp"
             android:id="@+id/close_timing"
-            android:background="@null"
-            android:src="@drawable/close50"/>
+            android:text="@string/save"
+            android:background="@color/colorGreen"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
