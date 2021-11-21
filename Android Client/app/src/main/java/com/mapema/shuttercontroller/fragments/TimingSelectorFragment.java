@@ -6,6 +6,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 
@@ -31,7 +32,7 @@ import org.json.JSONObject;
 public class TimingSelectorFragment extends DialogFragment implements FragmentNotifier {
 
     private CustomAdapter customAdapter;
-    private ImageButton closeButton;
+    private Button closeButton;
     private ListView listView;
     //private TextView valueText;
     private ActivityNotifier activityNotifier;
