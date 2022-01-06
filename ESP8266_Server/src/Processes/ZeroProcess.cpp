@@ -25,19 +25,19 @@ void ZeroProcess::processNull(ZeroState zeroState) {
 
 void ZeroProcess::start() {
     processStartTime = millis();
-    digitalWrite(UP_PIN, LOW);
-    digitalWrite(DOWN_PIN, LOW);
+    digitalWrite(UP_PIN, DEACTIVATE_PIN);
+    digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
 
     zeroFound = false;
     targetValue = currentValue;
 
     if (currentValue < 0.5f) {
         processTime = 1.0f / downSpeed;
-        digitalWrite(DOWN_PIN, HIGH);   
+        digitalWrite(DOWN_PIN, ACTIVATE_PIN);
     }
     else {
         processTime = 1.0f / upSpeed;
-        digitalWrite(UP_PIN, HIGH);
+        digitalWrite(UP_PIN, ACTIVATE_PIN);
     }
 
     processTime += 3.0f;
@@ -49,13 +49,13 @@ bool ZeroProcess::checkFinished() {
     if (!zeroFound) {
         if (millis() - processStartTime > processTime * 1000) {   
             if (targetValue < 0.5f) {
-                digitalWrite(DOWN_PIN, LOW);
-                digitalWrite(UP_PIN, HIGH);
+                digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
+                digitalWrite(UP_PIN, ACTIVATE_PIN);
                 processTime = targetValue / upSpeed;
             }
             else {
-                digitalWrite(DOWN_PIN, HIGH);
-                digitalWrite(UP_PIN, LOW);
+                digitalWrite(UP_PIN, DEACTIVATE_PIN);
+                digitalWrite(DOWN_PIN, ACTIVATE_PIN);                
                 processTime = (1.0f - targetValue) / downSpeed;
             }
 
@@ -67,8 +67,8 @@ bool ZeroProcess::checkFinished() {
     }
     else {
         if (millis() - processStartTime > processTime * 1000) {
-            digitalWrite(UP_PIN, LOW);
-            digitalWrite(DOWN_PIN, LOW);
+            digitalWrite(UP_PIN, DEACTIVATE_PIN);
+            digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
 
             TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
 

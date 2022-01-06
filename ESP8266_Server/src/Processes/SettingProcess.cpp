@@ -4,8 +4,8 @@
 #include "ZeroProcess.h"
 
 float SettingProcess::currentValue = -1.0f;
-const float SettingProcess::upSpeed = UP_SPEED;
-const float SettingProcess::downSpeed = DOWN_SPEED;
+const float SettingProcess::upSpeed = 1.0f / UP_TIME;
+const float SettingProcess::downSpeed = 1.0f / DOWN_TIME;
 
 int8_t SettingProcess::lastSetHour = -1;
 int8_t SettingProcess::lastSetMin = -1;
@@ -14,7 +14,7 @@ int8_t SettingProcess::lastSetDay = -1;
 SettingProcess SettingProcess::currentSettingByClient;
 SettingProcess* SettingProcess::currentProcess = nullptr;
 
-ArduinoQueue<SettingProcess*> SettingProcess::settingQueue = ArduinoQueue<SettingProcess*>(4);
+ArduinoQueue<SettingProcess*> SettingProcess::settingQueue = ArduinoQueue<SettingProcess*>(NR_OF_PROCESSES);
 
 void SettingProcess::start() {
     processStartTime = millis();
@@ -22,31 +22,35 @@ void SettingProcess::start() {
 
     Serial.println("Target value: " + String(targetValue) + ", current: " + String(currentValue));
 
+    digitalWrite(UP_PIN, DEACTIVATE_PIN);
+    digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
+
     if (targetValue > currentValue) {
         processTime = (targetValue - currentValue) / upSpeed;
 
-        Serial.println("ProcessTime: " + String(processTime));
+        Serial.println("Up - difference: " + String(targetValue - currentValue) + ", time: " + String(processTime));
 
         //Zeroing
         if (targetValue == 1.0f) {
             processTime += 3;
         }
 
-        digitalWrite(UP_PIN, HIGH);
+        digitalWrite(UP_PIN, ACTIVATE_PIN);
     }
-    
-    if (targetValue < currentValue) {
+    else if (targetValue < currentValue) {
         processTime = (currentValue - targetValue) / downSpeed;
  
+        Serial.println("Down - difference: " + String(currentValue - targetValue) + ", time: " + String(processTime));
+
         //Zeroing
         if (targetValue == 0) {
             processTime += 3;
         }
 
-        digitalWrite(DOWN_PIN, HIGH);
+        digitalWrite(DOWN_PIN, ACTIVATE_PIN);
     }
 
-    Serial.println("Generic Process started: "+String(processTime));
+    Serial.println("Generic Process started: " + String(processTime));
 }
 
 bool SettingProcess::checkFinished() {
@@ -55,17 +59,19 @@ bool SettingProcess::checkFinished() {
     if (targetValue == currentValue) {
         TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
         Serial.println("Setting finished, unchanged: " + String(currentValue));
+
+        digitalWrite(UP_PIN, DEACTIVATE_PIN);
+        digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
         return true;
     }
     else if (curMillis - processStartTime > processTime * 1000) {
-        digitalWrite(UP_PIN, LOW);
-        digitalWrite(DOWN_PIN, LOW);
         currentValue = targetValue;
 
         TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
-
         Serial.println("Setting finished: " + String(currentValue));
 
+        digitalWrite(UP_PIN, DEACTIVATE_PIN);
+        digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
         return true;
     }
 

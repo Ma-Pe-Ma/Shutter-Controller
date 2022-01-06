@@ -12,17 +12,21 @@
 
 void reconnect();
 
-void setup() {
-    delay(5000);
+void setup() {    
+    //This is needed when rx/gpio3 pin is used!
+    //pinMode(UP_PIN, FUNCTION_3);
+    pinMode(UP_PIN, OUTPUT); 
+    digitalWrite(UP_PIN, DEACTIVATE_PIN);
 
+    pinMode(DOWN_PIN, OUTPUT);
+    digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
+
+    delay(1000);
+
+    //Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
     Serial.begin(115200);
     Serial.println("Program started!");
     Serial.println("");
-
-    pinMode(UP_PIN, OUTPUT);
-    pinMode(DOWN_PIN, OUTPUT);
-    digitalWrite(UP_PIN, LOW);
-    digitalWrite(DOWN_PIN, LOW);
     
     WiFi.mode(WIFI_STA);
 
@@ -50,8 +54,8 @@ void setup() {
     Timing::initialize();
     ServerContainer::initialize();
 
-    String date = String(SettingProcess::getLastSetDay()) + "-" + String(SettingProcess::getLastSetHour()) + ":"+String(SettingProcess::getLastSetMin());
-    Serial.println("Startup value: " + String(SettingProcess::getCurrentValue()) +", date:" + date);
+    String date = String(SettingProcess::getLastSetDay()) + "-" + String(SettingProcess::getLastSetHour()) + ":" + String(SettingProcess::getLastSetMin());
+    Serial.println("Startup value: " + String(SettingProcess::getCurrentValue()) + ", date:" + date);
     Serial.println();
 
     EasyDDNS.service(DDNS_SERVICE);
