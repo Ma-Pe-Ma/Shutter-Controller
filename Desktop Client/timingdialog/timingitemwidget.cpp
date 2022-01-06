@@ -15,15 +15,13 @@ TimingItemWidget::TimingItemWidget(int ID, QWidget *parent) : QWidget(parent) {
 
     int itemHeight = height / (NR_OF_TIMINGS + 3) / 2;
 
-    //qInfo()<<"itemHeight: "<<QString::number(itemHeight);
-
     setFixedSize(width / 3, itemHeight);
 
     QLabel* qLabel = new QLabel();
     qLabel->setText(QString("%1.").arg(this->ID + 1));
-    QFont labelFont = QFont("ARIAL", itemHeight * 0.6);
+    QFont labelFont = QFont("ARIAL", itemHeight * 0.4);
     qLabel->setFont(labelFont);
-    qLabel->setGeometry(0,0, itemHeight,itemHeight);
+    qLabel->setGeometry(0,0, int(itemHeight*1.0f), int(itemHeight*1.0f));
     qLabel->show();
     horizontalLayout->addWidget(qLabel);
     horizontalLayout->setAlignment(qLabel, Qt::AlignVCenter);

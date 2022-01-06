@@ -4,5 +4,5 @@
 
 StatusGetRequest::StatusGetRequest() {
     location = "/S";
-    timeout = 10000;
+    timeout = 10;
 }

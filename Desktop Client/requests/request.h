@@ -20,7 +20,7 @@ protected:
     const std::string path = qPath.toUtf8().constData();
     const std::string arguments = "?username=" + std::string(USER_NAME) +"&password=" + std::string(PASSWORD);
     std::string location = "";
-    unsigned int timeout = 10000;
+    unsigned int timeout = 10;
     std::string postString = "";
 
     void get();
