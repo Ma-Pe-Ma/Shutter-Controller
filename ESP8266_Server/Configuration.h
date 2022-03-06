@@ -21,7 +21,27 @@
 #define PASSWORD ""
 
 //the html page served at the root
-#define DEFAULT_PAGE "<!DOCTYPE html><html lang=\"en\"><head><title>Shutter Controller</title></head><body><h1><a href=\"https://github.com/Ma-Pe-Ma/Shutter-Controller\">Shutter Controller</a></h1><p>Created by <a href=\"https://github.com/Ma-Pe-Ma/\">MaPeMa</a></p></body></html>"
+#define DEFAULT_PAGE "<!DOCTYPE html><html><head></head><body><form action=\"./L\" method=\"post\">" \
+	"<label for=\"fname\">Usarname:</label><br>" \
+	"<input type=\"text\" name=\"U\" value=\"\"><br><br>" \
+	"<label for=\"fname\">Password:</label><br>" \
+	"<input type=\"password\" name=\"P\" value=\"\"><br><br>" \
+	"<input type=\"submit\" value=\"Login\">" \
+"</form></body></html>"
+
+#define CONTROL_PAGE "<!DOCTYPE html><html><head></head><body>"\
+    "<script>"\
+        "var s = new XMLHttpRequest();"\
+        "s.onload=function() {"\
+            "console.log(\"Testing\");"\
+        "}"\
+        "var i = setInterval(function() {"\
+            "s.open(\"GET\", \"/S\");"\
+            "s.send();"\
+        "}, 30000);"\
+    "</script>"\
+    "TESTING"\
+"</body></html>"
 
 //unfortunately I can't define a multiline raw string macro properly
 //so these variables are needed

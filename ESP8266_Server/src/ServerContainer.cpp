@@ -22,9 +22,11 @@ namespace ServerContainer {
         secureServer.on("/V", HTTP_POST, handlePostSetting);
         secureServer.on("/T", HTTP_POST, handlePostTiming);  
         secureServer.on("/Z", HTTP_POST, handlePostZero);
+        secureServer.on("/L", HTTP_POST, handleLogin);
         
         secureServer.onNotFound(handleRedirectSecure); 
-
+        
+        secureServer.collectHeaders("Cookie");
         secureServer.begin();
 
         server.on("/", HTTP_GET, handleRedirect);
@@ -45,8 +47,14 @@ namespace ServerContainer {
     }
 
     void handleRoot() {
-        secureServer.send(200, "text/html", DEFAULT_PAGE);
-        Serial.println("Root was sent!");
+        if (secureServer.hasHeader("Cookie")) {
+            String cookie = secureServer.header("Cookie");
+            secureServer.send(200, "text/html", CONTROL_PAGE);
+        }
+        else {
+            secureServer.send(200, "text/html", DEFAULT_PAGE);
+            Serial.println("Root was sent!");
+        }
     }
 
     void handleStatus() {
@@ -259,7 +267,15 @@ namespace ServerContainer {
         MessageHandler::ResetUnseenCounter();
     }
 
-    bool authenticationCheck() {
+    bool authenticationCheck(bool cookie, String username, String password) {
+        if (cookie) {
+            if (username == USER_NAME && password == PASSWORD) {
+                return true;
+            }
+            
+            return false;
+        }
+
         if (secureServer.args() < 2) {
             return false;
         }
@@ -275,5 +291,25 @@ namespace ServerContainer {
         }
 
         return usernameCheck && passwordCheck;
+    }
+
+    void handleLogin() {
+        if (secureServer.hasArg("U") && secureServer.hasArg("P")) {
+            String username = secureServer.arg("U");
+            String password = secureServer.arg("P");
+
+            if (authenticationCheck(true, username, password)) {
+                secureServer.sendHeader("Cache-Control", "no-cache");
+                secureServer.sendHeader("Set-Cookie", "kukszi=kukszika");
+                secureServer.sendHeader("Location", "/");
+                secureServer.send(302, "text/html", "");
+            }
+            else {
+                secureServer.send(200, "text/plain", "LOGIN FAIL");
+            }    
+        }
+        else {
+            secureServer.send(400, "text/plain", "BAD REQUEST");
+        }        
     }
 }
