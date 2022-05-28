@@ -1,0 +1,275 @@
+{
+  "uuid": "680c37ffb906a91aed9144465dfb6554",
+  "path": "Offline/ShutterController",
+  "name": "ShutterController",
+  "content": "",
+  "created_at": "2021-11-27 11:09:10",
+  "updated_at": "2022-05-28 12:18:28",
+  "stick": "",
+  "documents": [
+    {
+      "uuid": "fec26db7f7d423150348c37a619f2421",
+      "title": "Shutter_layout",
+      "description": "",
+      "docType": "1",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "cda10df815d441b7830d062ba24b71b2": 2,
+        "b4b19361e9ec43b6a58a7fa5b17a22b6": 2,
+        "ee91b0b1fc06403687965be246975e5b": 2,
+        "deb30a980c9a4987be10c22a2fccbee4": 2,
+        "3721972c581d4f99b226effb1db7a790": 2,
+        "5d56951fd43d4b5083b0f3cd9bfd5587": 10,
+        "da85efb77378462aaaa3d5ff7db1c1dd": 2,
+        "d7a16cc7912942c8a8ab981f5e15e567": 6,
+        "32efea46c48449f9982b5bcf7f9794c3": 2,
+        "1c2b73ff61da4d8fa444958ee0f537d1": 2
+      },
+      "BOM": [
+        [
+          "Value",
+          "Quantity",
+          "Package",
+          "Components",
+          "CustomPara"
+        ],
+        [
+          "1N4007",
+          2,
+          "DO-41_BD2.4-L4.7-P8.70-D0.9-RD",
+          "D1,D2",
+          {
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "SEMTECH",
+            "BOM_Manufacturer Part": "1N4007",
+            "BOM_Supplier Part": "C106903",
+            "puuid": "c2803222ad4b48fb94db0de548a6280a",
+            "uuid": "da85efb77378462aaaa3d5ff7db1c1dd"
+          }
+        ],
+        [
+          "LED-TH-3mm_R",
+          2,
+          "LED-TH_BD3.0_RED",
+          "LED1,LED2",
+          {
+            "BOM_Manufacturer": "EVERLIGHT(台湾亿光)",
+            "BOM_Manufacturer Part": "204-10SDRD/S530-A3-L",
+            "BOM_Supplier Part": "C84774",
+            "BOM_Supplier": "LCSC",
+            "puuid": "bec79a4ea65a4f65ba290a03b598a762",
+            "uuid": "3721972c581d4f99b226effb1db7a790"
+          }
+        ],
+        [
+          "Power-jack",
+          2,
+          "DC005-2.5MM",
+          "P1,P2",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "EasyEDA",
+            "BOM_Manufacturer": "EasyEDA",
+            "BOM_Manufacturer Part": "DC005-2.5MM",
+            "puuid": "c9538942d27a2d176222e587511d96cb",
+            "uuid": "cda10df815d441b7830d062ba24b71b2"
+          }
+        ],
+        [
+          "Bipolar PNP-SIL 2.54mm",
+          2,
+          "BIPOLAR TRANSISTOR-SIL 2.54 MM",
+          "Q1,Q3",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "2e36d6feb2994b12a17a69b3826baebd",
+            "uuid": "b4b19361e9ec43b6a58a7fa5b17a22b6"
+          }
+        ],
+        [
+          "1k",
+          8,
+          "R_AXIAL-0.3",
+          "R0,R0*,R1,R2*,R3,R4,R5*,R6",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "3eb1249f3ebb4284ae221b0379016582",
+            "uuid": "5d56951fd43d4b5083b0f3cd9bfd5587"
+          }
+        ],
+        [
+          "10k",
+          2,
+          "R_AXIAL-0.3",
+          "R2,R5",
+          {
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "BOM_Manufacturer Part": "",
+            "puuid": "3eb1249f3ebb4284ae221b0379016582",
+            "uuid": "5d56951fd43d4b5083b0f3cd9bfd5587"
+          }
+        ],
+        [
+          "Tactile_Switch_12*12*7.3 4 3 2 1",
+          2,
+          "TACTS-24N-F_12*12*7.3",
+          "SW1,SW2",
+          {
+            "BOM_Manufacturer": "NINIGI // OMRON",
+            "BOM_Manufacturer Part": "TACTS-24N-F / TACTS-24K-F // B3F-40xx / B3F-50xx",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "c0ff990d028a493aa6d0fdc3d82fc927",
+            "uuid": "1c2b73ff61da4d8fa444958ee0f537d1"
+          }
+        ],
+        [
+          "DC-DC stepdown",
+          2,
+          "STDN-3A24-ADJ",
+          "U1,U8",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "HW-613",
+            "BOM_Supplier": "HESTORE.HU",
+            "BOM_Supplier Part": "100.387.25",
+            "puuid": "9aeaaa023b8f456c8669e22c15667213",
+            "uuid": "deb30a980c9a4987be10c22a2fccbee4"
+          }
+        ],
+        [
+          "ESP-01S",
+          2,
+          "ESP-01S",
+          "U2,U9",
+          {
+            "BOM_Supplier Part": "C111009",
+            "BOM_Supplier": "LCSC",
+            "BOM_Manufacturer": "Ai-Thinker",
+            "BOM_Manufacturer Part": "ESP-01S",
+            "puuid": "a7254caaf4794e139de29bdfab66f2e6",
+            "uuid": "ee91b0b1fc06403687965be246975e5b"
+          }
+        ],
+        [
+          "TX/RX ports",
+          2,
+          "SIMPLE 4PIN CONNECTOR",
+          "U3,U5",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "749f73ffd107432c92e513f0ea2346f0",
+            "uuid": "d7a16cc7912942c8a8ab981f5e15e567"
+          }
+        ],
+        [
+          "Output pins",
+          2,
+          "SIMPLE 4PIN CONNECTOR",
+          "U4,U11",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "749f73ffd107432c92e513f0ea2346f0",
+            "uuid": "d7a16cc7912942c8a8ab981f5e15e567"
+          }
+        ],
+        [
+          "Simple 2pin connector",
+          2,
+          "SIMPLE 2PIN CONNECTOR",
+          "U6,U12",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "f1e1a92f161849d8a4f33ed0f73ef7b2",
+            "uuid": "32efea46c48449f9982b5bcf7f9794c3"
+          }
+        ],
+        [
+          "ESP Enabling pins",
+          1,
+          "SIMPLE 4PIN CONNECTOR",
+          "U7",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "749f73ffd107432c92e513f0ea2346f0",
+            "uuid": "d7a16cc7912942c8a8ab981f5e15e567"
+          }
+        ],
+        [
+          "ESP enabling pins",
+          1,
+          "SIMPLE 4PIN CONNECTOR",
+          "U10",
+          {
+            "BOM_Manufacturer": "",
+            "BOM_Manufacturer Part": "",
+            "BOM_Supplier Part": "",
+            "BOM_Supplier": "",
+            "puuid": "749f73ffd107432c92e513f0ea2346f0",
+            "uuid": "d7a16cc7912942c8a8ab981f5e15e567"
+          }
+        ]
+      ],
+      "updateTime": 1653733082,
+      "createTime": 1653720245,
+      "histories": [],
+      "created_at": "2022-05-28 08:44:05",
+      "updated_at": "2022-05-28 12:18:02"
+    },
+    {
+      "uuid": "ddf370a66ba7d12d41882e5fc84c5cf8",
+      "puuid": "680c37ffb906a91aed9144465dfb6554",
+      "title": "PCB_ShutterController",
+      "filename": "PCB_ShutterController.json",
+      "description": "",
+      "docType": "3",
+      "master": "",
+      "thumb": "/images/thumb-default.png",
+      "components": {
+        "9aeaaa023b8f456c8669e22c15667213": 2,
+        "c9538942d27a2d176222e587511d96cb": 2,
+        "bec79a4ea65a4f65ba290a03b598a762": 2,
+        "749f73ffd107432c92e513f0ea2346f0": 6,
+        "3eb1249f3ebb4284ae221b0379016582": 10,
+        "f1e1a92f161849d8a4f33ed0f73ef7b2": 2,
+        "c0ff990d028a493aa6d0fdc3d82fc927": 2,
+        "a7254caaf4794e139de29bdfab66f2e6": 2,
+        "c2803222ad4b48fb94db0de548a6280a": 2,
+        "2e36d6feb2994b12a17a69b3826baebd": 2
+      },
+      "BOM": [],
+      "updateTime": 1653733108,
+      "createTime": 1638021661,
+      "histories": [],
+      "created_at": "2021-11-27 15:01:01",
+      "updated_at": "2022-05-28 12:18:28"
+    }
+  ],
+  "sort": [
+    "0eacdcb5209879afe3eb0392248cbefa",
+    "df9385599eaf71564713c6612547c90b"
+  ],
+  "title": "ShutterController",
+  "foldername": "ShutterController",
+  "schfilename": "ShutterController.json",
+  "schfilemtime": 1653733082483
+}
