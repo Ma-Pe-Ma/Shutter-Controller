@@ -1,15 +1,13 @@
-#include "timingdialog.h"
-
 #include <QDebug>
 
+#include "timingdialog.h"
 #include "mainwindow/mainwindow.h"
-#include <languages/languages.h>
 
 TimingDialog::TimingDialog(QWidget* parent) : QDialog(parent) {
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QRect  screenGeometry = screen->geometry();
-    int height = screenGeometry.height();
-    int width = screenGeometry.width();
+    //QScreen *screen = QGuiApplication::primaryScreen();
+    //QRect  screenGeometry = screen->geometry();
+    //int height = screenGeometry.height();
+    //int width = screenGeometry.width();
 
     int dividerWidth = 0;
     //int listElementHeight = height / (NR_OF_TIMINGS + 3) / 2;
@@ -20,8 +18,7 @@ TimingDialog::TimingDialog(QWidget* parent) : QDialog(parent) {
 
     verticalLayout = new QVBoxLayout(this);
 
-    std::string timingsString = Languages::getFormattedStringByID(Languages::StringResource::timings);
-    setWindowTitle(timingsString.c_str());
+    setWindowTitle(tr("timings"));
     setFixedSize(dialogWidth + 20, dialogHeight);
 
     qListWidget = new QListWidget(this);
@@ -55,8 +52,7 @@ TimingDialog::TimingDialog(QWidget* parent) : QDialog(parent) {
     verticalLayout->addWidget(qListWidget);
 
     okButton = new QPushButton(this);
-    std::string setButtonString = Languages::getFormattedStringByID(Languages::StringResource::setButton);
-    okButton->setText(setButtonString.c_str());
+    okButton->setText(tr("setButton"));
     //okButton->setFixedWidth(20);
     //okButton->resize(okButton->sizeHint().width(), okButton->sizeHint().height());
     //okButton->adjustSize();

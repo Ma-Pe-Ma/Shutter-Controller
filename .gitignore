@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 /ESP8266 Server/.vscode
+/build*/
+/DesktopClient/*.pro.user
+cert.pem

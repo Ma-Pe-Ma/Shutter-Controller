@@ -51,19 +51,21 @@ As mentioned before the engine is switched by a relay which is signalled by the 
 
 The ESP I used is a simple 8-pin variant (which technically has two GPIO pins: 0 and 2 but the TX and RX pins can be reprogrammed to act as GPIO). The problem with the ESP8266 is that at startup both the 0 and 2 pins are have to be pulled up to start normally or in the other case it will enter [sketch-flashing mode](https://www.esp8266.com/wiki/doku.php?id=esp8266_gpio_pin_allocations). When a relay is attached to one of the pins it gets pulled down so it will not start properly so a controlling circuit is needed to be implemented which solves pulling up the pins at startup.
 
-There are two easy solutions for this problem. For both of them I designed a simple PCB with [EasyEda](https://easyeda.com/).
+There are two easy solutions for this problem. For both of them I designed a [simple PCB](./Controlling%20Circuit/) with [EasyEda](https://easyeda.com/).
 
    --   |   Solution 1   |  Solution 2
 :-------------------------:|:-------------------------:|:-------------------------:
-Description | The outputs are controlled with a PNP transistor. In this case the ESP signal logic is needed to be inverted programatically to get the supposed signal at the output. | The outputs are simply pulled up with a pull-up transistor. &nbsp; The ESP signal logic is inverted here too as well as the output signals which means the relay has to be used invertedly.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Description | The outputs are controlled with a PNP transistor. In this case the ESP signal logic is needed to be inverted programatically to get the supposed signal at the output. | The outputs are simply pulled up with a pull-up transistor. The ESP signal logic is inverted here too as well as the output signals which means the relay has to be used invertedly.
 Circuit | <img src="./Images/Hardware/Circuit-1.png" alt="drawing"/>  |  <img src="./Images/Hardware/Circuit-2.png" alt="drawing"/>
 PCB | <img src="./Images/Hardware/PCB-1.png" alt="drawing"/>  |  <img src="./Images/Hardware/PCB-2.png" alt="drawing"/>
 
 Resistor values:
-* R0=1kΩ (used for pulling down GPIO0  to flash it)
+* R0=1kΩ (used for pulling down GPIO0 to flash the ESP)
 * R1=R4=1kΩ (used to prevent shorting when controlling the pins)
-* R2=R5=10kΩ (used for pulling up pins and transistor)
+* R2=R5=10kΩ (used for pulling up pins and transistors)
 * R3=R6=1kΩ (used with LEDs)
+
+At Solution 1 the diodes serve as [flyback diodes](https://en.wikipedia.org/wiki/Flyback_diode) for the relays while the LEDs indicate the working state of the  connected relay. 
 
 For more safety it is **strongly** recommended to configure the relays in a way that they stop each other if one them is in switched state (the easiest way is adding an other pair of relays).
 
@@ -73,4 +75,4 @@ I tried to keep this project as simple as it can be but after adding more and mo
 If I would start the project now I would develop it for a different platform. It's not planned to restructure this project as it does its job.
 
 ## Backlog
-* make hard-coded properties (certificate, passwords, url) configurable
+* Make hard-coded properties (certificate, passwords, url) configurable

@@ -1,6 +1,5 @@
 #include "timing.h"
 #include <QDebug>
-#include <languages/languages.h>
 
 Timing Timing::timings[NR_OF_TIMINGS];
 int Timing::restartTime = 0;
@@ -18,13 +17,13 @@ Timing::Timing() {
 QString Timing::dayAbbreviations[7];
 
 void Timing::initializeTimings() {
-    dayAbbreviations[0] = Languages::getFormattedStringByID(Languages::StringResource::w0).c_str();
-    dayAbbreviations[1] = Languages::getFormattedStringByID(Languages::StringResource::w1).c_str();
-    dayAbbreviations[2] = Languages::getFormattedStringByID(Languages::StringResource::w2).c_str();
-    dayAbbreviations[3] = Languages::getFormattedStringByID(Languages::StringResource::w3).c_str();
-    dayAbbreviations[4] = Languages::getFormattedStringByID(Languages::StringResource::w4).c_str();
-    dayAbbreviations[5] = Languages::getFormattedStringByID(Languages::StringResource::w5).c_str();
-    dayAbbreviations[6] = Languages::getFormattedStringByID(Languages::StringResource::w6).c_str();
+    dayAbbreviations[0] = QObject::tr("w0");
+    dayAbbreviations[1] = QObject::tr("w1");
+    dayAbbreviations[2] = QObject::tr("w2");
+    dayAbbreviations[3] = QObject::tr("w3");
+    dayAbbreviations[4] = QObject::tr("w4");
+    dayAbbreviations[5] = QObject::tr("w5");
+    dayAbbreviations[6] = QObject::tr("w6");
 }
 
 QString Timing::getProperAbbreviation(int dayID) {

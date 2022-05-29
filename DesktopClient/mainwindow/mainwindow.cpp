@@ -13,8 +13,6 @@
 
 #include <QTimer>
 
-#include <languages/languages.h>
-
 #include "requests/request.h"
 #include "requests/requestqueue.h"
 
@@ -27,9 +25,7 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    std::string appNameString = Languages::getFormattedStringByID(Languages::StringResource::appName);
-
-    setWindowTitle(appNameString.c_str());
+    setWindowTitle(tr("appName"));
     setWindowIcon(QIcon(":/app/appIcon"));
 
     central = new QWidget;
@@ -51,8 +47,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //setting up upButton and request
     upButton = new QPushButton(this);
-    std::string upString = Languages::getFormattedStringByID(Languages::StringResource::up);
-    upButton->setText(upString.c_str());
+    upButton->setText(tr("up"));
     upButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(upButton);
     connect(upButton, &QPushButton::clicked, this, &MainWindow::setUp);
@@ -89,8 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //setting up downButton and request
     downButton = new QPushButton(this);
-    std::string downString = Languages::getFormattedStringByID(Languages::StringResource::down);
-    downButton->setText(downString.c_str());
+    downButton->setText(tr("down"));
     downButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(downButton);
     connect(downButton, &QPushButton::clicked, this, &MainWindow::setDown);
@@ -99,8 +93,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
     //setting up timingButton and timingDialog
     timingDialog = new TimingDialog(this);
 
-    std::string timingsString = Languages::getFormattedStringByID(Languages::StringResource::timings);
-    timingButton = new QPushButton(timingsString.c_str(), this);
+    timingButton = new QPushButton(tr("timings"), this);
     //timingButton->setFixedSize(80,30);
     //timingButton->setAutoFillBackground(true);
     //QPalette pal = timingButton->palette();
@@ -115,8 +108,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //setting up zeroButton and zeroDialog
     zeroButton = new QPushButton(this);
-    std::string zeroString = Languages::getFormattedStringByID(Languages::StringResource::nulling);
-    zeroButton->setText(zeroString.c_str());
+    zeroButton->setText(tr("nulling"));
     zeroButton->setFixedWidth(buttonWidth);
     progressBox->addWidget(zeroButton);
     zeroDialog = new ZeroDialog(this);
@@ -125,15 +117,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainW
 
     //setting up MessageBox
     messageList = new MessageList(this);
-    std::string startupString = Languages::getFormattedStringByID(Languages::StringResource::startTime, "-");
-    startupDate = new QLabel(startupString.c_str(), this);
+    startupDate = new QLabel(tr("startTime%1").arg(""), this);
 
-    std::string syncString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
-    currentStateLabel = new QLabel(syncString.c_str(), this);
+    currentStateLabel = new QLabel(tr("syncing"), this);
 
     QVBoxLayout* messageBox = new QVBoxLayout;
-    std::string messagesString = Languages::getFormattedStringByID(Languages::StringResource::messages);
-    messageBox->addWidget(new QLabel(messagesString.c_str()));
+    messageBox->addWidget(new QLabel(tr("messages")));
     messageBox->addSpacing(0);
     messageBox->addWidget(messageList);
 
@@ -171,8 +160,7 @@ void MainWindow::enableGUI() {
 
 void MainWindow::disableGUI() {
     central->setEnabled(false);
-    std::string sync = Languages::getFormattedStringByID(Languages::StringResource::syncing);
-    currentStateLabel->setText(sync.c_str());
+    currentStateLabel->setText(tr("syncing"));
 }
 
 //------DUMP GET------
@@ -191,8 +179,7 @@ void MainWindow::statusGetRequestStart() {
     if (empty) {
         Request::requestQueue.enqueueRequest(new StatusGetRequest);
         //failureCounter = 0;
-        std::string syncString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
-        currentStateLabel->setText(syncString.c_str());
+        currentStateLabel->setText(tr("syncing"));
     }
 }
 
@@ -247,20 +234,18 @@ void MainWindow::processGenericResponse() {
 
     if (restartTime > 0) {
         QTimer::singleShot(restartTime * 1000, this, SLOT(statusGetRequestStart()));
-        std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::syncing);
+        currentStateLabel->setText(tr("syncing"));
         disableGUI();
     }
-    else {
-        std::string serverAvailableString = Languages::getFormattedStringByID(Languages::StringResource::serverAvailable);
-        currentStateLabel->setText(serverAvailableString.c_str());
+    else { 
+        currentStateLabel->setText(tr("serverAvailable"));
         enableGUI();
     }
 }
 
 void MainWindow::notifyMessage(std::string response) {
     if (response == "") {
-        std::string serverUnavailableString = Languages::getFormattedStringByID(Languages::StringResource::serverUnavailable);
-        currentStateLabel->setText(serverUnavailableString.c_str());
+        currentStateLabel->setText(tr("serverUnavailable"));
 
         if (failureCounter++ == 5) {
             QCoreApplication::quit();

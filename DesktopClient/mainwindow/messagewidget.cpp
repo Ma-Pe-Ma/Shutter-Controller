@@ -1,5 +1,4 @@
 #include "messagewidget.h"
-#include "languages/languages.h"
 
 MessageWidget::MessageWidget(int ID, QWidget *parent) : QWidget(parent) {
     messageBox = new QHBoxLayout();
@@ -10,13 +9,11 @@ MessageWidget::MessageWidget(int ID, QWidget *parent) : QWidget(parent) {
     messageBox->addWidget(idLabel);
 
     eventLabel = new QLabel(this);
-    std::string eventLabelString = Languages::getFormattedStringByID(Languages::StringResource::eventLabel);
-    eventLabel->setText(eventLabelString.c_str());
+    eventLabel->setText(tr("eventLabel"));
     messageBox->addWidget(eventLabel);
 
     dateLabel = new QLabel(this);
-    std::string dateLabelString = Languages::getFormattedStringByID(Languages::StringResource::dateLabel);
-    dateLabel->setText(dateLabelString.c_str());
+    dateLabel->setText(tr("dateLabel"));
     messageBox->addWidget(dateLabel);
 
     setLayout(messageBox);
