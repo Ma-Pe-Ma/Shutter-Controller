@@ -1,31 +1,25 @@
 #include "zerodialog.h"
 #include <QDebug>
 
-#include <languages/languages.h>
-
 ZeroDialog::ZeroDialog(QWidget* parent) : QDialog(parent) {
     verticalLayout = new QVBoxLayout();
     horizontalLayout = new QHBoxLayout();
 
     explanation = new QLabel(this);
-    std::string zeroQuestionString = Languages::getFormattedStringByID(Languages::StringResource::zeroQuestion);
-    explanation->setText(zeroQuestionString.c_str());
+    explanation->setText(tr("zeroQuestion"));
     verticalLayout->addWidget(explanation);
     verticalLayout->setAlignment(explanation, Qt::AlignHCenter);
 
     automaticButton = new QPushButton(this);
-    std::string automaticString = Languages::getFormattedStringByID(Languages::StringResource::automatic);
-    automaticButton->setText(automaticString.c_str());
+    automaticButton->setText(tr("automatic"));
     horizontalLayout->addWidget(automaticButton);
 
     downButton = new QPushButton(this);
-    std::string downString = Languages::getFormattedStringByID(Languages::StringResource::down);
-    downButton->setText(downString.c_str());
+    downButton->setText(tr("down"));
     horizontalLayout->addWidget(downButton);
 
     upButton = new QPushButton(this);
-    std::string upString = Languages::getFormattedStringByID(Languages::StringResource::up);
-    upButton->setText(upString.c_str());
+    upButton->setText(tr("up"));
     horizontalLayout->addWidget(upButton);
 
     verticalLayout->addItem(horizontalLayout);

@@ -1,6 +1,7 @@
 #include "messages.h"
 #include <QDebug>
-#include <languages/languages.h>
+#include <QObject>
+
 
 QString Messages::messages[MESSAGE_NR];
 QString Messages::dates[MESSAGE_NR];
@@ -34,8 +35,7 @@ void Messages::parseGenericResponse(json genericResponse) {
 
     json messagesObject = genericResponse["M"].get<json>();
 
-    std::string date = Languages::getFormattedStringByID(Languages::StringResource::startTime, messagesObject["S"].get<std::string>().c_str());
-    startupDate = date.c_str();
+    startupDate = QObject::tr("startTime%1").arg(messagesObject["S"].get<std::string>().c_str());
 
     json genericMessages = messagesObject["M"].get<json>();
 
@@ -70,47 +70,47 @@ QString Messages::processMessage(std::string type, std::string res, std::string 
         return "-";
     }
 
-    if (type == "I") {        
-        return Languages::getFormattedStringByID(Languages::StringResource::startEvent).c_str();
+    if (type == "I") {
+        return QObject::tr("startEvent");
     }
 
     if (type == "J") {
-        return Languages::getFormattedStringByID(Languages::StringResource::jsonError, res.c_str(), add.c_str()).c_str();
+        return QObject::tr("jsonError %1, %2").arg(res.c_str(), add.c_str());
     }
 
     if (type == "Z") {
         if (res == "F") {
-            return Languages::getFormattedStringByID(Languages::StringResource::nullFail).c_str();
+            return QObject::tr("nullFail");
         }
         if (res == "O") {
             if (add == "U") {
-                return Languages::getFormattedStringByID(Languages::StringResource::nullUp).c_str();
+                return QObject::tr("nullUp");
             }
             else if (add == "D") {
-                return Languages::getFormattedStringByID(Languages::StringResource::nullDown).c_str();
+                return QObject::tr("nullDown");
             }
         }
     }
 
     if (type == "T") {
-        return Languages::getFormattedStringByID(Languages::StringResource::timingEvent, res.c_str(), add.c_str()).c_str();
+        return QObject::tr("timingEvent%1, %2").arg(res.c_str(), add.c_str());
     }
 
     if (type == "S") {
         if (res == "M") {
-            return Languages::getFormattedStringByID(Languages::StringResource::manualSet, add.c_str()).c_str();
+            return QObject::tr("manualSet %1").arg(add.c_str());
         }
 
         if (res == "Z") {
-            return Languages::getFormattedStringByID(Languages::StringResource::positionFound, add.c_str()).c_str();
+            return QObject::tr("positionFound %1").arg(add.c_str());
         }
 
         if (res == "T") {
-            return Languages::getFormattedStringByID(Languages::StringResource::timingsSet).c_str();
+            return QObject::tr("timingSet"); 
         }
     }
 
-    return Languages::getFormattedStringByID(Languages::StringResource::unknown, type.c_str(), res.c_str(), add.c_str()).c_str();
+    return QObject::tr("unknown %1, %2, %3").arg(type.c_str(), res.c_str(), add.c_str());
 }
 
 QString Messages::getStartupDate() {

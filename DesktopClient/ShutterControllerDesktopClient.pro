@@ -29,7 +29,6 @@ SOURCES += \
     timingdialog/timingitemwidget.cpp \
     timingdialog/toggleswitch.cpp \
     zerodialog/zerodialog.cpp \
-    languages/languages.cpp \
 
 HEADERS += \
     mainwindow/messagelist.h \
@@ -53,16 +52,15 @@ HEADERS += \
     httplib.h \
     timingdialog/toggleswitch.h \
     zerodialog/zerodialog.h \
-    languages/languages.h \
 
 FORMS += \
     mainwindow.ui
 
 DEFINES += SERVER_URI='\\"https://your.uri\\"' \
-    CPPHTTPLIB_OPENSSL_SUPPORT
+    CPPHTTPLIB_OPENSSL_SUPPORT \
     USER_NAME='\\"USER_NAME\\"' \
     PASSWORD='\\"PASSWORD\\"'
-	
+
 OPEN_SSL_PATH=C:/Path/To/OpenSSL
 
 LIBS += -lws2_32 \
@@ -70,6 +68,9 @@ LIBS += -lws2_32 \
     -L$$quote("$${OPEN_SSL_PATH}/lib") -llibcrypto
 
 INCLUDEPATH +=  $$quote("$${OPEN_SSL_PATH}/include")
+
+TRANSLATIONS += languages/translation_en.ts \
+    languages/translation_hu.ts
 
 RESOURCES = application.qrc
 

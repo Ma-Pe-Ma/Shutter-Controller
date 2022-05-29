@@ -8,7 +8,7 @@ Before reading this through make sure you have read the [project's ReadMe](/Read
 * [openSSL](https://www.openssl.org/)
 
 ## Build instructions
-With a properly set up Qt creator this project should compile without no problems. Before building you have to install openSSL to your computer. You can find [binaries here](https://wiki.openssl.org/index.php/Binaries). Make sure you choose the correct version for the compiler you use in QT!
+With a properly set up Qt creator this project should compile without no problems. Before building you have to install the OpenSSL developer tools to your computer. You can find [binaries here](https://wiki.openssl.org/index.php/Binaries). Make sure you choose the correct version for the compiler you use in Qt! (On Windows MSVC compiler works only.)
 
 ### Configuration 
 Before building  the following properties neeed to be configured in the project's .pro file:
@@ -20,9 +20,8 @@ Before building  the following properties neeed to be configured in the project'
 After building:
 * Copy your certificate file to the root directory of the built application
 * Deploy the QT application (on Windows use the windeployqt tool) to run it in other non-developer environments
-* (Attach openSSL DLL/install openSSL on other non-developer environments)
+* Install OpenSSL user libraries (if target system is different from the developing system)
 
 ## Back Log
 * Make server url and certifate settable by user
-* Replace custom language system to Qt's
 * Implementing automatically adjusting GUI

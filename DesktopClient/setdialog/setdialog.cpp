@@ -2,15 +2,13 @@
 #include "timing.h"
 #include <QDebug>
 #include <QPushButton>
-#include <languages/languages.h>
 
 SetDialog::SetDialog(QWidget* parent) : QDialog(parent) {
     QVBoxLayout* verticalLayout = new QVBoxLayout;
 
     float progessStartValue = Timing::getCurrentValue();
 
-    std::string setShutterString = Languages::getFormattedStringByID(Languages::StringResource::setShutter);
-    explanation = new QLabel(setShutterString.c_str(), this);
+    explanation = new QLabel(tr("setShutter"), this);
     verticalLayout->addWidget(explanation);
     verticalLayout->setAlignment(explanation, Qt::AlignHCenter);
 
