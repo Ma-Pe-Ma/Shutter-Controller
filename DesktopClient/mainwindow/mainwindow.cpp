@@ -5,7 +5,6 @@
 #include <QDebug>
 
 #include <QApplication>
-#include <QScreen>
 #include <QDialog>
 #include <QListWidget>
 #include <QTextEdit>
@@ -25,117 +24,22 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) , ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    setWindowTitle(tr("appName"));
-    setWindowIcon(QIcon(":/app/appIcon"));
-
-    central = new QWidget;
-    setCentralWidget(central);
-
-    QScreen *screen = QGuiApplication::primaryScreen();
-    //QRect screenGeometry = screen->geometry();
-    //int height = screenGeometry.height();
-    //int width = screenGeometry.width();
-
     setFixedSize(640,460);
-    //setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
-    //statusBar()->setSizeGripEnabled(false);
+    statusBar()->setSizeGripEnabled(false);
 
-    QHBoxLayout* mainBox = new QHBoxLayout;
-    QVBoxLayout* progressBox = new QVBoxLayout;
+    ui->progressBox->setAlignment(ui->barBox, Qt::AlignHCenter);
+    ui->setButton->setFixedWidth(40);
 
-    int buttonWidth = 80;
+    ui->startupLabel->setText(tr("startTime%1").arg(""));
+    ui->stateLabel->setText(tr("syncing"));
 
-    //setting up upButton and request
-    upButton = new QPushButton(this);
-    upButton->setText(tr("up"));
-    upButton->setFixedWidth(buttonWidth);
-    progressBox->addWidget(upButton);
-    connect(upButton, &QPushButton::clicked, this, &MainWindow::setUp);
-    connect(this, &MainWindow::setUp, this, &MainWindow::sendUp);
-
-    //barbox
-    QHBoxLayout* barBox = new QHBoxLayout(this);
-
-    //setting up progressBar
-    progressBar = new QProgressBar(this);
-    progressBar->setOrientation(Qt::Vertical);
-    progressBar->setFixedSize(20, 220);
-
-    progressBar->setValue(0);
-    progressBar->setStyleSheet("QProgressBar::chunk { background-color: #05B8CC; }");
-    progressBar->setTextVisible(false);
-
-
-    barBox->addWidget(progressBar);
-    barBox->setAlignment(progressBar, Qt::AlignHCenter);
-
-    progressBox->addLayout(barBox);
-    progressBox->setAlignment(barBox, Qt::AlignHCenter);
-
-    //setting up setButton and setDialog
+    zeroDialog = new ZeroDialog(this);
     setDialog = new SetDialog(this);
-    setButton = new QPushButton(this);
-    setButton->setFixedWidth(buttonWidth / 2);
-    std::string setString = "  0%";
-    setButton->setText(setString.c_str());
-    barBox->addWidget(setButton);
-    connect(setButton, &QPushButton::clicked, setDialog, &QDialog::exec);
-    connect(setDialog, &SetDialog::setPostRequstStart, this, &MainWindow::setPostRequestStart);
-
-    //setting up downButton and request
-    downButton = new QPushButton(this);
-    downButton->setText(tr("down"));
-    downButton->setFixedWidth(buttonWidth);
-    progressBox->addWidget(downButton);
-    connect(downButton, &QPushButton::clicked, this, &MainWindow::setDown);
-    connect(this, &MainWindow::setDown, this, &MainWindow::sendDown);
-
-    //setting up timingButton and timingDialog
     timingDialog = new TimingDialog(this);
 
-    timingButton = new QPushButton(tr("timings"), this);
-    //timingButton->setFixedSize(80,30);
-    //timingButton->setAutoFillBackground(true);
-    //QPalette pal = timingButton->palette();
-    //pal.setColor(QPalette::Button, QColor(Qt::blue));
-    //timingButton->setPalette(pal);
-    timingButton->update();
-    timingButton->setFixedWidth(buttonWidth);
-    progressBox->addWidget(timingButton);
-
-    connect(timingButton, &QPushButton::clicked, timingDialog, &QDialog::exec);
+    connect(setDialog, &SetDialog::setPostRequstStart, this, &MainWindow::setPostRequestStart);
     connect(timingDialog, &TimingDialog::timingPostRequestStart, this, &MainWindow::timingPostRequestStart);
-
-    //setting up zeroButton and zeroDialog
-    zeroButton = new QPushButton(this);
-    zeroButton->setText(tr("nulling"));
-    zeroButton->setFixedWidth(buttonWidth);
-    progressBox->addWidget(zeroButton);
-    zeroDialog = new ZeroDialog(this);
-    connect(zeroButton, &QPushButton::clicked, zeroDialog, &QDialog::exec);
     connect(zeroDialog, &ZeroDialog::zeroPostRequestStart, this, &MainWindow::zeroPostRequestStart);
-
-    //setting up MessageBox
-    messageList = new MessageList(this);
-    startupDate = new QLabel(tr("startTime%1").arg(""), this);
-
-    currentStateLabel = new QLabel(tr("syncing"), this);
-
-    QVBoxLayout* messageBox = new QVBoxLayout;
-    messageBox->addWidget(new QLabel(tr("messages")));
-    messageBox->addSpacing(0);
-    messageBox->addWidget(messageList);
-
-    QHBoxLayout* stateBox = new QHBoxLayout;
-    stateBox->addWidget(startupDate);
-    stateBox->addWidget(currentStateLabel);
-    messageBox->addLayout(stateBox);
-
-    //finalizing main layout
-    mainBox->addLayout(progressBox);
-    mainBox->addLayout(messageBox);
-    central->setLayout(mainBox);
-
     connect(&Request::requestQueue, &RequestQueue::notifyMessage, this, &MainWindow::notifyMessage);
 
     //get dump and set up periodic update
@@ -146,21 +50,13 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::sendUp() {
-    setPostRequestStart(100);
-}
-
-void MainWindow::sendDown() {
-    setPostRequestStart(0);
-}
-
 void MainWindow::enableGUI() {
-    central->setEnabled(true);
+    this->centralWidget()->setEnabled(true);
 }
 
 void MainWindow::disableGUI() {
-    central->setEnabled(false);
-    currentStateLabel->setText(tr("syncing"));
+    this->centralWidget()->setEnabled(false);
+    ui->stateLabel->setText(tr("syncing"));
 }
 
 //------DUMP GET------
@@ -176,11 +72,16 @@ void MainWindow::statusGetRequestStart() {
     bool empty = true;
     Request::requestQueue.isEmpty(empty);
 
-    if (empty) {
+    if (empty && !longSyncInProgress) {
         Request::requestQueue.enqueueRequest(new StatusGetRequest);
         //failureCounter = 0;
-        currentStateLabel->setText(tr("syncing"));
+        ui->stateLabel->setText(tr("syncing"));
     }
+}
+
+void MainWindow::statusGetRequestRetry() {
+    Request::requestQueue.enqueueRequest(new StatusGetRequest);
+    ui->stateLabel->setText(tr("syncing"));
 }
 
 //------SET POST------
@@ -215,12 +116,12 @@ void MainWindow::zeroPostRequestStart(Zero zero) {
 //------GENERCIC RESPONSE------
 
 void MainWindow::processGenericResponse() {
-    messageList->updateList();
-    startupDate->setText(Messages::getStartupDate());
+    ui->messageList->updateList();
+    ui->startupLabel->setText(Messages::getStartupDate());
     int restartTime = Timing::getRestartTime();
 
     int currentValueInt = Timing::getCurrentValue();
-    progressBar->setValue(currentValueInt);
+    ui->progressBar->setValue(currentValueInt);
     QString progressText = QString::number(currentValueInt) + "%";
     if (progressText.length() < 100) {
         if(progressText.length() > 9) {
@@ -230,22 +131,24 @@ void MainWindow::processGenericResponse() {
             progressText = "  " + progressText;
         }
     }
-    setButton->setText(progressText);
+    ui->setButton->setText(progressText);
 
     if (restartTime > 0) {
-        QTimer::singleShot(restartTime * 1000, this, SLOT(statusGetRequestStart()));
-        currentStateLabel->setText(tr("syncing"));
+        QTimer::singleShot(restartTime * 1000, this, SLOT(statusGetRequestRetry()));
+        ui->stateLabel->setText(tr("syncing"));
+        longSyncInProgress = true;
         disableGUI();
     }
-    else { 
-        currentStateLabel->setText(tr("serverAvailable"));
+    else {
+        longSyncInProgress = false;
+        ui->stateLabel->setText(tr("serverAvailable"));
         enableGUI();
     }
 }
 
 void MainWindow::notifyMessage(std::string response) {
     if (response == "") {
-        currentStateLabel->setText(tr("serverUnavailable"));
+        ui->stateLabel->setText(tr("serverUnavailable"));
 
         if (failureCounter++ == 5) {
             QCoreApplication::quit();
@@ -254,31 +157,82 @@ void MainWindow::notifyMessage(std::string response) {
         if (!initialized) {
             QTimer::singleShot(10000, this, SLOT(dumpGetRequestStart()));
         }
+        else {
+            if (longSyncInProgress) {
+                longSyncInProgress = false;
+                statusGetRequestStart();
+            }
+        }
     }
     else {
         failureCounter = 0;
 
+        qInfo()<<"response: "<<response.c_str();
+
+        try {
+
         json responseObject = json::parse(response);
-        bool isDump = responseObject.contains("G");
+        bool isDump = responseObject.contains("T");
 
         if (isDump) {
             initialized = true;
             json timingObject = responseObject["T"].get<json>();
             json genericResponse = responseObject["G"].get<json>();
 
-            Timing::parseTimings(timingObject);
-            Messages::parseGenericResponse(genericResponse);
-
             if (statusTimer == nullptr) {
                 statusTimer = new QTimer(this);
                 connect(statusTimer, &QTimer::timeout, this, &MainWindow::statusGetRequestStart);
                 statusTimer->start(30000);
             }
+
+            Timing::parseTimings(timingObject);
+            Messages::parseGenericResponse(genericResponse);
         }
         else {
-            Messages::parseGenericResponse(responseObject);
+            json genericResponse = responseObject["G"].get<json>();
+            Messages::parseGenericResponse(genericResponse);
         }
 
         processGenericResponse();
+
+        }
+        catch(nlohmann::json::exception) {
+            ui->stateLabel->setText(tr("json error"));
+
+            if (longSyncInProgress) {
+                longSyncInProgress = false;
+            }
+
+            statusGetRequestStart();
+        }
     }
+}
+
+void MainWindow::on_upButton_clicked()
+{
+    setPostRequestStart(100);
+}
+
+
+void MainWindow::on_downButton_clicked()
+{
+    setPostRequestStart(0);
+}
+
+
+void MainWindow::on_timingsButton_clicked()
+{
+    timingDialog->exec();
+}
+
+
+void MainWindow::on_setButton_clicked()
+{
+    setDialog->exec();
+}
+
+
+void MainWindow::on_nullButton_clicked()
+{
+    zeroDialog->exec();
 }

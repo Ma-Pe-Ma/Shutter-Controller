@@ -39,7 +39,7 @@ TimingItemWidget::TimingItemWidget(int ID, QWidget *parent) : QWidget(parent) {
     horizontalLayout->addWidget(daySwitches);
     horizontalLayout->setAlignment(daySwitches, Qt::AlignVCenter);
 
-    valueBox = new QVBoxLayout(this);
+    valueBox = new QVBoxLayout();
     setterValueLabel = new QLabel("?", this);
     valueBox->addWidget(setterValueLabel);
     valueBox->setAlignment(setterValueLabel, Qt::AlignHCenter);

@@ -11,16 +11,6 @@ These libraries can be installed from the Arduino library manager:
  * [ArduinoQueue](https://github.com/EinarArnason/ArduinoQueue)
  * [ArduinoJSON](https://github.com/bblanchon/ArduinoJson)
  * [NTP Client](https://github.com/arduino-libraries/NTPClient)
- 
-At the time of writing this document, in the NTP client's latest release (v3.2.0) the update function always returns true not just only when the update happened. Later commits fix this, but there hasn't been a release with this fix. If there is now a newer release you can ignore the instructions below.
-
-To manually fix this, open 
-
-    %Path_To_Your_Arduino_Libraries/NTPClient/NTPClient.cpp
-and edit line 101 to
-
-    return false;
-(Note: [this is the file](https://github.com/arduino-libraries/NTPClient/blob/151bbc5484265cbeeb0273a3752a95aedda22f2f/NTPClient.cpp) in question which should be edited locally.)
 
 ### Configuring
 The server can be configured in the configuration.h and configuration.cpp files.

@@ -146,11 +146,18 @@ public class RequestDispatcher {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        if (backgroundRequest) {
-                            handleBackgroundRequestResponse(response);
+                        try{
+                            JSONObject genericResponseObject = (JSONObject) response.get("G");
+
+                            if (backgroundRequest) {
+                                handleBackgroundRequestResponse(genericResponseObject);
+                            }
+                            else {
+                                handleGenericResponse(genericResponseObject);
+                            }
                         }
-                        else {
-                            handleGenericResponse(response);
+                        catch(JSONException e) {
+                            e.printStackTrace();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -180,7 +187,13 @@ public class RequestDispatcher {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, customURL, jsonBody, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    handleGenericResponse(response);
+                    try{
+                        JSONObject genericResponseObject = (JSONObject) response.get("G");
+                        handleGenericResponse(genericResponseObject);
+                    }
+                    catch(JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -213,7 +226,13 @@ public class RequestDispatcher {
 
                 @Override
                 public void onResponse(JSONObject response) {
-                    handleGenericResponse(response);
+                    try{
+                        JSONObject genericResponseObject = (JSONObject) response.get("G");
+                        handleGenericResponse(genericResponseObject);
+                    }
+                    catch(JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
             }, new Response.ErrorListener() {
                 @Override
@@ -242,7 +261,13 @@ public class RequestDispatcher {
             @Override
             public void onResponse(JSONObject response) {
                 Timing.updateTimings();
-                handleGenericResponse(response);
+                try{
+                    JSONObject genericResponseObject = (JSONObject) response.get("G");
+                    handleGenericResponse(genericResponseObject);
+                }
+                catch(JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
@@ -262,7 +287,7 @@ public class RequestDispatcher {
     private void handleBackgroundRequestResponse(JSONObject responseObject) {
         try {
             //time
-            int time = (int) responseObject.get("T");
+            int time = (int) responseObject.get("R");
 
             if (time > 0) {
                 stateHandler.postDelayed(notificationDelayer, (int) (time * 1000));
@@ -278,21 +303,21 @@ public class RequestDispatcher {
             String startDate = (String) newMessagesObject.get("S");
             MessageContainer.getMessageContainer().setStartupTime(startDate);
 
-            int count = (int) newMessagesObject.get("C");
+            //int count = (int) newMessagesObject.get("C");
 
-            if (count > 0) {
-                AppContext.createNotification();
-            }
+            //if (count > 0) {
+                //AppContext.createNotification();
+            //}
         }
         catch (JSONException e) {
-
+            e.printStackTrace();
         }
     }
 
     public void handleGenericResponse(JSONObject responseObject) {
         try {
             //time
-            int time = (int) responseObject.get("T");
+            int time = (int) responseObject.get("R");
 
             if (time > 0) {
                 notifyDisableGUI();
@@ -308,7 +333,7 @@ public class RequestDispatcher {
             JSONObject genericMessages = (JSONObject) newMessagesObject.get("M");
             MessageContainer.getMessageContainer().updateMessages(genericMessages);
 
-            int count = (int) newMessagesObject.get("C");
+            //int count = (int) newMessagesObject.get("C");
             String startDate = (String) newMessagesObject.get("S");
             MessageContainer.getMessageContainer().setStartupTime(startDate);
 
@@ -330,8 +355,8 @@ public class RequestDispatcher {
             Timing.parseTimingObjectDump(timingObject);
 
             //Getting generic response
-            JSONObject messageObject = (JSONObject) dumpObject.get("G");
-            handleGenericResponse(messageObject);
+            JSONObject genericResponsObject = (JSONObject) dumpObject.get("G");
+            handleGenericResponse(genericResponsObject);
 
             startCyclicUpdate();
 
