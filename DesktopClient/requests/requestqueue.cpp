@@ -18,7 +18,6 @@ void RequestQueue::enqueueRequest(Request* newRequest) {
         queue.enqueue(newRequest);
     }
 
-
     queueMutex.unlock();
 }
 
@@ -37,16 +36,15 @@ void RequestQueue::notifyRequestEnd(std::string message) {
 
     if (!queue.isEmpty()) {
         currentRequest = queue.dequeue();
-        connect(this->currentRequest,&Request::requestFinish, this, &RequestQueue::notifyRequestEnd);
+        connect(this->currentRequest, &Request::requestFinish, this, &RequestQueue::notifyRequestEnd);
         currentRequest->start();
     }
 
     queueMutex.unlock();
 }
 
-
 void RequestQueue::isEmpty(bool& empty) {
     queueMutex.lock();
-    empty = queue.isEmpty();
+    empty = queue.isEmpty() && (this->currentRequest == nullptr);
     queueMutex.unlock();
 }

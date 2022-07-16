@@ -22,7 +22,7 @@ QString Messages::getDate(int messageID) {
 void Messages::parseGenericResponse(json genericResponse) {
    // qInfo()<<"Generic response: "<<genericResponse.dump().c_str();
 
-    int restartTime = genericResponse["T"].get<int>();
+    int restartTime = genericResponse["R"].get<int>();
     Timing::setRestartTime(restartTime);
 
     if (restartTime > 0) {
@@ -34,6 +34,10 @@ void Messages::parseGenericResponse(json genericResponse) {
     Timing::setCurrentValue(value);
 
     json messagesObject = genericResponse["M"].get<json>();
+
+    if (messagesObject.empty()) {
+        return;
+    }
 
     startupDate = QObject::tr("startTime%1").arg(messagesObject["S"].get<std::string>().c_str());
 

@@ -17,7 +17,8 @@
         android:theme="@style/AppTheme"
         android:name="com.mapema.shuttercontroller.AppContext">
         <activity android:name="com.mapema.shuttercontroller.activities.MainActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

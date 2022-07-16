@@ -23,25 +23,16 @@ public:
     ~MainWindow();
 
 private:
-    QWidget* central;
     bool initialized = false;
+    bool longSyncInProgress = false;
 
     QTimer* statusTimer = nullptr;
 
     Ui::MainWindow *ui;
-    QPushButton* timingButton = nullptr;
-    QProgressBar* progressBar = nullptr;
-    QPushButton* upButton = nullptr;
-    QPushButton* downButton = nullptr;
-    QPushButton* setButton = nullptr;
-    QPushButton* zeroButton = nullptr;
 
     TimingDialog* timingDialog = nullptr;
     SetDialog* setDialog = nullptr;
     ZeroDialog* zeroDialog = nullptr;
-    MessageList* messageList = nullptr;
-    QLabel* startupDate = nullptr;
-    QLabel* currentStateLabel = nullptr;
 
     void disableGUI();
     void enableGUI();
@@ -49,13 +40,10 @@ private:
 
     unsigned int failureCounter = 0;
 
-signals:
-    void setUp();
-    void setDown();
-
 private slots:
     void dumpGetRequestStart();
     void statusGetRequestStart();
+    void statusGetRequestRetry();
     void zeroPostRequestStart(Zero);
     void setPostRequestStart(int);
     void timingPostRequestStart(QString);
@@ -63,8 +51,15 @@ private slots:
     void notifyMessage(std::string);
     void updateTimings();
 
-    void sendUp();
-    void sendDown();
+    void on_upButton_clicked();
+    void on_downButton_clicked();
+
+    void on_timingsButton_clicked();
+
+    void on_setButton_clicked();
+
+    void on_nullButton_clicked();
+
 public slots:
 
 };
