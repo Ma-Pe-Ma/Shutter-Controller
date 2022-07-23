@@ -20,41 +20,14 @@
 #define USER_NAME ""
 #define PASSWORD ""
 
-//the html page served at the root
-#define DEFAULT_PAGE "<!DOCTYPE html><html><head></head><body><form action=\"./L\" method=\"post\">" \
-	"<label for=\"fname\">Usarname:</label><br>" \
-	"<input type=\"text\" name=\"U\" value=\"\"><br><br>" \
-	"<label for=\"fname\">Password:</label><br>" \
-	"<input type=\"password\" name=\"P\" value=\"\"><br><br>" \
-	"<input type=\"submit\" value=\"Login\">" \
-"</form></body></html>"
-
-#define CONTROL_PAGE "<!DOCTYPE html><html><head></head><body>"\
-    "<script>"\
-        "var s = new XMLHttpRequest();"\
-        "s.onload=function() {"\
-            "console.log(\"Testing\");"\
-        "}"\
-        "var i = setInterval(function() {"\
-            "s.open(\"GET\", \"/S\");"\
-            "s.send();"\
-        "}, 30000);"\
-    "</script>"\
-    "TESTING"\
-"</body></html>"
-
-//unfortunately I can't define a multiline raw string macro properly
-//so these variables are needed
-extern const char serverCert[] PROGMEM;
-extern const char serverKey[] PROGMEM;
-
 //the up and dow pin definitions
 #define UP_PIN 0
 #define DOWN_PIN 2
 
-//not too high amount of timings and processes
+//not too high amount of timings, processes and messages
 #define NR_OF_TIMINGS 6
 #define NR_OF_PROCESSES 6
+#define NR_OF_MESSAGES 10
 
 //working time of shutter in secs in both ways
 #define UP_TIME 27.0f

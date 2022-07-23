@@ -20,13 +20,17 @@ namespace ServerContainer {
     void handlePostSetting();    
     void handlePostTiming();
     void handlePostZero();
+    
     void handleLogin();
+    void handleLogout();
  
     extern BearSSL::ESP8266WebServerSecure secureServer;
     extern ESP8266WebServer server;
     void initialize();
-    void createGenericResponse(int retryTime, bool root = false);
-    bool authenticationCheck(bool cookies = false, String username = "", String password = "");
+    void createGenericResponse(int retryTime, JsonDocument& outDoc);
+    bool authenticationCheck();
+
+    bool isCookieValid();
 }
 
 #endif
