@@ -15,12 +15,12 @@ class Timing : public SettingProcess {
 public:
     static Timing timings[];
     static Timing timingsBuffer[];
-    static void CheckTimings(int, int, int); 
+    static void checkTimings(int, int, int); 
     static void initialize();
-    static String readTimingsFromFlash();
+    static void readTimingsFromFlash(String& target);
     static void loadTimingsFromFlash();
-    static void saveTimingsToFlash(String);
-    static void CreateJsonObject(JsonObject);
+    static void saveTimingsToFlash(const String&);
+    static void createJsonObject(JsonObject&);
     static void parseTimings(JsonObject&);
     static void disableEarlierSettings();
     

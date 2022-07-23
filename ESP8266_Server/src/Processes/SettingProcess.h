@@ -29,6 +29,7 @@ protected:
 public:
     static int getQueueCount();
     void setTargetValue(float targetValue) {this->targetValue = targetValue;}
+    float getTargetValue() {return this->targetValue; }
     virtual void generateMessage();
 
     static void processQueue();
@@ -44,6 +45,7 @@ public:
     static int8_t getLastSetDay();
     static void saveCurrentStateToFlash();
     static void loadCurrentStateFromFlash();
+    int getRemainingTime();
 };
 
 #endif

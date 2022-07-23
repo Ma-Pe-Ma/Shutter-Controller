@@ -29,7 +29,6 @@ void setup() {
     Serial.println("");
     
     WiFi.mode(WIFI_STA);
-
     WiFi.begin(SSID, PSWD);
 
     Serial.print("Connecting");
@@ -45,11 +44,10 @@ void setup() {
     Serial.print("MAC Address: ");
     Serial.println(WiFi.macAddress());
 
-    TimeCalibration::InitializeDateTime();
-    Serial.println("Current date-time: " + TimeCalibration::GetFormattedString());
+    TimeCalibration::initializeDateTime();
 
     LittleFSHelper::initialize();
-    MessageHandler::Initialize();
+    MessageHandler::initialize();
     SettingProcess::initialize();
     Timing::initialize();
     ServerContainer::initialize();
@@ -91,12 +89,12 @@ void loop() {
             Serial.println("UP AND RUNNING WAITING");
         }
 
-        TimeCalibration::Update();
+        TimeCalibration::update();
         EasyDDNS.update(10000);
         ServerContainer::server.handleClient();
         ServerContainer::secureServer.handleClient();
         SettingProcess::processQueue();   
-    } 
+    }
 
     yield();
 }

@@ -57,7 +57,7 @@ bool SettingProcess::checkFinished() {
     unsigned long curMillis = millis();
 
     if (targetValue == currentValue) {
-        TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+        TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
         Serial.println("Setting finished, unchanged: " + String(currentValue));
 
         digitalWrite(UP_PIN, DEACTIVATE_PIN);
@@ -67,7 +67,7 @@ bool SettingProcess::checkFinished() {
     else if (curMillis - processStartTime > processTime * 1000) {
         currentValue = targetValue;
 
-        TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+        TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
         Serial.println("Setting finished: " + String(currentValue));
 
         digitalWrite(UP_PIN, DEACTIVATE_PIN);
@@ -148,7 +148,7 @@ int SettingProcess::getQueueCount() {
 
 void SettingProcess::generateMessage() {
     int intCurrent = (int) (currentValue * 100);
-    MessageHandler::AddNewMessage("S", "M", String(intCurrent));
+    MessageHandler::addNewMessage("S", "M", String(intCurrent));
 }
 
 void SettingProcess::saveCurrentStateToFlash() {
@@ -164,7 +164,8 @@ void SettingProcess::saveCurrentStateToFlash() {
 }
 
 void SettingProcess::loadCurrentStateFromFlash() {
-    String currentState = LittleFSHelper::readFile("state.txt");
+    String currentState;
+    LittleFSHelper::readFile("state.txt", currentState);
 
     if (currentState != "") {
         StaticJsonDocument<256> doc;
@@ -179,4 +180,8 @@ void SettingProcess::loadCurrentStateFromFlash() {
         SettingProcess::setCurrentValue(0.5f);
         ZeroProcess::processNull(ZeroState::find);
     }
+}
+
+int SettingProcess::getRemainingTime() { 
+    return int(-(millis() - processStartTime)) / 1000 + processTime + 1;
 }

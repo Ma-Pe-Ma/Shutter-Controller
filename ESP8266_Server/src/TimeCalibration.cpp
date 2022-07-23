@@ -7,10 +7,10 @@ namespace TimeCalibration {
     WiFiUDP ntpUDP;
     NTPClient dateTime = NTPClient(ntpUDP, NTP_ADRESS, TIME_ZONE * 3600, UPDATE_FREQ * 1000);
 
-    const unsigned long day48time = 3600 * 24 * 48;
+    const unsigned long day48time = 1000 * 3600 * 24 * 48;
 
     //offset by one, to start week on monday
-    inline int8_t CorrectDay(int8_t day) {
+    inline int8_t correctDay(int8_t day) {
         int8_t correctedDay = day - 1;
 
         if (correctedDay == -1) {
@@ -20,16 +20,22 @@ namespace TimeCalibration {
         return correctedDay;
     }
     
-    void GetCurrentTime(int8_t& day, int8_t& hour, int8_t& minute) {
+    void getCurrentTime(int8_t& day, int8_t& hour, int8_t& minute) {
         time_t epochTime = dateTime.getEpochTime();
         struct tm* ti = gmtime(&epochTime);
 
-        day = CorrectDay(ti->tm_wday);
+        day = correctDay(ti->tm_wday);
         hour = ti->tm_hour;
         minute = ti->tm_min;
     }    
 
-    void InitializeDateTime() {
+    void initializeDateTime() {
+        static unsigned int initFailCounter = 0;
+
+        if (initFailCounter++ == 15) {
+            ESP.restart();
+        }
+
         dateTime.begin();
         dateTime.forceUpdate();
 
@@ -39,23 +45,23 @@ namespace TimeCalibration {
         int year = ptm->tm_year + 1900;
 
         //if timefetch was unsuccesful, recursively try again!
-        if (year < 2021) {
-            InitializeDateTime();
+        if (year < 2022) {
+            initializeDateTime();
         }
         else {
-            CorrectByDST();
+            correctByDST();
         }
 
-        Serial.println("Time after initializing: " + GetFormattedString());
+        Serial.println("Time after initializing: " + getFormattedString());
     } 
 
-    void Update() {
+    void update() {
         //Maybe disable update if currentProcess is in progress??
         if (dateTime.update()) {
-            CorrectByDST();
-            Serial.println("Time updated: " + GetFormattedString());
+            correctByDST();
+            Serial.println("Time updated: " + getFormattedString());
 
-            Timing::CheckTimings(CorrectDay(dateTime.getDay()), dateTime.getHours(), dateTime.getMinutes());
+            Timing::checkTimings(correctDay(dateTime.getDay()), dateTime.getHours(), dateTime.getMinutes());
 
             if (millis() > day48time) {
                 ESP.restart();
@@ -63,7 +69,7 @@ namespace TimeCalibration {
         }
     }
 
-    void CorrectByDST() {        
+    void correctByDST() {        
         dateTime.setTimeOffset((TIME_ZONE) * 3600);
 
         time_t epochTime = dateTime.getEpochTime();
@@ -74,12 +80,12 @@ namespace TimeCalibration {
         int weekDay = ti->tm_wday;
         int hours = ti->tm_hour;
 
-        if (IsDST(month, day, weekDay, hours)) {
+        if (isDST(month, day, weekDay, hours)) {
             dateTime.setTimeOffset((TIME_ZONE + 1) * 3600);
         }
     }
 
-    bool IsDST(int month, int day, int dayOfWeek, int hour) {
+    bool isDST(int month, int day, int dayOfWeek, int hour) {
         if (month < 2 || 9 < month) {
             return false;
         }
@@ -87,7 +93,7 @@ namespace TimeCalibration {
             return true;
         }
         else if (month == 2) {
-            int lastSundayOfMonth = GetLastSundayOfMonth(day, dayOfWeek);
+            int lastSundayOfMonth = getLastSundayOfMonth(day, dayOfWeek);
 
             if (day < lastSundayOfMonth) {
                 return false;
@@ -105,7 +111,7 @@ namespace TimeCalibration {
             }
         }
         else if (month == 9) {
-            int lastSundayOfMonth = GetLastSundayOfMonth(day, dayOfWeek);
+            int lastSundayOfMonth = getLastSundayOfMonth(day, dayOfWeek);
 
             if (day < lastSundayOfMonth) {
                 return true;
@@ -126,7 +132,7 @@ namespace TimeCalibration {
         return false;
     }
 
-    int GetLastSundayOfMonth(int day, int dayOfWeek) {
+    int getLastSundayOfMonth(int day, int dayOfWeek) {
         int lastSunday = day - dayOfWeek;
 
         while (lastSunday + 7 < 32) {
@@ -136,11 +142,11 @@ namespace TimeCalibration {
         return lastSunday;
     }
 
-    String GetFormattedString() {
-        return GetFormattedStringByEpoch(dateTime.getEpochTime());
+    String getFormattedString() {
+        return getFormattedStringByEpoch(dateTime.getEpochTime());
     }
 
-    String GetFormattedStringByEpoch(time_t epochTime) {
+    String getFormattedStringByEpoch(time_t epochTime) {
         struct tm *ptm = gmtime ((time_t *) & epochTime);
 
         int year = ptm->tm_year;
@@ -158,7 +164,7 @@ namespace TimeCalibration {
         return String(year + 1900) + ". " + month + ". " + day + ". " + hours + ":" + minutes;
     }
 
-    time_t CustomTimeSetter() {
+    time_t customTimeSetter() {
         return dateTime.getEpochTime();
     }
 }

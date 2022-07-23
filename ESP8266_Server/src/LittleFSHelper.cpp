@@ -3,13 +3,16 @@
 
 namespace LittleFSHelper {
 
-    void initialize() {
+    void initialize(bool format) {
         LittleFS.begin();
-        LittleFS.setTimeCallback(TimeCalibration::CustomTimeSetter); 
-        //LittleFS.format();
+        LittleFS.setTimeCallback(TimeCalibration::customTimeSetter); 
+
+        if (format) {
+            LittleFS.format();
+        }
     }
 
-    void writeFile(const char* path, String message) {
+    void writeFile(const char* path, const String& message) {
         writeFile(path, message.c_str());
     }
 
@@ -21,7 +24,7 @@ namespace LittleFSHelper {
             Serial.println("\t\tFailed to open file for writing");
             return;
         }
-        file.setTimeCallback(TimeCalibration::CustomTimeSetter);
+        file.setTimeCallback(TimeCalibration::customTimeSetter);
         
         //Serial.print("Writing file: ");
         //Serial.println(message);
@@ -36,8 +39,8 @@ namespace LittleFSHelper {
         file.close();
     }
 
-    String readFile(const char * path) {
-        String fileContent = "";
+    void readFile(const char * path, String& target) {
+        target = "";
 
         Serial.printf("\t\tReading file: %s\n", path);
 
@@ -45,21 +48,17 @@ namespace LittleFSHelper {
         
         if (!file) {
             Serial.println("\t\tFailed to open file for reading");
-            return fileContent;
         }
-        file.setTimeCallback(TimeCalibration::CustomTimeSetter);
+        file.setTimeCallback(TimeCalibration::customTimeSetter);
 
         //Serial.print("Read from file: ");
         
         while (file.available()) {
-            fileContent += file.readString();
+            target += file.readString();
         }
        
-        //Serial.println(fileContent);
-
+        //Serial.println(target);
         file.close();
-
-        return fileContent;
     }
 
     void deleteFile(const char * path) {

@@ -20,21 +20,14 @@
 #define USER_NAME ""
 #define PASSWORD ""
 
-//the html page served at the root
-#define DEFAULT_PAGE "<!DOCTYPE html><html lang=\"en\"><head><title>Shutter Controller</title></head><body><h1><a href=\"https://github.com/Ma-Pe-Ma/Shutter-Controller\">Shutter Controller</a></h1><p>Created by <a href=\"https://github.com/Ma-Pe-Ma/\">MaPeMa</a></p></body></html>"
-
-//unfortunately I can't define a multiline raw string macro properly
-//so these variables are needed
-extern const char serverCert[] PROGMEM;
-extern const char serverKey[] PROGMEM;
-
 //the up and dow pin definitions
 #define UP_PIN 0
 #define DOWN_PIN 2
 
-//not too high amount of timings and processes
+//not too high amount of timings, processes and messages
 #define NR_OF_TIMINGS 6
 #define NR_OF_PROCESSES 6
+#define NR_OF_MESSAGES 10
 
 //working time of shutter in secs in both ways
 #define UP_TIME 27.0f

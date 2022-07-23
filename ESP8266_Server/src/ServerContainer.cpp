@@ -1,19 +1,16 @@
 #include "ServerContainer.h"
 #include "../Configuration.h"
+#include "../Keys.h"
+#include "BrowserClient.h"
+#include "Hash.h"
 
 namespace ServerContainer {
     BearSSL::ESP8266WebServerSecure secureServer(HTTPS_PORT);
     ESP8266WebServer server(HTTP_PORT);
     String secureAddress = "https://" + String(DDNS_DOMAIN);
 
-    StaticJsonDocument<2048> docOut;
-    StaticJsonDocument<768> docIn;
-    String response;
-
     void initialize() {
         secureServer.getServer().setRSACert(new BearSSL::X509List(serverCert), new BearSSL::PrivateKey(serverKey));
-        //Serial.print(serverCert);
-        //Serial.println();
 
         secureServer.on("/", HTTP_GET, handleRoot);
         secureServer.on("/S", HTTP_GET, handleStatus);
@@ -23,8 +20,12 @@ namespace ServerContainer {
         secureServer.on("/T", HTTP_POST, handlePostTiming);  
         secureServer.on("/Z", HTTP_POST, handlePostZero);
         
+        secureServer.on("/L", HTTP_POST, handleLogin);
+        secureServer.on("/O", HTTP_GET, handleLogout);
+        
         secureServer.onNotFound(handleRedirectSecure); 
-
+        
+        secureServer.collectHeaders("Cookie");
         secureServer.begin();
 
         server.on("/", HTTP_GET, handleRedirect);
@@ -45,62 +46,78 @@ namespace ServerContainer {
     }
 
     void handleRoot() {
-        secureServer.send(200, "text/html", DEFAULT_PAGE);
-        Serial.println("Root was sent!");
+        if (secureServer.hasHeader("Cookie") && isCookieValid()) {
+            secureServer.send(200, "text/html", controlPage);
+        }
+        else {
+            secureServer.send(200, "text/html", loginPage);
+            Serial.println("Showing login page!");
+        }
     }
 
     void handleStatus() {
-        docOut.clear();
+        DynamicJsonDocument docOut(1024);
 
         if (!authenticationCheck()) {
             handleRedirectSecure();
             return;
         }
 
-        if (SettingProcess::getCurrentSettingProcess() != nullptr) {
-            createGenericResponse(3);
+        SettingProcess* current = SettingProcess::getCurrentSettingProcess();
+        if (current != nullptr) {
+            createGenericResponse(current->getRemainingTime(), docOut);
         }
         else {
-            createGenericResponse(0);
+            createGenericResponse(0, docOut);
         }
 
+        String response;
         serializeJson(docOut, response);
-        docOut.clear();
 
         secureServer.send(200, "text/plain", response);
         response = "";
+
+        //if (current == nullptr) {
+        //    MessageHandler::ResetUnseenCounter();
+        //}        
 
         Serial.println("Status was sent!");
     }
 
     void handleGetDump() {
-        docOut.clear();
+        DynamicJsonDocument docOut(2048);
 
         if (!authenticationCheck()) {
             handleRedirectSecure();
             return;
         }
 
-        docOut["T"] = serialized(Timing::readTimingsFromFlash());
+        String timingsString;
+        Timing::readTimingsFromFlash(timingsString);
+        docOut["T"] = serialized(timingsString.c_str());
         
-        if (SettingProcess::getCurrentSettingProcess() != nullptr) {
-            createGenericResponse(3, true);
+        SettingProcess* current = SettingProcess::getCurrentSettingProcess();
+        if (current != nullptr) {
+            createGenericResponse(current->getRemainingTime(), docOut);
         }
         else {
-            createGenericResponse(0, true);
+            createGenericResponse(0, docOut);
         }
     
+        String response;
 	    serializeJson(docOut, response);
-        docOut.clear();
+
+        //if (current == nullptr) {
+           // MessageHandler::ResetUnseenCounter();
+        //}
 
         secureServer.send(200, "text/plain", response);
-        response = "";
         Serial.println("Dump sent back!");
     }
 
     void handlePostSetting() {
-        docOut.clear();
-        docIn.clear();
+        DynamicJsonDocument docOut(1024);
+        StaticJsonDocument<512> docIn;
 
         if (!authenticationCheck()) {
             handleRedirectSecure();
@@ -120,16 +137,14 @@ namespace ServerContainer {
             wait = 3;
         }
         else {
-            MessageHandler::AddNewMessage("J","S", err.c_str()); 
+            MessageHandler::addNewMessage("J","S", err.c_str()); 
             wait = 0;
         }
 
-        docIn.clear();
+        createGenericResponse(wait, docOut);
 
-        createGenericResponse(wait);
-
+        String response;
         serializeJson(docOut, response);
-        docOut.clear();
 
         secureServer.send(200, "text/plain", response);
         response = "";
@@ -138,48 +153,47 @@ namespace ServerContainer {
     }
 
     void handlePostTiming() {
-        docOut.clear();
-        docIn.clear();
+        DynamicJsonDocument docOut(1024);
+        StaticJsonDocument<768> docIn;
 
         if (!authenticationCheck()) {
             handleRedirectSecure();
             return;
         }
 
-        String body = secureServer.arg("plain");
-
-        DeserializationError err = deserializeJson(docIn, body);
-
-        for (int i = 0; i < secureServer.args(); i++) {
-            Serial.println(String(i) + ". arg: " + secureServer.argName(i) + " - " + secureServer.arg(i));
-        }
+        DeserializationError err = deserializeJson(docIn, secureServer.arg("plain"));
 
         if (err == DeserializationError::Ok) {
             JsonObject timingConfig = docIn.as<JsonObject>();
             Timing::parseTimings(timingConfig);
             Timing::disableEarlierSettings();
-            MessageHandler::AddNewMessage("S","T", "O");
+            MessageHandler::addNewMessage("S","T", "O");
         } 
         else {
-            MessageHandler::AddNewMessage("J","T", err.c_str());
+            MessageHandler::addNewMessage("J","T", err.c_str());
         }
+        
         docIn.clear();
+        yield();
 
-        createGenericResponse(0);
+        createGenericResponse(0, docOut);
 
+        String response;
         serializeJson(docOut, response);
         docOut.clear();
 
         secureServer.send(200, "text/plain", response);
         response = "";
 
-        Timing::saveTimingsToFlash(body);
+        yield();
+
+        Timing::saveTimingsToFlash(secureServer.arg("plain"));
         Serial.println("Timings were updated!");
     }
 
     void handlePostZero() {
-        docOut.clear();
-        docIn.clear();
+        DynamicJsonDocument docOut(1024);
+        StaticJsonDocument<512> docIn;
 
         if (!authenticationCheck()) {
             handleRedirectSecure();
@@ -201,79 +215,126 @@ namespace ServerContainer {
             }
             else {
                 if (SettingProcess::getCurrentSettingProcess() != nullptr) {
-                    MessageHandler::AddNewMessage("Z","F", "B");
+                    MessageHandler::addNewMessage("Z","F", "B");
                     retryTime = 3;
                 }
                 else {
                     if(zeroState == "up") {
                         ZeroProcess::zeroProcess.processNull(up);
-                        MessageHandler::AddNewMessage("Z","O", "U");
+                        MessageHandler::addNewMessage("Z","O", "U");
                         retryTime = 0;
                     }
 
                     if(zeroState == "down") {
                         ZeroProcess::zeroProcess.processNull(down);
-                        MessageHandler::AddNewMessage("Z","O", "D");
+                        MessageHandler::addNewMessage("Z","O", "D");
                         retryTime = 0;
                     }
                 }
             }
         }
         else {
-            MessageHandler::AddNewMessage("J","Z", err.c_str());
+            MessageHandler::addNewMessage("J","Z", err.c_str());
             retryTime = 0;
         }
 
-        docIn.clear();
-
-        createGenericResponse(retryTime);
-
+        createGenericResponse(retryTime, docOut);
+        String response;
         serializeJson(docOut, response);
-        docOut.clear();
-
         secureServer.send(200, "text/plain", response);
-        response = "";
 
         Serial.println("Zeroing was set: " + zeroState);
     }
 
-    void createGenericResponse(int waitTime, bool root) {
-        JsonObject genericResponse;
-        
-        if (root) {
-            genericResponse = docOut.createNestedObject("G");
-        }
-        else {
-            genericResponse = docOut.to<JsonObject>();
-        }
+    void createGenericResponse(int waitTime, JsonDocument& document) {
+        JsonObject genericResponse = document.createNestedObject("G");
         
         if (waitTime > 0) {
-            genericResponse["T"] = waitTime;
+            genericResponse["R"] = waitTime;
             return;
         }
-      
-        genericResponse["M"] = serialized(MessageHandler::GetEveryMessage());
-        genericResponse["V"] = (int) (SettingProcess::getCurrentValue() * 100);
-        genericResponse["T"] = waitTime;
 
-        MessageHandler::ResetUnseenCounter();
+        JsonObject messageObject = genericResponse.createNestedObject("M");
+        MessageHandler::getEveryMessage(messageObject);
+
+        genericResponse["V"] = (int) (SettingProcess::getCurrentValue() * 100);
+        genericResponse["R"] = waitTime;
     }
 
     bool authenticationCheck() {
+        if (isCookieValid()) {
+            return true;
+        }
+
         if (secureServer.args() < 2) {
             return false;
         }
 
-        bool usernameCheck = false;
-        if (secureServer.argName(0) == "username" && secureServer.arg(0) == USER_NAME) {
-            usernameCheck = true;
+        if (secureServer.hasArg("username") && secureServer.hasArg("password")) {
+            if (secureServer.arg("username") == USER_NAME && secureServer.arg("password") == PASSWORD) {
+                return true;
+            }
         }
 
-        bool passwordCheck = false;
-        if (secureServer.argName(1) == "password" && secureServer.arg(1) == PASSWORD) {
-            passwordCheck = true;
+        return false;
+    }
+
+    unsigned long lastCookieUsage = 0;
+    String currentCookie;
+    unsigned long cookieStartTime = 0;
+
+    bool isCookieValid() {
+        String receivedCookie = secureServer.header("Cookie");
+
+        //Sign out after 5 minutes of idle state
+        if (millis() - lastCookieUsage >  5 * 60 * 1000) {
+            return false;
         }
 
-        return usernameCheck && passwordCheck;
+        //Force sign out 30 minutes after login
+        if (millis() - cookieStartTime > 30 * 60 * 1000) {
+            return false;
+        } 
+
+        if (currentCookie.indexOf(receivedCookie) != -1) {
+            lastCookieUsage = millis();
+            return true;
+        }
+
+        return false;
+    }
+
+    String generateCookie() {
+        lastCookieUsage = millis();
+        currentCookie = "session=" + sha1(USER_NAME + String(lastCookieUsage));
+        cookieStartTime = millis();
+
+        return currentCookie;
+    }
+
+    void handleLogin() {
+        if (secureServer.hasHeader("Cookie") && isCookieValid()) {
+            Serial.println("ALREADY SIGNED IN!");
+            handleRoot();
+        }
+        else {
+            if (authenticationCheck()) {
+                Serial.println("Signing IN...");
+                secureServer.sendHeader("Cache-Control", "no-cache");
+                secureServer.sendHeader("Set-Cookie", generateCookie());
+                secureServer.sendHeader("Location", "/");
+                secureServer.send(302, "text/html", "");
+            }
+            else {
+                secureServer.send(200, "text/html", loginFail);
+            }    
+        }
+    }
+
+    void handleLogout() {
+        Serial.println("Signing out...");
+        secureServer.sendHeader("Set-Cookie", "session=null");
+        secureServer.sendHeader("Location", "/");
+        secureServer.send(302, "text/html", "");
     }
 }
