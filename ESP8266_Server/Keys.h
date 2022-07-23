@@ -1,6 +1,7 @@
-//if I could properly define a multiline raw string macro
-//then this file could be removed
-#include "Configuration.h"
+#ifndef KEYS_H
+#define KEYS_H
+
+#include <Arduino.h>
 
 const char serverCert[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -13,3 +14,5 @@ const char serverKey[] PROGMEM =  R"EOF(
 
 -----END PRIVATE KEY-----
 )EOF";
+
+#endif

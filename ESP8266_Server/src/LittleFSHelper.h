@@ -4,10 +4,10 @@
 #include <LittleFS.h>
 
 namespace LittleFSHelper {
-    void initialize();
-    void writeFile(const char* path, String message);
+    void initialize(bool format = false);
+    void writeFile(const char* path, const String& message);
     void writeFile(const char * path, const char * message);
-    String readFile(const char * path);
+    void readFile(const char * path, String& target);
     void deleteFile(const char * path);
     void listDir(const char * dirname);
 }

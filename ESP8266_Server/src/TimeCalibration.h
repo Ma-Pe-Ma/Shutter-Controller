@@ -18,16 +18,16 @@ namespace TimeCalibration {
     extern NTPClient dateTime;
     extern bool dst;    
 
-    void Update();
-    void InitializeDateTime();
-    void CorrectByDST();
-    bool IsDST(int, int, int, int);
-    int GetLastSundayOfMonth(int, int);
-    String GetFormattedString();
-    String GetFormattedStringByEpoch(time_t);
-    time_t CustomTimeSetter();
+    void update();
+    void initializeDateTime();
+    void correctByDST();
+    bool isDST(int, int, int, int);
+    int getLastSundayOfMonth(int, int);
+    String getFormattedString();
+    String getFormattedStringByEpoch(time_t);
+    time_t customTimeSetter();
 
-    void GetCurrentTime(int8_t&, int8_t&, int8_t&);
+    void getCurrentTime(int8_t&, int8_t&, int8_t&);
 }
 
 #endif

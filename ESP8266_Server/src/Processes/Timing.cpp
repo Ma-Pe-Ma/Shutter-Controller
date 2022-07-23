@@ -5,7 +5,7 @@
 Timing Timing::timings[NR_OF_TIMINGS];
 Timing Timing::timingsBuffer[NR_OF_TIMINGS];
 
-void Timing::CheckTimings(int day, int hour, int minute) {
+void Timing::checkTimings(int day, int hour, int minute) {
     if (hour == 0 && minute == 0) {
         for (int i = 0; i < NR_OF_TIMINGS; i++) {
             timings[i].queued = false;
@@ -20,9 +20,6 @@ void Timing::CheckTimings(int day, int hour, int minute) {
         int timingMinute = 60 * checkableTiming->hour + checkableTiming->minute;
 
         if (checkableTiming->active && checkableTiming->days[day] && !checkableTiming->queued) {
-            
-            Serial.println("timingminute: " +String(timingMinute) + ", cur: " + String(currentMinuteTime));
-
             //normal behaviour, spring DST change not implemented
             //only one case, when clock goes from 2 to 3 at the end of march!
             if (timingMinute <= currentMinuteTime) {
@@ -40,32 +37,38 @@ void Timing::initialize() {
     loadTimingsFromFlash();
 }
 
-String Timing::readTimingsFromFlash() {
-    return LittleFSHelper::readFile("timings.txt");
+void Timing::readTimingsFromFlash(String& target) {
+    LittleFSHelper::readFile("timings.txt", target);
 }
 
-void Timing::saveTimingsToFlash(String timingsString) {
+void Timing::saveTimingsToFlash(const String& timingsString) {
     LittleFSHelper::writeFile("timings.txt", timingsString);
 }
 
 void Timing::loadTimingsFromFlash() {
-    String timingsSerialized = LittleFSHelper::readFile("timings.txt");
-
-    Serial.println("Loading timings: " + timingsSerialized);
+    String timingsSerialized;
+    LittleFSHelper::readFile("timings.txt", timingsSerialized);
 
     if (timingsSerialized != "") {
         StaticJsonDocument<1024> doc;
 
-        deserializeJson(doc, timingsSerialized);
-        JsonObject timingsObject = doc.to<JsonObject>();
-        Timing::parseTimings(timingsObject);
+        DeserializationError err = deserializeJson(doc, timingsSerialized);
+
+        if (err == DeserializationError::Ok) {
+            JsonObject timingsObject = doc.as<JsonObject>();
+            Timing::parseTimings(timingsObject);
+        }
+        else {
+            Serial.print("Error parsing timing json: ");
+            Serial.println(err.c_str());
+        }        
 
         Timing* possibleMissedTiming = nullptr;
         int8_t currentDay = 0;
         int8_t currentHour = 0;
         int8_t currentMinute = 0;
 
-        TimeCalibration::GetCurrentTime(currentDay, currentHour, currentMinute);        
+        TimeCalibration::getCurrentTime(currentDay, currentHour, currentMinute);        
 
         int currentSumMinutes = currentHour * 60 + currentMinute;
 
@@ -84,6 +87,8 @@ void Timing::loadTimingsFromFlash() {
                         possibleMissedTiming = timing;
                     }
                 }
+
+                timing->queued =  true;
             }
         }
 
@@ -104,18 +109,18 @@ void Timing::loadTimingsFromFlash() {
     else {
         StaticJsonDocument<1024> doc;
         JsonObject object = doc.to<JsonObject>();
-        CreateJsonObject(object);
+        createJsonObject(object);
 
         String serialized;
         serializeJson(doc, serialized);
         //Serial.println("Saving: " + serialized);
         saveTimingsToFlash(serialized);
         doc.clear();
-        Serial.println("Timings saved to flash: "+serialized);
+        //Serial.println("Timings saved to flash: "+serialized);
     }
 }
 
-void Timing::CreateJsonObject(JsonObject object) {
+void Timing::createJsonObject(JsonObject& object) {
     for (int i = 0; i < NR_OF_TIMINGS; i++) {
         String ID = String(i);
         Timing* timing = &Timing::timings[i];
@@ -161,7 +166,7 @@ void Timing::disableEarlierSettings() {
     int8_t currentHour = 0;
     int8_t currentMinute = 0;
 
-    TimeCalibration::GetCurrentTime(currentDay, currentHour, currentMinute);
+    TimeCalibration::getCurrentTime(currentDay, currentHour, currentMinute);
 
     int currentSumMinutes = currentHour * 60 + currentMinute;
 
@@ -191,5 +196,5 @@ void Timing::generateMessage() {
     }
 
     int intCurrent = (int) (currentValue * 100);
-    MessageHandler::AddNewMessage("T", String(ID), String(intCurrent));
+    MessageHandler::addNewMessage("T", String(ID), String(intCurrent));
 }

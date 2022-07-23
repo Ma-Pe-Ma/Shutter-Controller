@@ -9,12 +9,12 @@ void ZeroProcess::processNull(ZeroState zeroState) {
     switch (zeroState) {
         case up:
             currentValue = 1.0f;
-            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
             saveCurrentStateToFlash();
             break;
         case down:
             currentValue = 0.0f;
-            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
             saveCurrentStateToFlash();
             break;
         default:
@@ -70,7 +70,7 @@ bool ZeroProcess::checkFinished() {
             digitalWrite(UP_PIN, DEACTIVATE_PIN);
             digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
 
-            TimeCalibration::GetCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
 
             currentValue = targetValue;
 
@@ -84,5 +84,5 @@ bool ZeroProcess::checkFinished() {
 
 void ZeroProcess::generateMessage() {
     int intCurrent = (int) (currentValue * 100);
-    MessageHandler::AddNewMessage("S", "Z", String(intCurrent));
+    MessageHandler::addNewMessage("S", "Z", String(intCurrent));
 }
