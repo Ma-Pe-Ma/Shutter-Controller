@@ -126,7 +126,7 @@ public class Timing {
         if (days != null) {
             for (WeekDay weekDay : WeekDay.values()) {
 
-                if (days.get(weekDay) == true) {
+                if (days.get(weekDay)) {
                     activeDays += " " + dayID.get(weekDay);
                 }
             }

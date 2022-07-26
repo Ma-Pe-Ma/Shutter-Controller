@@ -1,46 +1,41 @@
 <!DOCTYPE html>
     <head>
+        <link rel="shortcut icon" href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIBAMAAAA2IaO4AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAwUExURZuYmp6amqKfn6GeoKajo6WgoamlpqunqK6rq66qq66rrLGurrKvsbWytLWxsri1tmaDmxsAAAAJcEhZcwAADsIAAA7CARUoSoAAAAAtSURBVBjTY7j///9/BkZBQUEIyzTEVYnh3N1z7xjSy9JcGFbtntHFsLw8LQ0AfZASPN7lR7sAAAAASUVORK5CYII=">
         <style>
-            body {font-family: Arial;}
-            
-            /* Style the tab */
-            .tab {
-              overflow: hidden;
-              border: 1px solid #ccc;
-              background-color: #f1f1f1;
-            }
-            
-            /* Style the buttons inside the tab */
-            .tab button {
-              background-color: inherit;
-              float: left;
-              border: none;
-              outline: none;
-              cursor: pointer;
-              padding: 14px 16px;
-              transition: 0.3s;
-              font-size: 17px;
-            }
-            
-            /* Change background color of buttons on hover */
-            .tab button:hover {
-              background-color: #ddd;
-            }
-            
-            /* Create an active/current tablink class */
-            .tab button.active {
-              background-color: #ccc;
-            }
-            
-            /* Style the tab content */
-            .tabcontent {
-              display: none;
-              padding: 6px 12px;
-              border: 1px solid #ccc;
-              border-top: none;
-            }
-            </style>
-
+        body {font-family: Arial;}
+        
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+        
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+        
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        
+        .tab button.active {
+            background-color: #ccc;
+        }
+        
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+        </style>
         <script>
             const NR_OF_TIMINGS = 6;
             const NR_OF_MESSAGES = 10;
@@ -52,6 +47,9 @@
             var messages;
             var timings;
             var timingSeekbars = [];
+			
+			var seekbar;
+			var seekbarValue;			
 
             var longrequest = false;
             var failureCounter = 0;
@@ -106,8 +104,18 @@
 
                     if (currentRequest.request.onload == null) {
                         currentRequest.request.onload = function() {
-                            var responseObject = JSON.parse(currentRequest.request.response);
-                            parseGenericResponse(responseObject["G"]);
+                            if (this.response == null || this.response == "") {
+                                location.reload();
+                            }
+
+                            try {
+                                var responseObject = JSON.parse(this.response);
+                                parseGenericResponse(responseObject["G"]);
+                            }
+                            catch(e) {
+                               location.reload();
+                            }
+
                             currentRequest = null;
                             failureCounter = 0;
                             dequeue();
@@ -240,8 +248,18 @@
 
                 var statusRequest = new XMLHttpRequest();
                 statusRequest.onload = function() {
-                    var responseObject = JSON.parse(this.response);
-                    parseGenericResponse(responseObject["G"]);
+                    if (this.response == null || this.response == "") {
+                        location.reload();
+                    }
+
+                    try {
+                        var responseObject = JSON.parse(this.response);
+                        parseGenericResponse(responseObject["G"]);
+                    }
+                    catch(e) {
+                        location.reload();
+                    }
+
                     currentRequest = null;
 
                     if (longrequest) {
@@ -326,6 +344,12 @@
 
             function postTimings() {
                 var timingstJObject = serializeTimings();
+
+                if (timingstJObject == null) {
+                    alert("Invalid time input for a timing!");
+                    return;
+                }
+
                 var timingsRequestObject = new Object();
 
                 timingsRequestObject.request = new XMLHttpRequest();
@@ -412,11 +436,15 @@
                     var activeBox = document.getElementById(`toggle${i}`);
                     var seekbar = document.getElementById(`tseekbar${i}`);
 
+                    if (times[0] == null || times[1] == null) {
+                        return null;
+                    }
+
                     timingObject["H"] = parseInt(times[0]);
                     timingObject["M"] = parseInt(times[1]);
                     timingObject["D"] = days;
                     timingObject["A"] = activeBox.checked;
-                    timingObject["V"] = seekbar.value;
+                    timingObject["V"] = parseInt(seekbar.value);
 
                     timingsObject[String(i)] =  timingObject;
                 }
@@ -439,15 +467,15 @@
 
                 if (T == "Z"){
                     if (R == "F") {
-                        return "Nulling failed.";
+                        return "Zeroing failed.";
                     }
 
                     if (R == "O") {
                         if (A == "U") {
-                            return "Nulling: up.";
+                            return "Zeroing: up.";
                         }
                         else if (A == "D") {
-                            return "Nulling: down.";
+                            return "Zeroing: down.";
                         }
                     }
                 }
@@ -473,10 +501,12 @@
                 return "Unknown event: " + T + ", " + R + ", " + A;
             }
 
-            window.onload = function(){
+            window.onload = function() {
                 currentValue = document.getElementById("curVal");
                 startup = document.getElementById("startup");
                 stateMessage = document.getElementById("stat");
+
+                seekbarValue = document.getElementById("seekbarValue");
 
                 seekbar = document.getElementById("seekbar");
                 seekbar.oninput = function() {
@@ -484,10 +514,16 @@
                 };
 
                 timingButton = document.getElementById("timingButton");
+                timingButton.onclick = postTimings;
                 setButton = document.getElementById("setButton");
+                setButton.onclick = postValue;
                 upButton = document.getElementById("upButton");
+                upButton.onclick = postUR;
+
                 downButton = document.getElementById("downButton");
+                downButton.onclick = postDR;
                 autoButton = document.getElementById("autoButton");
+                autoButton.onclick = postAR;
 
                 initMessages();
                 initTimings();
@@ -511,22 +547,22 @@
             &nbsp; &nbsp;
             <form action="./O">
                 <input type="submit" style="display:inline-block; margin-top: 40%;" value="Sign out">
-            </form>            
+            </form>
         </div>
 
-        <div class="tab" style = "width: 61.3%;">
+        <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'set')">Set</button>
             <button class="tablinks" onclick="openTab(event, 'time')">Timing</button>
-            <button class="tablinks" onclick="openTab(event, 'zero')">Null</button>
+            <button class="tablinks" onclick="openTab(event, 'zero')">Zeroing</button>
         </div>
 
-        <div id="set" class="tabcontent" style="width: 60%;">
+        <div id="set" class="tabcontent">
             <h5 style="height:0px;">Timings: </h5>
             <div style="display:inline-flex;">
                 <label for="fname">Set:</label><br>
                 <input type="range" min="0" max="100" name="V" id="seekbar" value=""><br>
                 <div id="seekbarValue"></div> &nbsp;
-                <button id="setButton" onclick="postValue()">Send</button>
+                <button id="setButton">Send</button>
             </div><br><br>
             <div style="display:inline-flex;">
                 <div>Current value: &nbsp;</div>
@@ -534,7 +570,7 @@
             </div><br><br>
         </div>
 
-        <div id="time" class="tabcontent" style="width: 60%;">
+        <div id="time" class="tabcontent">
             <h5 style="height:0px;">Timings: </h5>
 
             <div id="timings">
@@ -543,15 +579,15 @@
            
             <br>
             <br>
-            <input type="submit" value="Send" onclick="postTimings()" style="margin-left: 2em;" id="timingButton">
+            <input type="submit" value="Send" style="margin-left: 2em;" id="timingButton">
 
         </div>
 
-        <div id="zero" class="tabcontent" style="width: 60%;">
-            <h5 style="height: 10px;">Type of null:</h5>
-            <button id="upButton" onclick="postUR()" style="margin-left: 2em">Up</button>
-            <button id="downButton" onclick="postDR()" style="margin-left: 2em">Down</button>
-            <button id="autoButton" onclick="postAR()" style="margin-left: 2em">Auto</button>
+        <div id="zero" class="tabcontent">
+            <h5 style="height: 10px;">Type of zeroing:</h5>
+            <button id="upButton" style="margin-left: 2em">Up</button>
+            <button id="downButton" style="margin-left: 2em">Down</button>
+            <button id="autoButton" style="margin-left: 2em">Find</button>
             <br>
         </div>
 

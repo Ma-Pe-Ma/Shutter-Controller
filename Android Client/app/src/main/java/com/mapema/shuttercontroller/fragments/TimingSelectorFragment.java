@@ -83,8 +83,8 @@ public class TimingSelectorFragment extends DialogFragment implements FragmentNo
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = (int) (displayMetrics.heightPixels * 0.8f);
-        int width = (int) (displayMetrics.widthPixels * 0.8f);
+        int height = (int) (displayMetrics.heightPixels * 0.9f);
+        int width = (int) (displayMetrics.widthPixels * 0.9f);
 
         ((MainActivity) getActivity()).subscribeToFragmentNotifications(this);
         getDialog().getWindow().setLayout(width, height);

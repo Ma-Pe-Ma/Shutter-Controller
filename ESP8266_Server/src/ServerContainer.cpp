@@ -292,7 +292,7 @@ namespace ServerContainer {
         }
 
         //Force sign out 30 minutes after login
-        if (millis() - cookieStartTime > 30 * 60 * 1000) {
+        if (millis() - cookieStartTime > 20 * 60 * 1000) {
             return false;
         } 
 

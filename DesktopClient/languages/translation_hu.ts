@@ -6,7 +6,7 @@
     <message>
         <location filename="../mainwindow.ui" line="20"/>
         <source>MainWindow</source>
-        <translation>Redőnykapcsoló [Margitai Péter Máté]</translation>
+        <translation>Redőnyvezérlő [Margitai Péter Máté]</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="41"/>
@@ -63,9 +63,9 @@
         <translation>Szinkronizálás folyamatban...</translation>
     </message>
     <message>
-        <location filename="../mainwindow/mainwindow.cpp" line="200"/>
+        <location filename="../mainwindow/mainwindow.cpp" line="198"/>
         <source>json error</source>
-        <translation>JSON parsolási hiba</translation>
+        <translation>Json parsolási hiba</translation>
     </message>
     <message>
         <location filename="../mainwindow/mainwindow.cpp" line="144"/>
@@ -126,17 +126,17 @@
     <message>
         <location filename="../messages.cpp" line="100"/>
         <source>timingEvent%1, %2</source>
-        <translation type="unfinished">%1. ütemezés végrehajtva: %2%</translation>
+        <translation>%1. ütemezés végrehajtva: %2%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="105"/>
         <source>manualSet %1</source>
-        <translation type="unfinished">Kézi beállítás: %1%</translation>
+        <translation>Kézi beállítás: %1%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="109"/>
         <source>positionFound %1</source>
-        <translation type="unfinished">Pozició megkeresve: %1%</translation>
+        <translation>Pozició megkeresve: %1%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="117"/>

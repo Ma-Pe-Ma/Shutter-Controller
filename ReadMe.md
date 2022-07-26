@@ -1,55 +1,51 @@
 # Shutter Controller
 
-This is a very simple solution for controlling motorized rolling shutters remotely.
+![status](https://badgen.net/badge/status/finished/green) ![license](https://badgen.net/github/license/Ma-Pe-Ma/Shutter-Controller)
+
+![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/Browser%20client/working/green) ![Desktop](https://badgen.net/badge/Desktop%20client/working/green) ![Android](https://badgen.net/badge/Android%20client/working/green)
+
+This is a very simple solution for controlling motorized rolling shutters remotely by using a microcontroller.
 
 ## Features
 
 ### Working principle
 The shutter is controlled by an [ESP8226](https://www.espressif.com/en/products/socs/esp8266), only two pins are used: one for signalling up, and one for signalling down. For both signals a seperate relay is used to turn on the power circuit to move the shutter to the proper direction (up or down).
 
-There is no feedback for the current position of the shutter so it's only possible to operate it for a given amount of time. The speed of the rolling is assumed constant so a setting process's duration can be calculated by the current position, the next position and by the speed.
+There is no feedback for the current position of the shutter so it's only possible to operate it for a given amount of time. The speed of the rolling is assumed constant so a setting operation's duration can be calculated by the current position, the next position and by the speed.
 
-Because of this the ESP needs to be updated regularly with the correct current location. (The easiest way to set this at the two extremities full-up and full-down but also there is an automatic method which first finds one of the extremeties and then sets itself to the current position).
+#### Zeroing
+Because of this the ESP needs to be updated regularly with the correct current location. The easiest way to set this at one of the two extremities: full-up or full-down.
+
+Also there is an automatic method which first finds one of the extremities and then sets itself to the current position.
 
 ### Timings
-An additional handy function are timings you can schedule settings at specific times on the given days of the week.
+An additional handy function is timing the setting operations: you can schedule setting operations at specific times on the given days of the week.
 
 ### Communication, clients
-The ESP acts as an https server to which you can POST settings and GET the current state.
+The ESP acts as an https server to which the clients can POST settings and GET the current state.
 
-At this state there are two clients: an [Android](./Android%20Client) and a [Qt Windows desktop client](./Desktop%20Client).
+There are three clients: a [web browser](./Browser%20Client/), [Qt desktop](./DesktopClient) and an [Android client](./Android%20Client). The best variant is the browser one as it can be used on any platform.
 
-I do not provide built versions for this project as there are some properties which are user-specific and because of laziness they are hard-coded into the applications. It's planned to fix this limitations in the future. 
+The GUI becomes disabled on every platfrom when a request/shutter setting operation is in progress, this prevents the user to send multiple commands which may contradict each other. (On the server side it's also ensured that two operations can't be executed at the same time as they are queued so they get executed one after other.)
 
-Android Client   |  Windows Client
-:-------------------------:|:-------------------------:
-<img src="./Images/Android%20Client/Main.jpg" alt="drawing" width="300"/>  |  <img src="./Images/Desktop%20Client/Main.png" alt="drawing"/>
+For images of the clients [see the gallery](#gallery).
 
 ## Setting Up 
 ### Software
-#### DDNS
-Fix IP addresses are generally not available for end-users so this problem is usually bypassed by using a [DDNS service](https://en.wikipedia.org/wiki/Dynamic_DNS). Firstly you have to make sure your connection is not behind [NAT](https://en.wikipedia.org/wiki/Network_address_translation) otherwise you have to ask your internet service provider to solve this (usually this is available to users).
 
-Next you have to register for a DDNS service provider (like No-IP, DynDNS, DuckDNS eg). You will have to choose a domain name and you will get a token which is needed for updating your address. For setting it up check out the [server's ReadMe](./ESP8266_Server/ReadMe.md). Don't forget to [forward the server's ports](https://en.wikipedia.org/wiki/Port_forwarding) (project defaults are 80 for redirection and 443 for secure connection).
+I do not provide built versions for this project. The ESP server can only be configured by hardcoding the configuring variables. The desktop and Android versions' user parameters are hardcoded too because solving this problem was not prioritized as the browser client is fully functional (and the build process is not complicated for neither platform.)
 
-#### TLS Certificate
-As the communication is implemented through secure https requests you have to create a proper key and certificate for it. The easiest way is using openSSL with this command:
-
-    openssl req -x509 -nodes -newkey rsa:1024 -keyout key.pem -out cert.pem -days 4096 -addext "subjectAltName = DNS:%your-domain%.com"
-
-Make sure to add your chosen DDNS domain at the "subjectaltname" argument. After executing it fill in the required fields.
-
-#### Server + clients
-You can find the various solutions' configuring manual at their own ReadMe:
-* [Server + browser client](./ESP8266_Server/ReadMe.md)
+You can find the various solutions' building/configuring manual at their own ReadMe:
+* [Server + networking parameters](./ESP8266_Server/ReadMe.md)
+* [Browser](./Browser%20Client/ReadMe.md)
+* [Desktop](./DesktopClient/ReadMe.md)
 * [Android](./Android%20Client/ReadMe.md)
-* [Desktop](./Desktop%20Client/ReadMe.md)
 
 ### Hardware
 
-As mentioned before the engine is switched by a relay which is signalled by the ESP. At the top and the bottom state there have to be two limit switches which turn off the power circuits in case of accidental bad signalling by the ESP. This prevents the damaging and burning down of the engine.
+As mentioned before, the engine of the shutter is turned on by a relay which is signalled by the ESP. At the top and the bottom state there have to be two limit switches which turn off the power circuits in case of accidental bad signalling by the ESP. This prevents the damaging and burning down of the engine.
 
-The ESP I used is a simple 8-pin variant (which technically has two GPIO pins: 0 and 2 but the TX and RX pins can be reprogrammed to act as GPIO). The problem with the ESP8266 is that at startup both the 0 and 2 pins are have to be pulled up to start normally or in the other case it will enter [sketch-flashing mode](https://www.esp8266.com/wiki/doku.php?id=esp8266_gpio_pin_allocations). When a relay is attached to one of the pins it gets pulled down so it will not start properly so a controlling circuit is needed to be implemented which solves pulling up the pins at startup.
+The ESP I used is a simple 8-pin variant (which technically has two GPIO pins: 0 and 2 but the TX and RX pins can be reprogrammed to act as GPIO). The problem with the ESP8266 is that at startup both the 0 and 2 pins are have to be [pulled up to start normally](https://www.esp8266.com/wiki/doku.php?id=esp8266_gpio_pin_allocations#pin_functions) or in the other case it will enter sketch-flashing mode. When a relay is attached to one of the pins it gets pulled down so it will not start properly that's why a controlling circuit is needed to be implemented which solves pulling up the pins at startup.
 
 There are two easy solutions for this problem. For both of them I designed a [simple PCB](./Controlling%20Circuit/) with [EasyEda](https://easyeda.com/).
 
@@ -65,14 +61,31 @@ Resistor values:
 * R2=R5=10kΩ (used for pulling up pins and transistors)
 * R3=R6=1kΩ (used with LEDs)
 
-At Solution 1 the diodes serve as [flyback diodes](https://en.wikipedia.org/wiki/Flyback_diode) for the relays while the LEDs indicate the working state of the  connected relay. 
+At Solution 1 the diodes serve as [flyback diodes](https://en.wikipedia.org/wiki/Flyback_diode) for the relays while the LEDs indicate the working state of the connected relay. 
 
 For more safety it is **strongly** recommended to configure the relays in a way that they stop each other if one them is in switched state (the easiest way is adding an other pair of relays).
 
+## Gallery
+
+| Browser Client |
+|:----------------------: |
+| <img src="./Images/Browser%20Client/Set.png" alt="drawing" width="900"/> | |
+| <img src="./Images/Browser%20Client/Timings.png" alt="drawing" width="900"/> |
+| <img src="./Images/Browser%20Client/Zeroing.png" alt="drawing" width="900"/> |
+
+Android Client   |  Qt desktop client
+:-------------------------:|:-------------------------:
+<img src="./Images/Android%20Client/Main.jpg" alt="drawing" height="492"/>  |  <img src="./Images/Desktop%20Client/Main.png" alt="drawing"/>
+
 ## Developer Notes
-I tried to keep this project as simple as it can be but after adding more and more simple functions and because of the limited memory of the ESP8266 the code became a bit like a spaghetti-code.
+I tried to keep this project as simple as it can be, which I mostly succeeded to manage.
 
-If I would start the project now I would develop it for a different platform. It's not planned to restructure this project as it does its job.
+There are two parts which I'm not satisfied with:
+* the GUIs of the clients look quite ugly
+* the syncing/communication system got a bit complicated/lame at the end
 
-## Backlog
-* Make hard-coded properties (certificate, passwords, url) configurable
+The ESP8266 was not the best choice for solving this problem as it needs the aforementioned controlling circuit. With an ESP32 this whole project could have been solved more easily. The reason I carried on with the 8266 variant is the following: solving the problem looked a great learning experience which turned out to be true. Understanding how to control the relay and designing the PCB was a satisfying experience.
+
+## To-do
+* upload images of PCBs
+* upload video of the operating shutter
