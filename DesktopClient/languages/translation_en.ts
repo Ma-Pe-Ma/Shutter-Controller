@@ -63,7 +63,7 @@
         <translation>Synchronisation in progress...</translation>
     </message>
     <message>
-        <location filename="../mainwindow/mainwindow.cpp" line="200"/>
+        <location filename="../mainwindow/mainwindow.cpp" line="198"/>
         <source>json error</source>
         <translation>Json Parsing Error</translation>
     </message>
@@ -126,17 +126,17 @@
     <message>
         <location filename="../messages.cpp" line="100"/>
         <source>timingEvent%1, %2</source>
-        <translation type="unfinished">%1. timing executed: %2%</translation>
+        <translation>%1. timing executed: %2%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="105"/>
         <source>manualSet %1</source>
-        <translation type="unfinished">Manual set: %1%</translation>
+        <translation>Manual set: %1%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="109"/>
         <source>positionFound %1</source>
-        <translation type="unfinished">Position found: %1%</translation>
+        <translation>Position found: %1%</translation>
     </message>
     <message>
         <location filename="../messages.cpp" line="117"/>

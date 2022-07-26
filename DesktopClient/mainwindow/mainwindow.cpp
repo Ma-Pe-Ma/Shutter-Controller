@@ -170,31 +170,29 @@ void MainWindow::notifyMessage(std::string response) {
         qInfo()<<"response: "<<response.c_str();
 
         try {
+            json responseObject = json::parse(response);
+            bool isDump = responseObject.contains("T");
 
-        json responseObject = json::parse(response);
-        bool isDump = responseObject.contains("T");
+            if (isDump) {
+                initialized = true;
+                json timingObject = responseObject["T"].get<json>();
+                json genericResponse = responseObject["G"].get<json>();
 
-        if (isDump) {
-            initialized = true;
-            json timingObject = responseObject["T"].get<json>();
-            json genericResponse = responseObject["G"].get<json>();
+                if (statusTimer == nullptr) {
+                    statusTimer = new QTimer(this);
+                    connect(statusTimer, &QTimer::timeout, this, &MainWindow::statusGetRequestStart);
+                    statusTimer->start(30000);
+                }
 
-            if (statusTimer == nullptr) {
-                statusTimer = new QTimer(this);
-                connect(statusTimer, &QTimer::timeout, this, &MainWindow::statusGetRequestStart);
-                statusTimer->start(30000);
+                Timing::parseTimings(timingObject);
+                Messages::parseGenericResponse(genericResponse);
+            }
+            else {
+                json genericResponse = responseObject["G"].get<json>();
+                Messages::parseGenericResponse(genericResponse);
             }
 
-            Timing::parseTimings(timingObject);
-            Messages::parseGenericResponse(genericResponse);
-        }
-        else {
-            json genericResponse = responseObject["G"].get<json>();
-            Messages::parseGenericResponse(genericResponse);
-        }
-
-        processGenericResponse();
-
+            processGenericResponse();
         }
         catch(nlohmann::json::exception) {
             ui->stateLabel->setText(tr("json error"));

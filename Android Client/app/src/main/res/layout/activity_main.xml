@@ -85,12 +85,11 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/messageTitle"
-            app:layout_constraintBottom_toTopOf="@id/startDateText"/>
+            app:layout_constraintBottom_toTopOf="@id/stateText"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
             android:id="@+id/stateText"
             android:text="@string/syncInProgress"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -113,7 +112,7 @@
         app:layout_constraintLeft_toLeftOf="@id/barParent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barParent"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="15dp">
 
         <ImageButton
             android:layout_width="wrap_content"
