@@ -4,7 +4,7 @@
 
 ![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/Browser%20client/working/green) ![Desktop](https://badgen.net/badge/Desktop%20client/working/green) ![Android](https://badgen.net/badge/Android%20client/working/green)
 
-This is a very simple solution for controlling motorized rolling shutters remotely by using a microcontroller.
+This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller.
 
 ## Features
 
@@ -54,6 +54,7 @@ There are two easy solutions for this problem. For both of them I designed a [si
 Description | The outputs are controlled with a PNP transistor. In this case the ESP signal logic is needed to be inverted programatically to get the supposed signal at the output. | The outputs are simply pulled up with a pull-up transistor. The ESP signal logic is inverted here too as well as the output signals which means the relay has to be used invertedly.
 Circuit | <img src="./Images/Hardware/Circuit-1.png" alt="drawing"/>  |  <img src="./Images/Hardware/Circuit-2.png" alt="drawing"/>
 PCB | <img src="./Images/Hardware/PCB-1.png" alt="drawing"/>  |  <img src="./Images/Hardware/PCB-2.png" alt="drawing"/>
+PCB-photo | <img src="./Images/Hardware/PCB-1-photo.png" alt="drawing"/>  |  <img src="./Images/Hardware/PCB-2-photo.png" alt="drawing"/>
 
 Resistor values:
 * R0=1kΩ (used for pulling down GPIO0 to flash the ESP)
@@ -87,5 +88,4 @@ There are two parts which I'm not satisfied with:
 The ESP8266 was not the best choice for solving this problem as it needs the aforementioned controlling circuit. With an ESP32 this whole project could have been solved more easily. The reason I carried on with the 8266 variant is the following: solving the problem looked a great learning experience which turned out to be true. Understanding how to control the relay and designing the PCB was a satisfying experience.
 
 ## To-do
-* upload images of PCBs
 * upload video of the operating shutter
