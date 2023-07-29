@@ -10,7 +10,7 @@ namespace TimeCalibration {
     const unsigned long day48time = 1000 * 3600 * 24 * 48;
 
     //offset by one, to start week on monday
-    inline int8_t correctDay(int8_t day) {
+    int8_t correctDay(int8_t day) {
         int8_t correctedDay = day - 1;
 
         if (correctedDay == -1) {
@@ -55,18 +55,20 @@ namespace TimeCalibration {
         Serial.println("Time after initializing: " + getFormattedString());
     } 
 
-    void update() {
+    bool update() {
         //Maybe disable update if currentProcess is in progress??
         if (dateTime.update()) {
-            correctByDST();
-            Serial.println("Time updated: " + getFormattedString());
-
-            Timing::checkTimings(correctDay(dateTime.getDay()), dateTime.getHours(), dateTime.getMinutes());
-
             if (millis() > day48time) {
                 ESP.restart();
             }
+            
+            correctByDST();
+            Serial.println("Time updated: " + getFormattedString());
+
+            return true;
         }
+
+        return false;
     }
 
     void correctByDST() {        

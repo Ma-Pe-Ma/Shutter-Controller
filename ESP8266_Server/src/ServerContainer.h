@@ -5,32 +5,46 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266WebServerSecure.h>
 #include <ArduinoJson.h>
-#include "Processes/ZeroProcess.h"
+
 #include "MessageHandler.h"
 #include "TimeCalibration.h"
 
-namespace ServerContainer {
-    void handleRoot();
-    void handleRedirect();
+#include "Processes/TimingContainer.h"
+#include "Processes/ProcessQueue.h"
+#include "Processes/ZeroProcess.h"
+
+#include "../Configuration.h"
+
+class MessageHandler;
+
+class ServerContainer {
+private:
+    ESP8266WebServer server = ESP8266WebServer(HTTP_PORT);
+    BearSSL::ESP8266WebServerSecure secureServer = BearSSL::ESP8266WebServerSecure(HTTPS_PORT);    
+
+    TimingContainer timingContainer;
+    ProcessQueue processQueue;
+    MessageHandler messageHandler;
+
+    const String secureAddress = "https://" + String(DDNS_DOMAIN);
+
     void handleRedirectSecure();
-    
-    void handleStatus();
-    void handleGetDump();
-
-    void handlePostSetting();    
-    void handlePostTiming();
-    void handlePostZero();
-    
-    void handleLogin();
-    void handleLogout();
- 
-    extern BearSSL::ESP8266WebServerSecure secureServer;
-    extern ESP8266WebServer server;
-    void initialize();
     void createGenericResponse(int retryTime, JsonDocument& outDoc);
-    bool authenticationCheck();
 
+    unsigned long lastCookieUsage = 0;
+    unsigned long cookieStartTime = 0;
+    String currentCookie;
+
+    bool authenticationCheck();
+    String generateCookie();
     bool isCookieValid();
-}
+public:   
+    void initialize();
+    void listen();
+
+    MessageHandler& getMessageHandler() {return this->messageHandler; }
+    ProcessQueue& getProcessQueue() {return this->processQueue; }
+    TimingContainer& getTimingContainer() {return this->timingContainer; }
+};
 
 #endif
