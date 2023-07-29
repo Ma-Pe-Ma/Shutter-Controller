@@ -1,29 +1,7 @@
 #include "ZeroProcess.h"
 #include "../TimeCalibration.h"
 
-ZeroProcess ZeroProcess::zeroProcess;
-
-void ZeroProcess::processNull(ZeroState zeroState) {
-    zeroProcess.zeroState = zeroState;
-
-    switch (zeroState) {
-        case up:
-            currentValue = 1.0f;
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
-            saveCurrentStateToFlash();
-            break;
-        case down:
-            currentValue = 0.0f;
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
-            saveCurrentStateToFlash();
-            break;
-        default:
-            settingQueue.enqueue(&zeroProcess);
-            break;
-    }    
-}
-
-void ZeroProcess::start() {
+void ZeroProcess::start(const float currentValue) {
     processStartTime = millis();
     digitalWrite(UP_PIN, DEACTIVATE_PIN);
     digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
@@ -31,7 +9,7 @@ void ZeroProcess::start() {
     zeroFound = false;
     targetValue = currentValue;
 
-    if (currentValue < 0.5f) {
+    if (targetValue < 0.5f) {
         processTime = 1.0f / downSpeed;
         digitalWrite(DOWN_PIN, ACTIVATE_PIN);
     }
@@ -69,12 +47,8 @@ bool ZeroProcess::checkFinished() {
         if (millis() - processStartTime > processTime * 1000) {
             digitalWrite(UP_PIN, DEACTIVATE_PIN);
             digitalWrite(DOWN_PIN, DEACTIVATE_PIN);
-
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
-
-            currentValue = targetValue;
-
-            Serial.println("Zeroing finished: " + String(currentValue));
+            
+            Serial.println("Zeroing finished: " + String(targetValue));
             return true;
         }
     }
@@ -82,7 +56,7 @@ bool ZeroProcess::checkFinished() {
     return false;
 }
 
-void ZeroProcess::generateMessage() {
-    int intCurrent = (int) (currentValue * 100);
-    MessageHandler::addNewMessage("S", "Z", String(intCurrent));
+RawMessage ZeroProcess::generateMessage() {
+    int intCurrent = (int) (targetValue * 100);
+    return {"S", "Z", String(intCurrent)};
 }

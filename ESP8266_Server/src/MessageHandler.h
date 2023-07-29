@@ -4,15 +4,18 @@
 #include "Arduino.h"
 #include <ArduinoJson.h>
 #include "LittleFSHelper.h"
+#include "RawMessage.h"
 
-namespace MessageHandler {
-    extern String messages[];
-    extern unsigned int unseenNr;
-    extern String startupMessage;
+#include "../Configuration.h"
 
+class MessageHandler {
+    String messages[NR_OF_MESSAGES];
+    unsigned int unseenNr = 0;
+    String startupMessage;
+public:
     void initialize();
     void getEveryMessage(JsonObject&);
-    void addNewMessage(String, String, String);
+    void addNewMessage(RawMessage);
     void createNewMessage(String&, String&, String&, String&);
     void serializeMessages();
     void resetUnseenCounter();
@@ -20,6 +23,6 @@ namespace MessageHandler {
     void saveMessagesToFlash(String&);
     void loadMessagesFromFlash();
     void readMessagesFromFlash(String&);
-}
+};
 
 #endif

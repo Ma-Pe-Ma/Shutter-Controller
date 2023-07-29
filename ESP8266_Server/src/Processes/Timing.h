@@ -6,29 +6,28 @@
 #include <ArduinoJson.h>
 
 class Timing : public SettingProcess {
-    int8_t hour = -1;
-    int8_t minute = -1;
+    int8_t hour = 12;
+    int8_t minute = 0;
     bool days[7] = {};
     bool queued = false;
     bool active = false;
 
-public:
-    static Timing timings[];
-    static Timing timingsBuffer[];
-    static void checkTimings(int, int, int); 
-    static void initialize();
-    static void readTimingsFromFlash(String& target);
-    static void loadTimingsFromFlash();
-    static void saveTimingsToFlash(const String&);
-    static void createJsonObject(JsonObject&);
-    static void parseTimings(JsonObject&);
-    static void disableEarlierSettings();
-    
+    int8_t id = -1;
 
-    void setHour(int8_t hour) {this->hour = hour;}
-    void setMinute(int8_t minute) {this->minute = minute;}
-    void setDays(String daysString) {
-        for (int i = 0; i < daysString.length(); i++) {
+public:
+    int8_t getID() { return this->id; }
+    void setID(int8_t id) {this->id = id;}
+
+    int8_t getHour() { return this->hour; }
+    void setHour(int8_t hour) {this->hour = hour; }
+
+    int8_t getMinute() { return this->minute; }
+    void setMinute(int8_t minute) {this->minute = minute; }
+
+    void parseDayStates(String daysString) {
+        int length = daysString.length() > 7 ? 7 : daysString.length();
+
+        for (int i = 0; i < length; i++) {
             if (daysString.charAt(i) == 'T') {
                 days[i] = true;
             }
@@ -37,23 +36,31 @@ public:
             }
         }
     }
-    void setActive(bool active) {
-        this->active = active;
+
+    String serializeDayStates() {
+        String daysString = "";
+
+        for (int i = 0; i < 7; i++) {
+            if (days[i]) {
+                daysString += 'T';
+            }
+            else {
+                daysString += 'F';
+            }
+        }
+
+        return daysString;
     }
 
-    int8_t getHour() {
-        return this->hour;
-    }
+    void setActive(bool active) { this->active = active; }
+    bool getActive() { return this->active; }
 
-    int8_t getMinute() {
-        return this->minute;
-    }
+    bool getActivityByDay(int day) { return days[day]; }   
 
-    bool getActivityByDay(int day) {
-        return days[day];
-    }
+    void setQueued(bool queued) {this->queued = queued;}
+    bool getQueued() { return this->queued; }
 
-    void generateMessage();
+    RawMessage generateMessage() override;
 };
 
 #endif

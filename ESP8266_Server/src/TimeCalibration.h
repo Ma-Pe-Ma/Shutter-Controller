@@ -18,7 +18,9 @@ namespace TimeCalibration {
     extern NTPClient dateTime;
     extern bool dst;    
 
-    void update();
+    int8_t correctDay(int8_t day);
+
+    bool update();
     void initializeDateTime();
     void correctByDST();
     bool isDST(int, int, int, int);
