@@ -1,0 +1,42 @@
+appname Redõnyvezérlõ
+startEvent Szerver indítás
+jsonError JSON hiba ({0}, {1})
+msetting Kézi beállítás: 
+nullFail Nullázás meghíusult, a redõny foglalt
+nullUp Pozíció nullázva: fent!
+nullDown Pozíció nullázva: lent!
+timingEvent {0}. idõzítés végrehajtva: {1}%%
+manualSet Kézi beállítás: {0}%
+positionFound Pozíció megkeresve: {0}%%
+timingSet Idõzítések beállítva!
+unknown Ismeretlen esemény: {0} - {1} - {2}
+timings Idõzítések
+set Beállítás
+zeroing Nullázás
+svalue pozíció
+automatic Megkeres
+up Fel
+down Le
+active 
+time idõ
+value value
+update Módosít
+timing Idõzítés {0}:
+w0 H
+w1 K
+w2 Sze
+w3 Cs
+w4 P
+w5 Sz
+w6 V
+toz Nullázás típusa: 
+curPos Jelenlegi pozíció: {0}%%
+sync Szinkronizálás folyamatban...
+avail Nem elérhetõ!
+running Elérhetõ!
+sstate A szerver állapota: {0}
+stime Szerver indítási idõ: {0}
+messages Üzenetek:
+mid ID
+mevent Esemény
+mdate Idõpont

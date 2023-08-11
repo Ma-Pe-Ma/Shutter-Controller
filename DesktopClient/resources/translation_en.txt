@@ -1,0 +1,42 @@
+appname Shutter Controller
+startEvent Server start
+jsonError JSON error ({0}, {1})
+msetting Manual setting: 
+nullFail Zeroing failed, shutter is busy
+nullUp Position zeroed: up!
+nullDown Position zeroed: down!
+timingEvent {0}. timing executed: {1}%%
+manualSet Manual set: {0}%%
+positionFound Position found: {0}%%
+timingSet Timings were set!
+unknown Unknown event: {0} - {1} - {2}
+timings Timings
+set Set
+zeroing Zeroing
+svalue Shutter Value
+automatic Find
+up Up
+down Down
+active active
+time time
+value value
+update Update
+timing Timing {0}:
+w0 M
+w1 Tu
+w2 W
+w3 Th
+w4 F
+w5 Sa
+w6 Su
+toz Type of zero: 
+curPos Current position: {0}%%
+sync Synchronisation is in progress...
+avail The server is not available!
+running The server is up and running!
+sstate Server state: {0}
+stime Server start time: {0}
+messages Messages:
+mid ID
+mevent Event
+mdate Date
