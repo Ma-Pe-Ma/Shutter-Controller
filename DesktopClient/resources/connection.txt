@@ -1,0 +1,3 @@
+siteAddress https://server.path
+username Username
+password Password
