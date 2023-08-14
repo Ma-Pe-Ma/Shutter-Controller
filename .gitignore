@@ -12,7 +12,6 @@
 /Android Client/captures
 .externalNativeBuild
 .cxx
-/ESP8266 Server/.vscode
-/build*/
-/DesktopClient/*.pro.user
+.vscode
+key.pem
 cert.pem

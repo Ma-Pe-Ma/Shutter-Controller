@@ -2,7 +2,7 @@
 
 ![status](https://badgen.net/badge/status/finished/green) ![license](https://badgen.net/github/license/Ma-Pe-Ma/Shutter-Controller)
 
-![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/Browser%20client/working/green) ![Desktop](https://badgen.net/badge/Desktop%20client/working/green) ![Android](https://badgen.net/badge/Android%20client/working/green)
+![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/HTML+JS%20client/working/green) ![Desktop](https://badgen.net/badge/WASM%20client/working/green) 
 
 This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller.
 
@@ -13,7 +13,7 @@ The shutter is controlled by an [ESP8226](https://www.espressif.com/en/products/
 
 There is no feedback for the current position of the shutter so it's only possible to operate it for a given amount of time. The speed of the rolling is assumed constant so a setting operation's duration can be calculated by the current position, the next position and by the speed.
 
-#### Zeroing
+### Zeroing
 Because of this the ESP needs to be updated regularly with the correct current location. The easiest way to set this at one of the two extremities: full-up or full-down.
 
 Also there is an automatic method which first finds one of the extremities and then sets itself to the current position.
@@ -22,24 +22,39 @@ Also there is an automatic method which first finds one of the extremities and t
 An additional handy function is timing the setting operations: you can schedule setting operations at specific times on the given days of the week.
 
 ### Communication, clients
-The ESP acts as an https server to which the clients can POST settings and GET the current state.
+The ESP acts as an HTTPS server to which the clients can POST settings and GET the current state.
 
-There are three clients: a [web browser](./Browser%20Client/), [Qt desktop](./DesktopClient) and an [Android client](./Android%20Client). The best variant is the browser one as it can be used on any platform.
+There are two clients, both can be accessed from browsers: 
+* [HTML+JS](./HTML+JS-client/) - pure HTML + CSS + JavaScript solution
+* [Wasm client](./Wasm-client) - WASM application embedded into an HTML page
 
-The GUI becomes disabled on every platfrom when a request/shutter setting operation is in progress, this prevents the user to send multiple commands which may contradict each other. (On the server side it's also ensured that two operations can't be executed at the same time as they are queued so they get executed one after other.)
+The Wasm client uses [DearImGui](https://github.com/ocornut/imgui) for the gui and it can be built as a desktop application.
+
+The GUI becomes disabled on both platfroms when a request/shutter setting operation is in progress, this prevents the user to send multiple commands which may contradict each other. On the server side it's also ensured that two operations can't be executed at the same time as they are queued so they get executed one after other.
 
 For images of the clients [see the gallery](#gallery).
+
+## Gallery
+
+   --   |   HTML+JS   |  WASM
+|:----------------------:|:----------------------:|:----------------------:
+Control | <img src="./Images/HTML+JS client/set.png" alt="drawing"/> | <img src="./Images/Wasm client/set.png" alt="drawing"/>
+Timings | <img src="./Images/HTML+JS client/timings.png" alt="drawing"/> | <img src="./Images/Wasm client/timings.png" alt="drawing"/>
+Zeroing | <img src="./Images/HTML+JS client/zeroing.png" alt="drawing"/> | <img src="./Images/Wasm client/zeroing.png" alt="drawing"/>
+
 
 ## Setting Up 
 ### Software
 
-I do not provide built versions for this project. The ESP server can only be configured by hardcoding the configuring variables. The desktop and Android versions' user parameters are hardcoded too because solving this problem was not prioritized as the browser client is fully functional (and the build process is not complicated for neither platform.)
+The ESP server can only be configured by hardcoding the configuration variables.
+At the release section you can find the two clients' resources. 
 
-You can find the various solutions' building/configuring manual at their own ReadMe:
+The resources for both the HTML+JS and the WASM client have to be served from an external server as they are quite large (in the extent of the ESP). 
+
+You can find the various solutions' building/configuration manual at their own ReadMe:
 * [Server + networking parameters](./ESP8266_Server/ReadMe.md)
-* [Browser](./Browser%20Client/ReadMe.md)
-* [Desktop](./DesktopClient/ReadMe.md)
-* [Android](./Android%20Client/ReadMe.md)
+* [HTML+JS](./HTML+JS-client/ReadMe.md)
+* [WASM](./Wasm-client/ReadMe.md)
 
 ### Hardware
 
@@ -66,26 +81,10 @@ At Solution 1 the diodes serve as [flyback diodes](https://en.wikipedia.org/wiki
 
 For more safety it is **strongly** recommended to configure the relays in a way that they stop each other if one them is in switched state (the easiest way is adding an other pair of relays).
 
-## Gallery
-
-| Browser Client |
-|:----------------------: |
-| <img src="./Images/Browser%20Client/Set.png" alt="drawing" width="900"/> | |
-| <img src="./Images/Browser%20Client/Timings.png" alt="drawing" width="900"/> |
-| <img src="./Images/Browser%20Client/Zeroing.png" alt="drawing" width="900"/> |
-
-Android Client   |  Qt desktop client
-:-------------------------:|:-------------------------:
-<img src="./Images/Android%20Client/Main.jpg" alt="drawing" height="492"/>  |  <img src="./Images/Desktop%20Client/Main.png" alt="drawing"/>
-
 ## Developer Notes
 I tried to keep this project as simple as it can be, which I mostly succeeded to manage.
 
-There are two parts which I'm not satisfied with:
-* the GUIs of the clients look quite ugly
-* the syncing/communication system got a bit complicated/lame at the end
-
 The ESP8266 was not the best choice for solving this problem as it needs the aforementioned controlling circuit. With an ESP32 this whole project could have been solved more easily. The reason I carried on with the 8266 variant is the following: solving the problem looked a great learning experience which turned out to be true. Understanding how to control the relay and designing the PCB was a satisfying experience.
 
-## To-do
+## To-Do
 * upload video of the operating shutter

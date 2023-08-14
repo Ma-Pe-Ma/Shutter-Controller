@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Shutter Controller - WASM client</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="./wasm-client.css"/>
+</head>
+<body>
+  <div id="header">
+    <div class="row">
+      <h2 class="row-item">Shutter controller!</h2>
+      <p class="row-item">Hello USER!</p>
+      <form class="row-item" action="./O">
+          <input type="submit" value="Sign out">
+      </form>
+    </div>
+    <div class="row">
+        <a href="/">HTML+JS client</a>
+    </div>
+    <canvas id="canvas" class="emscripten" oncontextmenu="event.preventDefault()" tabindex=-1>Canvas for WASM.</canvas>
+  </div>
+  <script type='text/javascript'>
+    var Module = {
+        canvas: (function() { return document.getElementById('canvas'); })()
+    };
+  </script>
+  <script async type="text/javascript" src="./ShutterClient.js" ></script>
+</body>
+</html>

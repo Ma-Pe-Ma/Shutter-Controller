@@ -49,7 +49,7 @@ void setup() {
 
     // setup tools and the server itself
     TimeCalibration::initializeDateTime();
-    LittleFSHelper::initialize();
+    LittleFSHelper::initialize(FORMAT_FS_ONSTARTUP);
     serverContainer.initialize();
 
     float value = serverContainer.getProcessQueue().getCurrentValue();

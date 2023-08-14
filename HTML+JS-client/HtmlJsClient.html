@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shutter Controller - HTML client</title>
+    <link rel="stylesheet" type="text/css" href="/control.css"/>
+    <script src="/control.js"></script>
+    <script>
+        function showTab(tabIndex) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            tabContents[tabIndex].classList.add('active');
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            tabs[tabIndex].classList.add('active');
+        }
+    </script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row">
+            <h2 class="row-item">Shutter controller!</h2>
+            <p class="row-item">Hello USER!</p>
+            <form class="row-item" action="./O">
+                <input type="submit" value="Sign out">
+            </form>
+        </div>
+        <div class="row">
+            <a href="/W">WASM client</a>
+        </div>
+
+        <div class="wrapper">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <div class="tab active" onclick="showTab(0)">Setting</div>
+                    <div class="tab" onclick="showTab(1)">Timing</div>
+                    <div class="tab" onclick="showTab(2)">Zeroing</div>
+                </div>
+            </div>
+
+            <div class="tab-contents">
+                <div class="tab-content active">
+                    <div class="set-tab-content">
+                        <div class="range-container">
+                            <label class="range-label" for="range-input">Position:</label>
+                            <input type="range" id="seekbar" step="5" min="0" max="100" step="1" value=0>
+                            <span class="range-value" id="seekbarValueText">0%</span>
+                            <input id="setButton" type="button" value="Set">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content">
+                    <div id="timings">
+
+                    </div>
+                    <input type="submit" value="Send" id="timingButton">
+                </div>
+
+                <div class="tab-content">
+                    <div class="zero-content">
+                        <button class="zero-button" id="upButton">Up</button>
+                        <button class="zero-button" id="downButton">Down</button>
+                        <button class="zero-button" id="autoButton">Find</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="additional-section">
+            <div class="state-section">
+                <div class="state-line">
+                    <div>Current position:</div>
+                    <div id="curVal"> - </div>
+                </div>
+                <div class="state-line">
+                    <div>Server state:</div>
+                    <div id="stat"> - </div>
+                </div>
+                <div class="state-line">
+                    <div>Server startup time:</div>
+                    <div id="startup"> - </div>
+                </div>
+            </div>
+            <div class="message-column">
+                <h5>Messages:</h5>
+                <table id="messages">
+                    <tr>
+                        <th class="message-index-width">ID</th>
+                        <th class="message-content-width">Message</th>
+                        <th class="message-date-width">Date</th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

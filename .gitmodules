@@ -1,15 +1,15 @@
 [submodule "DesktopClient/src/submodules/imgui"]
-	path = DesktopClient/src/submodules/imgui
+	path = Wasm-client/src/submodules/imgui
 	url = https://github.com/ocornut/imgui.git
 [submodule "DesktopClient/src/submodules/glfw"]
-	path = DesktopClient/src/submodules/glfw
+	path = Wasm-client/src/submodules/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "DesktopClient/src/submodules/cpp-httplib"]
-	path = DesktopClient/src/submodules/cpp-httplib
+	path = Wasm-client/src/submodules/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
 [submodule "DesktopClient/src/submodules/json"]
-	path = DesktopClient/src/submodules/json
+	path = Wasm-client/src/submodules/json
 	url = https://github.com/nlohmann/json.git
 [submodule "DesktopClient/src/submodules/stb"]
-	path = DesktopClient/src/submodules/stb
+	path = Wasm-client/src/submodules/stb
 	url = https://github.com/nothings/stb.git

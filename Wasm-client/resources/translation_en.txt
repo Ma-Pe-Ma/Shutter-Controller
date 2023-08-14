@@ -13,11 +13,11 @@ unknown Unknown event: {0} - {1} - {2}
 timings Timings
 set Set
 zeroing Zeroing
-svalue Shutter Value
+svalue [%]
 automatic Find
 up Up
 down Down
-active active
+active enabled
 time time
 value value
 update Update

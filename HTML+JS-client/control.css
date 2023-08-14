@@ -1,0 +1,179 @@
+body {
+    text-align: center;
+}
+.container {
+    width: 60%;
+    margin: 50px auto;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.row-item {
+    margin: 0 10px;
+}
+.tabs-container {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+.tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.tab {
+    padding: 10px 40px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+.tab.active {
+    background-color: #ccc;
+}
+.tab-contents {
+    width: 100%;
+}
+.tab-content {
+    display: none;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 5px;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* Mobile Styles */
+@media only screen and (max-width: 600px) {
+    .container {
+        width: 85%;
+    }
+    .tabs-container {
+        width: 100%;
+    }
+}
+
+.additional-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.message-column {
+    width: 100%;
+    text-align: left;
+}
+
+.state-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.state-line {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.state-line div {
+    margin-right: 10px;
+}
+
+h5 {
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.message-index-width {
+    width: 30%;
+}
+
+.message-content-width {
+    width: 40%;
+}
+
+.message-date-width {
+    width: 30%;
+}
+
+.message-index-width, .message-content-width, .message-date-width {
+    text-align: left;
+}
+
+.set-tab-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.timing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.timing p,
+.timing input[type="time"],
+.timing input[type="checkbox"] {
+    margin: 0;
+}
+
+.zero-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.zero-button {
+    flex-grow: 1;
+    padding: 5px 10px;
+    margin: 0 5px;
+    font-size: 14px;
+}
+
+.range-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.range-container label {
+    margin: 0;
+}
+
+.range-container input[type="range"] {
+    width: 150px;
+}
+
+.range-value {
+    display: inline-block;
+    width: 40px;
+    text-align: center;
+}

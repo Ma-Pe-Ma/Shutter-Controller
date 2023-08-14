@@ -13,11 +13,11 @@ unknown Ismeretlen esemény: {0} - {1} - {2}
 timings Idõzítések
 set Beállítás
 zeroing Nullázás
-svalue pozíció
+svalue [%]
 automatic Megkeres
 up Fel
 down Le
-active 
+active aktív
 time idõ
 value value
 update Módosít

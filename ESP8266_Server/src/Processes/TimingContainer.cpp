@@ -102,16 +102,16 @@ void TimingContainer::loadTimingsFromFlash() {
         }
     }
     else {
-        StaticJsonDocument<1024> doc;
+        /*StaticJsonDocument<1024> doc;
         JsonObject object = doc.to<JsonObject>();
         createJsonObject(object);
 
         String serialized;
         serializeJson(doc, serialized);
-        //Serial.println("Saving: " + serialized);
+        Serial.println("Saving: " + serialized);
         saveTimingsToFlash(serialized);
         doc.clear();
-        //Serial.println("Timings saved to flash: "+serialized);
+        Serial.println("Timings saved to flash: "+serialized);*/
     }
 }
 
@@ -123,6 +123,13 @@ void TimingContainer::parseTimings(JsonObject& timingsObject) {
         JsonObject timingObject = timingsObject[ID].as<JsonObject>();
 
         int intValue = timingObject["V"].as<int>();
+        int digit = intValue % 5;
+
+        if (digit != 0)
+        {
+            intValue = digit < 3 ? intValue - digit : intValue - digit + 5;
+        }
+
         modifiableTiming.setTargetValue(1.0f * intValue / 100);
         modifiableTiming.setHour(timingObject["H"].as<int>());
         modifiableTiming.setMinute(timingObject["M"].as<int>());

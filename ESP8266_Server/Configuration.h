@@ -3,9 +3,18 @@
 
 #include "Arduino.h"
 
+//format the persistent memory
+#define FORMAT_FS_ONSTARTUP false
+
+//disable authentication during development
+//#define DISABLE_AUTHENTICATION
+
 //wireless network properties
 #define SSID ""
 #define PSWD ""
+
+//location where the html and wasm resource files are served
+#define RESOURCE_PROVIDER "https://path.to/resources"
 
 //ports on which the server listens
 #define HTTP_PORT 80
