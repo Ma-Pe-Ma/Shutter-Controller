@@ -1,0 +1,50 @@
+body {
+	margin: 0; /* Remove default margin */
+	overflow: hidden;
+	font-family: Arial, sans-serif;
+	overflow-x: hidden;
+}
+
+#header {
+	position: relative;
+	height: 100vh; /* Set the container height to full viewport height */
+}
+.row {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 10px;
+}
+.row-item {
+	margin: 0 10px;
+}
+
+canvas {
+	display: block;
+}
+
+@media (max-width: 768px) { /* Adjust the breakpoint as needed */
+  #header {
+	width: 100vw;
+	height: 20vh;
+  }
+
+  canvas {
+	width: 100vw;
+	height: 80vh;
+  }
+}
+
+@media (min-width: 769px) { /* Adjust the breakpoint as needed */
+  #header {
+	width: 100%;
+	height: auto;
+  }
+
+  canvas {
+	width: 460px; /* Adjust the width as needed */
+	height: 540px; /* Adjust the height as needed */
+	margin: 0 auto; /* Center the canvas horizontally */
+  }
+}

@@ -33,10 +33,20 @@ The server can be configured with the [Configuration.h](./Configuration.h) heade
 * User-name and password: simple authentication credentials
 * Up and down pins
 * Total time of the shutter's operations of going up and down
+* the path where the resources of the HTML+JS/WASM clients are served
 
 You have to specify the key and certificate (created by OpenSSL) in the [Keys.h](./Keys.h) header file.
 
+### Setting up the external resource provider server
 
+On the external server the HTML+JS and the WASM clients' resources have to be placed in the same folder.
+The resources can be found at the release section.
+
+The server has to serve the files with the following headers:
+
+* `Access-Control-Allow-Origin: your-dns.com` - allow only our application's site to fetch the resources
+* `Cross-Origin-Resource-Policy: cross-origin` - enable other sites to use these files as resources
+* `Cache-Control: max-age=31536000` - cache the resources for at least a year as they will not change
 
 ## Backlog
 * implement configuring automatic zeroing at given time? (+clients too?)
