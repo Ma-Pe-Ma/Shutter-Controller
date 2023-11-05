@@ -1,1 +1,3 @@
-Wasm-client/src/submodules/* linguist-vendored
+Wasm-client/src/submodules/glad.c linguist-vendored
+Wasm-client/src/submodules/glad/glad.h linguist-vendored
+Wasm-client/src/submodules/KHR/khrplatform.h linguist-vendored

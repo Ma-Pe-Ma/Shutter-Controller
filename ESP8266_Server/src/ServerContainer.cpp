@@ -370,11 +370,13 @@ bool ServerContainer::authenticationCheck() {
         return false;
     }
 
+#ifndef COOKIE_AUTHORIZATION_ONLY
     if (secureServer.hasArg("username") && secureServer.hasArg("password")) {
         if (secureServer.arg("username") == USER_NAME && secureServer.arg("password") == PASSWORD) {
             return true;
         }
     }
+#endif
 
     return false;
 }

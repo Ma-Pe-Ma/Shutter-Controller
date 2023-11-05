@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 project("ShutterClient")
 
-# to build emscripten version: emcmake cmake -B./out/build/wasm -G "Ninja"
+# to build emscripten version: emcmake cmake -B./out/build/wasm -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 add_executable (ShutterClient
 	"src/Main.cpp"
 	"src/WindowHandler.h"
@@ -67,6 +67,8 @@ if(NOT EMSCRIPTEN)
 else()
 	# generate html file
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -fexperimental-library")
 	
 	# configure opengl context + pthreads link options
 	set(CMAKE_EXE_LINKER_FLAGS 
