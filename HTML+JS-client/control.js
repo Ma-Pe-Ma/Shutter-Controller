@@ -1,3 +1,7 @@
+import { RequestQueue, TestRequestQueue } from './requestqueue.js';
+
+var testMode = document.getElementById("control").src.split("testMode=")[1] == "true";
+
 const NR_OF_TIMINGS = 6;
 const NR_OF_MESSAGES = 10;
 
@@ -180,7 +184,7 @@ class GuiElements {
         return timingsObject;
     }
 
-    parseGenericResponse(responseObject) {
+    parseResponse(responseObject) {
         var newRequest = null;
         
         if (Object.keys(responseObject).length == 0) {
@@ -192,45 +196,10 @@ class GuiElements {
             if (isDump)
             {
                 var timingsObject = responseObject["T"];
-
-                for (var key in timingsObject) {
-                    var timingObject = timingsObject[key];
-                    var keyInt = parseInt(key);
-            
-                    var activeBox = document.getElementById(`toggle${keyInt}`);
-                    activeBox.checked = timingObject["A"];
-            
-                    var timeSet = document.getElementById(`timeSet${keyInt}`);
-            
-                    var hourString = String(timingObject["H"]);
-                    hourString = hourString.length == 1 ? "0" + hourString : hourString;
-            
-                    var minuteString = String(timingObject["M"]);
-                    minuteString = minuteString.length == 1 ? "0" + minuteString : minuteString;
-            
-                    timeSet.value = hourString + ":" + minuteString;
-            
-                    var seekbar = document.getElementById(`tseekbar${keyInt}`);
-                    seekbar.value = timingObject["V"];
-            
-                    var seekbarText = document.getElementById(`seekbarValue${keyInt}`);
-                    seekbarText.innerText = timingObject["V"];
-            
-                    for(var i = 0; i < 7; i++) {
-                        var dayBox = document.getElementById(`day${keyInt}_${i}`);
-            
-                        if (timingObject["D"][i] == "T") {
-                            dayBox.checked = true;    
-                        }   
-                        else{
-                            dayBox.checked = false;
-                        }
-                    }
-                }
-            }
+                this.parseTimings(timingsObject)
+            }            
 
             var genericResponse = responseObject["G"];
-
             var retrytime = genericResponse["R"];
             retrytime = parseInt(retrytime);
 
@@ -242,46 +211,87 @@ class GuiElements {
             }
             else
             {
-                this.seekbar.value = parseInt(genericResponse["V"]);
-                this.seekbarValueText.innerText = this.seekbar.value + "%"; 
-
-                this.currentValue.innerText = this.seekbar.value + "%";
-
-                var messagesObject = genericResponse["M"];
-                
-                this.startupTimeText.innerText = messagesObject["S"];
-            
-                for (var key in messagesObject["M"]) {
-                    var keyInt = parseInt(key);
-                    var messageObject = messagesObject["M"][key];
-                    var formattedMessage = this.getFormattedMessage(messageObject["T"], messageObject["R"], messageObject["A"]);
-                    var rootMessage = messages.childNodes[keyInt + 2];
-
-                    const content = [`${keyInt + 1}.`, `${formattedMessage}`, `${messageObject["D"]}`]
-
-                    for (var j = 0; j < rootMessage.children.length; j++) {
-                        rootMessage.children[j].innerText = content[j];
-                    }
-                }
+               this.parseGenericResponse(genericResponse);
             }
         } 
         return newRequest;      
     };
 
+    parseTimings(timingsObject) {        
+        for (var key in timingsObject) {
+            var timingObject = timingsObject[key];
+            var keyInt = parseInt(key);
+    
+            var activeBox = document.getElementById(`toggle${keyInt}`);
+            activeBox.checked = timingObject["A"];
+    
+            var timeSet = document.getElementById(`timeSet${keyInt}`);
+    
+            var hourString = String(timingObject["H"]);
+            hourString = hourString.length == 1 ? "0" + hourString : hourString;
+    
+            var minuteString = String(timingObject["M"]);
+            minuteString = minuteString.length == 1 ? "0" + minuteString : minuteString;
+    
+            timeSet.value = hourString + ":" + minuteString;
+    
+            var seekbar = document.getElementById(`tseekbar${keyInt}`);
+            seekbar.value = timingObject["V"];
+    
+            var seekbarText = document.getElementById(`seekbarValue${keyInt}`);
+            seekbarText.innerText = timingObject["V"];
+    
+            for(var i = 0; i < 7; i++) {
+                var dayBox = document.getElementById(`day${keyInt}_${i}`);
+    
+                if (timingObject["D"][i] == "T") {
+                    dayBox.checked = true;    
+                }   
+                else{
+                    dayBox.checked = false;
+                }
+            }
+        }
+    }
+
+    parseGenericResponse(genericResponse) {
+        this.seekbar.value = parseInt(genericResponse["V"]);
+        this.seekbarValueText.innerText = this.seekbar.value + "%"; 
+
+        this.currentValue.innerText = this.seekbar.value + "%";
+
+        var messagesObject = genericResponse["M"];
+        
+        this.startupTimeText.innerText = messagesObject["S"];
+    
+        for (var key in messagesObject["M"]) {
+            var keyInt = parseInt(key);
+            var messageObject = messagesObject["M"][key];
+            var formattedMessage = this.getFormattedMessage(messageObject["T"], messageObject["R"], messageObject["A"]);
+            var rootMessage = messages.childNodes[keyInt + 2];
+
+            const content = [`${keyInt + 1}.`, `${formattedMessage}`, `${messageObject["D"]}`]
+
+            for (var j = 0; j < rootMessage.children.length; j++) {
+                rootMessage.children[j].innerText = content[j];
+            }
+        }
+    }
+
     getFormattedMessage(T, R, A) {
-        if (T == "E"){
+        if (T == "E") {
             return "-";
         }
     
-        if (T == "I"){
+        if (T == "I") {
             return "Server startup.";
         }
     
-        if (T == "J"){
+        if (T == "J") {
             return "JSON Error: " + R + ", " + A;
         }
     
-        if (T == "Z"){
+        if (T == "Z") {
             if (R == "F") {
                 return "Zeroing failed.";
             }
@@ -323,7 +333,7 @@ class GuiElements {
         {
             var request = new CustomRequest();
             request.setPostData({"Z" : state});
-            request.setLocation("./Z");
+            request.setLocation("/Z");
             requestQueue.addNewRequest(request)
         }
 
@@ -384,8 +394,16 @@ class CustomRequest {
         this.#postData = postData;
     }
 
+    getPostData() {
+        return this.#postData;
+    }
+
     setLocation(location) {
         this.#location = location;
+    }
+
+    getLocation() {
+        return this.#location;
     }
 
     setDelay(delay) {
@@ -404,7 +422,7 @@ class CustomRequest {
             }
 
             try {
-                var newRequest = guiElements.parseGenericResponse(JSON.parse(this.response));
+                var newRequest = guiElements.parseResponse(JSON.parse(this.response));
                 if (newRequest != null) {
                     requestQueue.addNewRequest(newRequest);
                     guiElements.setGuiState(false);
@@ -456,50 +474,14 @@ class CustomRequest {
     }
 }
 
-class RequestQueue {
-    failureCounter = 0;
-
-    #queue = [];
-    #currentRequest = null
-
-    currentRequestFinished() {
-        this.#currentRequest = null;
-    }
-
-    addNewRequest(request) {
-        this.#queue.push(request);
-    }
-
-    dequeue() {
-        if (this.#queue.length > 0 && this.#currentRequest == null) 
-        {
-            this.#currentRequest = this.#queue.shift();
-            var req = this.#currentRequest;
-            
-            guiElements.setGuiState(false);
-            setTimeout(function() { req.launchRequest(); }, this.#currentRequest.getDelay() * 1000);
-                
-            guiElements.stateMessage.innerText = "Synchronisation is in progress...";
-        }    
-    }
-
-    launchPeriodicStatusRequest() {
-        if (this.#queue.length == 0 && this.#currentRequest == null) {
-            var statusRequest = new CustomRequest();
-            statusRequest.setLocation("/S");
-            requestQueue.addNewRequest(statusRequest);
-        }
-    }
-};
-
 function tryDequeue() {
     requestQueue.dequeue()
     window.requestAnimationFrame(tryDequeue);
 }
 
 window.onload = function() {
-    requestQueue = new RequestQueue();
     guiElements = new GuiElements();
+    requestQueue = testMode ? new TestRequestQueue(guiElements) : new RequestQueue(guiElements);
 
     guiElements.bindGUIElements();
     guiElements.initMessages();
@@ -516,6 +498,10 @@ window.onload = function() {
 
     //Set periodic status request
     var i = setInterval(function() {
-        requestQueue.launchPeriodicStatusRequest();
-    }, 30000);
+        if (requestQueue.launchPeriodicStatusRequest()) {
+            var statusRequest = new CustomRequest();
+            statusRequest.setLocation("/S");
+            requestQueue.addNewRequest(statusRequest);
+        }
+    }, 30 * 1000);
 };

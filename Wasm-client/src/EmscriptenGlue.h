@@ -13,7 +13,13 @@ extern "C" {
 	bool is_mobile();
 	void setup_broadcast_channel();
 	void redirect_to_location(const char* location);	
-}	
+	
+	char* create_datestring_by_offset(int hour, int minute);
+	int get_today();
+	int get_sum_minutes();
+	void timeout_method(int, int);
+	bool use_demo_request();
+}
 
 #endif
 

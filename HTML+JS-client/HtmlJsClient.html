@@ -2,8 +2,8 @@
 <html>
 <head>
     <title>Shutter Controller - HTML client</title>
-    <link rel="stylesheet" type="text/css" href="/control.css"/>
-    <script src="/control.js"></script>
+    <link rel="stylesheet" type="text/css" href="./control.css"/>
+    <script type="module" src="./control.js?testMode=false" id="control"></script>
     <script>
         function showTab(tabIndex) {
             const tabContents = document.getElementsByClassName('tab-content');
@@ -20,7 +20,6 @@
     </script>
 </head>
 <body>
-
     <div class="container">
         <div class="row">
             <h2 class="row-item">Shutter controller!</h2>

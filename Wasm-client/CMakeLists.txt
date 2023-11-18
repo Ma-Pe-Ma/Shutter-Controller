@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 project("ShutterClient")
 
-# to build emscripten version: emcmake cmake -B./out/build/wasm -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+# to build emscripten version: emcmake cmake -B./out/build/wasm-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 add_executable (ShutterClient
 	"src/Main.cpp"
 	"src/WindowHandler.h"
@@ -18,6 +18,7 @@ add_executable (ShutterClient
 	"src/Request/Request.h"
 	"src/Request/SimpleRequest.h"
 	"src/Request/EmscriptenRequest.h"
+	"src/Request/DemoRequest.h"
 	"src/EmscriptenGlue.h"
 	"src/EmscriptenGlue.cpp"
 
@@ -83,7 +84,8 @@ else()
 	set_target_properties(ShutterClient	PROPERTIES LINK_FLAGS
 		#"--preload-file ${CMAKE_SOURCE_DIR}/resources@/resources/"
 		"--preload-file ${CMAKE_SOURCE_DIR}/resources/Roboto-Medium.ttf@/resources/Roboto-Medium.ttf \
-		--preload-file ${CMAKE_SOURCE_DIR}/resources/translation_en.txt@/resources/translation_en.txt"
+		--preload-file ${CMAKE_SOURCE_DIR}/resources/translation_en.txt@/resources/translation_en.txt \ 
+		--bind"
 	)
 	
 	# add compile options

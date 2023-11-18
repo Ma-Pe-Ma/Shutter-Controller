@@ -4,7 +4,7 @@
 
 ![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/HTML+JS%20client/working/green) ![Desktop](https://badgen.net/badge/WASM%20client/working/green) 
 
-This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller.
+This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller. Demos for the clients can be tried out [here](https://mapema.hu/wasm/shutter-controller/HtmlJsClient.html).
 
 ## Features
 
