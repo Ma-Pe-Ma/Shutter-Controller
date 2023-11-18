@@ -48,7 +48,7 @@ namespace StaticPage {
     "<head>\n"
     "<title>Shutter Controller - HTML client</title>\n"
     "<link rel=\"stylesheet\" type=\"text/css\" href=\"" RESOURCE_PROVIDER "/control.css\"/>\n"
-    "<script src=\"" RESOURCE_PROVIDER "/control.js\"></script>\n"
+    "<script type=\"module\" src=\"" RESOURCE_PROVIDER "/control.js\" id=\"control\"></script>\n"
     "<script>\n"
     "function showTab(tabIndex) {\n"
     "const tabContents = document.getElementsByClassName('tab-content');\n"
@@ -163,21 +163,21 @@ namespace StaticPage {
     "</div>\n"
     "<script type='text/javascript'>\n"
     "var Module = {\n"
-    "canvas: (function() { return document.getElementById('canvas'); })()\n"
+    "canvas: (function() { return document.getElementById('canvas'); })(),\n"
+    "demoMode:false\n"
     "};\n"
     "</script>\n"
     "<script async type=\"text/javascript\" src=\"" RESOURCE_PROVIDER "/ShutterClient.js\" ></script>\n"
     "</body>\n"
     "</html>";
 
-    //worker/thread module for the wasm module,  TODO:should be served from an external server
+    //worker/thread module for the wasm module, TODO:should be served from an external server
     const char wasmWorker[] PROGMEM = "var Module={},ENVIRONMENT_IS_NODE=\"object\"==typeof process&&\"object\"==typeof process.versions&&\"string\"==typeof process.versions.node;\n"
     "if(ENVIRONMENT_IS_NODE){var nodeWorkerThreads=require(\"worker_threads\"),parentPort=nodeWorkerThreads.parentPort;parentPort.on(\"message\",a=>onmessage({data:a}));var fs=require(\"fs\");Object.assign(global,{self:global,require,Module,location:{href:__filename},Worker:nodeWorkerThreads.Worker,importScripts:a=>(0,eval)(fs.readFileSync(a,\"utf8\")+\"//# sourceURL=\"+a),postMessage:a=>parentPort.postMessage(a),performance:global.performance||{now:Date.now}})}var initializedJS=!1;\n"
-    "function assert(a,c){a||abort(\"Assertion failed: \"+c)}function threadPrintErr(){var a=Array.prototype.slice.call(arguments).join(\" \");ENVIRONMENT_IS_NODE?fs.writeSync(2,a+\"\\n\"):console.error(a)}function threadAlert(){var a=Array.prototype.slice.call(arguments).join(\" \");postMessage({cmd:\"alert\",text:a,threadId:Module._pthread_self()})}var out=()=>{throw\"out() is not defined in worker.js.\";},err=threadPrintErr;self.alert=threadAlert;var dbg=threadPrintErr;\n"
-    "Module.instantiateWasm=(a,c)=>{var b=Module.wasmModule;Module.wasmModule=null;a=new WebAssembly.Instance(b,a);return c(a)};self.onunhandledrejection=a=>{throw a.reason??a;};\n"
-    "function handleMessage(a){try{if(\"load\"===a.data.cmd){let b=[];self.onmessage=d=>b.push(d);self.startWorker=d=>{postMessage({cmd:\"loaded\"});for(let e of b)handleMessage(e);self.onmessage=handleMessage};Module.wasmModule=a.data.wasmModule;for(const d of a.data.handlers)Module[d]=(...e)=>{postMessage({cmd:\"callHandler\",handler:d,args:e})};Module.wasmMemory=a.data.wasmMemory;Module.buffer=Module.wasmMemory.buffer;Module.workerID=a.data.workerID;Module.ENVIRONMENT_IS_PTHREAD=!0;if(\"string\"==typeof a.data.urlOrBlob)importScripts(a.data.urlOrBlob);\n"
-    "else{var c=URL.createObjectURL(a.data.urlOrBlob);importScripts(c);URL.revokeObjectURL(c)}}else if(\"run\"===a.data.cmd){Module.__emscripten_thread_init(a.data.pthread_ptr,0,0,1);Module.__emscripten_thread_mailbox_await(a.data.pthread_ptr);assert(a.data.pthread_ptr);Module.establishStackSpace();Module.PThread.receiveObjectTransfer(a.data);Module.PThread.threadInitTLS();initializedJS||=!0;try{Module.invokeEntryPoint(a.data.start_routine,a.data.arg)}catch(b){if(\"unwind\"!=b)throw b;}}else\"cancel\"===a.data.cmd?\n"
-    "Module._pthread_self()&&Module.__emscripten_thread_exit(-1):\"setimmediate\"!==a.data.target&&(\"checkMailbox\"===a.data.cmd?initializedJS&&Module.checkMailbox():a.data.cmd&&(err(\"worker.js received unknown command \"+a.data.cmd),err(a.data)))}catch(b){throw err(\"worker.js onmessage() captured an uncaught exception: \"+b),b&&b.stack&&err(b.stack),Module.__emscripten_thread_crashed&&Module.__emscripten_thread_crashed(),b;}}self.onmessage=handleMessage;";
+    "function threadPrintErr(){var a=Array.prototype.slice.call(arguments).join(\" \");ENVIRONMENT_IS_NODE?fs.writeSync(2,a+\"\\n\"):console.error(a)}function threadAlert(){var a=Array.prototype.slice.call(arguments).join(\" \");postMessage({cmd:\"alert\",text:a,threadId:Module._pthread_self()})}var err=threadPrintErr;self.alert=threadAlert;Module.instantiateWasm=(a,d)=>{var b=Module.wasmModule;Module.wasmModule=null;a=new WebAssembly.Instance(b,a);return d(a)};self.onunhandledrejection=a=>{throw a.reason||a;};\n"
+    "function handleMessage(a){try{if(\"load\"===a.data.cmd){let b=[];self.onmessage=c=>b.push(c);self.startWorker=c=>{postMessage({cmd:\"loaded\"});for(let e of b)handleMessage(e);self.onmessage=handleMessage};Module.wasmModule=a.data.wasmModule;for(const c of a.data.handlers)Module[c]=(...e)=>{postMessage({cmd:\"callHandler\",handler:c,args:e})};Module.wasmMemory=a.data.wasmMemory;Module.buffer=Module.wasmMemory.buffer;Module.ENVIRONMENT_IS_PTHREAD=!0;if(\"string\"==typeof a.data.urlOrBlob)importScripts(a.data.urlOrBlob);\n"
+    "else{var d=URL.createObjectURL(a.data.urlOrBlob);importScripts(d);URL.revokeObjectURL(d)}}else if(\"run\"===a.data.cmd){Module.__emscripten_thread_init(a.data.pthread_ptr,0,0,1);Module.__emscripten_thread_mailbox_await(a.data.pthread_ptr);Module.establishStackSpace();Module.PThread.receiveObjectTransfer(a.data);Module.PThread.threadInitTLS();initializedJS||(Module.__embind_initialize_bindings(),initializedJS=!0);try{Module.invokeEntryPoint(a.data.start_routine,a.data.arg)}catch(b){if(\"unwind\"!=b)throw b;\n"
+    "}}else\"cancel\"===a.data.cmd?Module._pthread_self()&&Module.__emscripten_thread_exit(-1):\"setimmediate\"!==a.data.target&&(\"checkMailbox\"===a.data.cmd?initializedJS&&Module.checkMailbox():a.data.cmd&&(err(`worker.js received unknown command ${a.data.cmd}`),err(a.data)))}catch(b){throw Module.__emscripten_thread_crashed&&Module.__emscripten_thread_crashed(),b;}}self.onmessage=handleMessage;";
 }
 
 #endif

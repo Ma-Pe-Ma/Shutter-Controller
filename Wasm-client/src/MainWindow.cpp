@@ -4,15 +4,22 @@
 #include <format>
 
 #include <imgui/ImGui.h>
-
-#ifndef __EMSCRIPTEN__
-#include "Request/SimpleRequest.h"
-#else
+ 
+#ifdef __EMSCRIPTEN__
+#include "Request/DemoRequest.h"
 #include "Request/EmscriptenRequest.h"
+#else
+#include "Request/SimpleRequest.h"
 #endif
 
 void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::string>> connectionParameters)
 {
+#ifdef __EMSCRIPTEN__
+    if (use_demo_request()) {
+        DemoRequest::initialize();
+    }
+#endif
+
     std::string siteAddress = (*connectionParameters)["siteAddress"];
     std::string username = (*connectionParameters)["username"];
     std::string password = (*connectionParameters)["password"];
@@ -371,10 +378,14 @@ void MainWindow::handleMessages() {
 
 std::shared_ptr<Request> MainWindow::createRequest()
 {
-#ifndef __EMSCRIPTEN__
-    return std::make_shared<SimpleRequest>();
+#ifdef __EMSCRIPTEN__
+    if (use_demo_request()) {
+        return std::make_shared<DemoRequest>();
+    }
+    
+    return std::make_shared<EmscriptenRequest>();    
 #else
-    return std::make_shared<EmscriptenRequest>();
+    return std::make_shared<SimpleRequest>();
 #endif
 }
 

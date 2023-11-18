@@ -66,4 +66,37 @@ EM_JS(void, redirect_to_location, (const char* path), {
 	bc.close();
 	});
 
+EM_JS(char*, create_datestring_by_offset, (int hour, int minute), {
+	var date = new Date(Date.now() - 1000 * 60 * (hour * 60 + minute));
+	var h = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
+	var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+
+	return stringToNewUTF8(`${date.getFullYear()}. ${ date.getMonth() + 1 }. ${ date.getDate() }. ${ h }:${ m }`);
+	});
+
+EM_JS(int, get_today, (), {
+		var date = new Date();
+		let today = date.getDay();
+		return today > 0 ? today - 1 : 6;
+	});
+
+EM_JS(void, timeout_method, (int index, int timingMinutes), {
+	setTimeout(function(index, originalMinutes) { 
+		Module.DemoRequest.launchTiming(index, originalMinutes);
+	}, (timingMinutes - get_sum_minutes()) * 60 * 1000, index, timingMinutes);
+	});
+
+EM_JS(int, get_sum_minutes, (), {
+		var date = new Date();
+		return 60 * date.getHours() + date.getMinutes();
+	});
+
+EM_JS(bool, use_demo_request, (), {
+	if (Module['demoMode'] == null) {
+		return false;
+	}
+
+	return Module['demoMode'];
+});
+
 #endif

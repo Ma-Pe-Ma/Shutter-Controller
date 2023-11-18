@@ -28,6 +28,7 @@ void ServerContainer::initialize() {
 
     secureServer.on("/R", HTTP_GET, [this]() -> void {
         if(this->authenticationCheck()) {
+            this->secureServer.send(200, "text/plain", "Server restarted!");
             ESP.restart();
         }
         else{
