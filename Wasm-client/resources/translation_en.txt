@@ -1,14 +1,14 @@
 appname Shutter Controller
-startEvent Server start
+startEvent Server start.
 jsonError JSON error ({0}, {1})
 msetting Manual setting: 
 nullFail Zeroing failed, shutter is busy
-nullUp Position zeroed: up!
-nullDown Position zeroed: down!
-timingEvent {0}. timing executed: {1}%%
+nullUp Zeroing: up.
+nullDown Zeroing: down.
+timingEvent {0}. timing set: {1}%%
 manualSet Manual set: {0}%%
 positionFound Position found: {0}%%
-timingSet Timings were set!
+timingSet Timings updated.
 unknown Unknown event: {0} - {1} - {2}
 timings Timings
 set Set
@@ -17,7 +17,7 @@ svalue [%]
 automatic Find
 up Up
 down Down
-active enabled
+active active
 time time
 value value
 update Update

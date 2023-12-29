@@ -9,25 +9,31 @@ var requestQueue;
 var guiElements;
 
 class GuiElements {
-    timingButton = null;
-    setButton = null;
+    constructor() {
+        this.dayAbbreviationMap = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
+        this.timingButton = null;
+        this.setButton = null;
+        
+        this.upButton = null;
+        this.downButton = null;
+        this.autoButton = null;
     
-    upButton = null;
-    downButton = null;
-    autoButton = null;
+        this.seekbar = null;
+        this.seekbarValueText = null;
+    
+        this.stateMessage = null;
+        this.messages = null;
+        this.messageTemplate = null;
+        this.startupTimeText = null;
+    
+        this.currentValue = null;
+        this.timings = null;
+        this.timingTemplate = null;
+        this.checkboxTemplate = null;
+        this.timingSeekbars = [];
 
-    seekbar = null;
-    seekbarValueText = null;
-
-    stateMessage = null;
-    messages = null;
-    startupTimeText = null;
-
-    currentValue = null;
-    timings = null;    
-    timingSeekbars = [];
-
-    disableables = [];
+        this.disableables = [];
+    }  
 
     setGuiState(guiState) {
         for (var i = 0; i < this.disableables.length; i++)
@@ -44,141 +50,58 @@ class GuiElements {
         seekbar.disabled = !guiState;
     }
 
-    initMessages() 
-    {
+    initMessages() {
         messages = document.getElementById("messages");
-        for (var i = 0; i < NR_OF_MESSAGES; i++) {
-            var tr = document.createElement('tr');
-    
-            const content = [`${i + 1}`, "-", "-"];
-            const classNames = ['message-index-width', 'message-content-width', 'message-date-width'];
+        messageTemplate = document.getElementById("messageTemplate");
 
-            for (var j = 0; j < 3; j++) {
-                var div = document.createElement("td");
-                //div.className = classNames[j]
-                div.innerText = content[j];
-                tr.appendChild(div);
-            }
-    
-            messages.appendChild(tr);
+        for (var i = 0; i < NR_OF_MESSAGES; i++) {
+            var messageElement = messageTemplate.content.cloneNode(true);
+            messageElement.getElementById("id").innerText =`${i+1}`;
+            messageElement.getElementById("event").innerText = `-`;
+            messageElement.getElementById("date").innerText = `-`;
+            messages.appendChild(messageElement);
         }
     }
     
     initTimings() {
-        timings = document.getElementById("timings");
-        
-        const dayAbbreviationMap = ["M", "Tu", "W", "Th", "F", "Sa", "Su"]
+        var defualtTimings = {
+            "0" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
+            "1" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
+            "2" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
+            "3" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
+            "4" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
+            "5" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0}
+        };
 
-        for (var i = 0; i < NR_OF_TIMINGS; i++) {
-            var timingDiv = document.createElement('div');
-            timingDiv.className = "timing";
+        this.timings = document.getElementById("timings");
+        this.timingTemplate = document.getElementById("timingTemplate");
+        this.checkboxTemplate = document.getElementById("checkboxTemplate");
 
-            var p = document.createElement('p');
-            p.innerText = `${i+1}.`;
-            timingDiv.appendChild(p);
-
-            var t = document.createElement('input');
-            t.id = `timeSet${i}`;
-            t.type = "time";
-            timingDiv.appendChild(t);
-
-            this.disableables.push(t);
-
-            for (var j = 0; j < 7; j++) {
-                var label = document.createElement('label');
-                var checkBox = document.createElement('input');
-                checkBox.id = `day${i}_${j}`;;
-                checkBox.type = "checkbox";
-                this.disableables.push(checkBox);
-
-                label.appendChild(checkBox);
-                label.appendChild(document.createTextNode(" " + dayAbbreviationMap[j]));
-
-                timingDiv.appendChild(label);
-            }
-
-            var rangeContainer = document.createElement('div');
-            rangeContainer.className = "range-container";
-
-            var rangeLabel = document.createElement('label');
-            rangeLabel.for = "range-input";
-            rangeLabel.innerText = "Position:";
-            rangeContainer.appendChild(rangeLabel);
-
-            var rangeInput = document.createElement('input');
-            rangeInput.id = `tseekbar${i}`;
-            rangeInput.type = "range";
-            rangeInput.step = 5;
-            this.disableables.push(rangeInput);
-            rangeContainer.appendChild(rangeInput);
-
-            var span = document.createElement('span');
-            span.className = "range-value";
-            span.innerText = "50";
-            span.id = `seekbarValue${i}`;
-            rangeContainer.appendChild(span)
-            
-            rangeInput.customLabel = span;
-            rangeInput.oninput = function() {
-                this.customLabel.innerText = this.value;
-            };
-
-            timingDiv.append(rangeContainer);
-
-            var activeLabel = document.createElement('label');
-            var checkBox = document.createElement('input');
-            checkBox.id = `toggle${i}`;
-            checkBox.type = "checkbox";
-            this.disableables.push(checkBox);
-
-            activeLabel.appendChild(checkBox);
-            activeLabel.appendChild(document.createTextNode(` Enabled`));
-
-            timingDiv.appendChild(activeLabel);
-
-            timings.appendChild(timingDiv);
-
-            var breakline = document.createElement('br');
-            timings.appendChild(breakline);
-        }
+        this.parseTimings(defualtTimings);
     }
 
     serializeTimings() {
         var timingsObject = {};
-    
-        for(var i = 0; i < NR_OF_TIMINGS; i++) {
-            var timingObject = {};
-    
-            var timeInput = document.getElementById(`timeSet${i}`).value;
-            var times = timeInput.split(":");
-    
-            var days = "";
-    
-            for (var j = 0; j < 7; j++) {
-                var dayBox = document.getElementById(`day${i}_${j}`);
-    
-                if (dayBox.checked) {
-                    days += "T";
-                }
-                else {
-                    days += "F";
-                }
-            }
-    
-            var activeBox = document.getElementById(`toggle${i}`);
-            var seekbar = document.getElementById(`tseekbar${i}`);
-    
+
+        var index = 0;
+        for (var timing of timings.children) {
+            var times = timing.querySelector("#timeSet").value.split(":");
             if (times[0] == null || times[1] == null) {
                 return null;
             }
-    
-            timingObject["H"] = parseInt(times[0]);
-            timingObject["M"] = parseInt(times[1]);
-            timingObject["D"] = days;
-            timingObject["A"] = activeBox.checked;
-            timingObject["V"] = parseInt(seekbar.value);
-    
-            timingsObject[String(i)] =  timingObject;
+
+            var days = "";
+            for (var day of timing.querySelectorAll("#dayCheck")) {
+                days += day.checked ? "T" : "F";
+            }
+
+            timingsObject[String(index++)] = {
+                "H" : parseInt(times[0]),
+                "M" : parseInt(times[1]),
+                "D" : days,
+                "A" : timing.querySelector("#activeCheck").checked,
+                "V" : parseInt(timing.querySelector("#seekbar").value)
+            };
         }
     
         return timingsObject;
@@ -217,40 +140,50 @@ class GuiElements {
         return newRequest;      
     };
 
-    parseTimings(timingsObject) {        
-        for (var key in timingsObject) {
-            var timingObject = timingsObject[key];
-            var keyInt = parseInt(key);
-    
-            var activeBox = document.getElementById(`toggle${keyInt}`);
-            activeBox.checked = timingObject["A"];
-    
-            var timeSet = document.getElementById(`timeSet${keyInt}`);
-    
-            var hourString = String(timingObject["H"]);
-            hourString = hourString.length == 1 ? "0" + hourString : hourString;
-    
-            var minuteString = String(timingObject["M"]);
-            minuteString = minuteString.length == 1 ? "0" + minuteString : minuteString;
-    
-            timeSet.value = hourString + ":" + minuteString;
-    
-            var seekbar = document.getElementById(`tseekbar${keyInt}`);
-            seekbar.value = timingObject["V"];
-    
-            var seekbarText = document.getElementById(`seekbarValue${keyInt}`);
-            seekbarText.innerText = timingObject["V"];
-    
-            for(var i = 0; i < 7; i++) {
-                var dayBox = document.getElementById(`day${keyInt}_${i}`);
-    
-                if (timingObject["D"][i] == "T") {
-                    dayBox.checked = true;    
-                }   
-                else{
-                    dayBox.checked = false;
-                }
+    parseTimings(timingsObject) {
+        this.disableables = []
+        timings.innerHTML = "";
+
+        function formatTimeValue(value) {
+            var valueString = String(value);
+            return valueString.length == 1 ? "0" + valueString : valueString;
+        }
+
+        var j = 0;
+        for (var timing of Object.values(timingsObject)) {
+            var timingElement = this.timingTemplate.content.cloneNode(true);
+
+            timingElement.getElementById("timingId").innerText = `${j++ + 1}.`;
+            
+            timingElement.getElementById("timeSet").value = formatTimeValue(timing["H"]) + ":" + formatTimeValue(timing["M"]);
+            this.disableables.push(timingElement.getElementById("timeSet"));
+
+            timingElement.getElementById("activeCheck").checked = timing["A"];
+            this.disableables.push(timingElement.getElementById("activeCheck"));
+
+            var inputText = timingElement.getElementById("seekbarValueText");
+            inputText.innerText = `${timing["V"]}%`;
+
+            var input = timingElement.getElementById("seekbar");
+            input.textHolder = inputText;
+            input.value = timing["V"];
+            input.oninput = function() {
+                this.textHolder.innerText = `${this.value}%`;
             }
+            this.disableables.push(input);
+
+            var daySelector = timingElement.getElementById("daySelector");            
+
+            var i = 0;
+            for (const dayID of this.dayAbbreviationMap) {
+                var dayCheckBox = this.checkboxTemplate.content.cloneNode(true);
+                dayCheckBox.getElementById("dayLabel").innerText = dayID;
+                dayCheckBox.getElementById("dayCheck").checked = timing["D"][i++] == "T";
+                this.disableables.push(dayCheckBox.getElementById("dayCheck"));
+                daySelector.appendChild(dayCheckBox);
+            }
+
+            timings.appendChild(timingElement);
         }
     }
 
@@ -264,17 +197,16 @@ class GuiElements {
         
         this.startupTimeText.innerText = messagesObject["S"];
     
-        for (var key in messagesObject["M"]) {
+        messages.innerHTML = "";
+        for (const message of Object.entries(messagesObject["M"])) {
+            let[key, messageObject] = message;
             var keyInt = parseInt(key);
-            var messageObject = messagesObject["M"][key];
-            var formattedMessage = this.getFormattedMessage(messageObject["T"], messageObject["R"], messageObject["A"]);
-            var rootMessage = messages.childNodes[keyInt + 2];
 
-            const content = [`${keyInt + 1}.`, `${formattedMessage}`, `${messageObject["D"]}`]
-
-            for (var j = 0; j < rootMessage.children.length; j++) {
-                rootMessage.children[j].innerText = content[j];
-            }
+            var messageElement = messageTemplate.content.cloneNode(true);
+            messageElement.getElementById("id").innerText =`${keyInt+1}`;
+            messageElement.getElementById("event").innerText = this.getFormattedMessage(messageObject["T"], messageObject["R"], messageObject["A"]);
+            messageElement.getElementById("date").innerText = messageObject["D"];
+            messages.appendChild(messageElement);
         }
     }
 
@@ -284,7 +216,7 @@ class GuiElements {
         }
     
         if (T == "I") {
-            return "Server startup.";
+            return "Server start.";
         }
     
         if (T == "J") {
@@ -312,11 +244,11 @@ class GuiElements {
     
         if (T == "S") {
             if (R == "M") {
-                return "Manual set: " + A + "%.";
+                return "Manual set: " + A + "%";
             }
     
             if (R == "Z") {
-                return "Position found: " + A + "%.";
+                return "Position found: " + A + "%";
             }
     
             if (R == "T") {

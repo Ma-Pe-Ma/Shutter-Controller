@@ -66,11 +66,11 @@ export class TestRequestQueue extends RequestQueue {
 
     dummy_timings = {
         "0" : {"H" :  6, "M" : 0, "D" : "TTTTTFF", "A" :  true, "V" : 100},
-        "1" : {"H" : 18, "M" : 12, "D" : "TTTTTFF", "A" :  true, "V" :  0},
+        "1" : {"H" : 18, "M" : 0, "D" : "TTTTTFF", "A" :  true, "V" :  0},
         "2" : {"H" :  8, "M" : 0, "D" : "FFFFFTT", "A" :  true, "V" : 100},
         "3" : {"H" : 22, "M" : 0, "D" : "FFFFFTT", "A" :  true, "V" :   0},
-        "4" : {"H" : 15, "M" : 0, "D" : "FFFFFTT", "A" : false, "V" :  50},
-        "5" : {"H" : 12, "M" : 0, "D" : "TTFFFFF", "A" : false, "V" :  50}
+        "4" : {"H" : 15, "M" : 30, "D" : "FFFFFTT", "A" : false, "V" :  50},
+        "5" : {"H" : 12, "M" : 45, "D" : "TTFFFFF", "A" : false, "V" :  50}
     }
 
     dummy_messages = {
@@ -176,7 +176,7 @@ export class TestRequestQueue extends RequestQueue {
                 "V" : this.dummy_value,
                 "M" : {
                     "M" : this.dummy_messages,
-                    "S" : this.serializeDate(new Date(Date.now() - 1000 * 60 * ( 24 * 23 + 5)))
+                    "S" : this.serializeDate(new Date(Date.now() - 1000 * 60 * ( 60 * 23 + 5)))
                 }
             }
         }

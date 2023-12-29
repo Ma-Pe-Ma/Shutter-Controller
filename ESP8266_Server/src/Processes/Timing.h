@@ -28,12 +28,7 @@ public:
         int length = daysString.length() > 7 ? 7 : daysString.length();
 
         for (int i = 0; i < length; i++) {
-            if (daysString.charAt(i) == 'T') {
-                days[i] = true;
-            }
-            else {
-                days[i] = false;
-            }
+            days[i] = daysString.charAt(i) == 'T' ? true : false;
         }
     }
 
@@ -41,12 +36,7 @@ public:
         String daysString = "";
 
         for (int i = 0; i < 7; i++) {
-            if (days[i]) {
-                daysString += 'T';
-            }
-            else {
-                daysString += 'F';
-            }
+            daysString += days[i] ? 'T' : 'F';
         }
 
         return daysString;
@@ -60,7 +50,10 @@ public:
     void setQueued(bool queued) {this->queued = queued;}
     bool getQueued() { return this->queued; }
 
-    RawMessage generateMessage() override;
+    inline RawMessage generateMessage() override {
+        int intCurrent = (int) (targetValue * 100);
+        return {"T", String(id + 1), String(intCurrent)};
+    }
 };
 
 #endif

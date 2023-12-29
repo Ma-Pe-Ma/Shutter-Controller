@@ -29,8 +29,8 @@ class DemoRequest : public Request {
 		{"1" , {{"H" , 18}, {"M" , 0}, {"D", "TTTTTFF"}, {"A",  true}, {"V",   0}}},
 		{"2" , {{"H" ,  8}, {"M" , 0}, {"D", "FFFFFTT"}, {"A",  true}, {"V", 100}}},
 		{"3" , {{"H" , 22}, {"M" , 0}, {"D", "FFFFFTT"}, {"A",  true}, {"V",  0}}},
-		{"4" , {{"H" , 15}, {"M" , 0}, {"D", "FFFFFTT"}, {"A", false}, {"V",  50}}},
-		{"5" , {{"H" , 12}, {"M" , 0}, {"D", "TTTTTFF"}, {"A", false}, {"V",  50}}}
+		{"4" , {{"H" , 15}, {"M" , 30}, {"D", "FFFFFTT"}, {"A", false}, {"V",  50}}},
+		{"5" , {{"H" , 12}, {"M" , 45}, {"D", "TTTTTFF"}, {"A", false}, {"V",  50}}}
 	};
 
 	inline static int dummyValue = 45;
