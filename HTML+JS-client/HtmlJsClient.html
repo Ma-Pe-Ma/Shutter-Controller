@@ -1,101 +1,187 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Shutter Controller - HTML client</title>
-    <link rel="stylesheet" type="text/css" href="./control.css"/>
-    <script type="module" src="./control.js?testMode=false" id="control"></script>
-    <script>
-        function showTab(tabIndex) {
-            const tabContents = document.getElementsByClassName('tab-content');
-            for (let i = 0; i < tabContents.length; i++) {
-                tabContents[i].classList.remove('active');
-            }
-            tabContents[tabIndex].classList.add('active');
-            const tabs = document.getElementsByClassName('tab');
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove('active');
-            }
-            tabs[tabIndex].classList.add('active');
-        }
-    </script>
+<html lang="en" data-bs-theme="light"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="Péter Máté Margitai">
+<title>Shutter Controller - HTML client</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
+<script type="module" src="./control.js?testMode=false" id="control"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="row">
-            <h2 class="row-item">Shutter controller!</h2>
-            <p class="row-item">Hello USER!</p>
-            <form class="row-item" action="./O">
-                <input type="submit" value="Sign out">
-            </form>
-        </div>
-        <div class="row">
-            <a href="/W">WASM client</a>
-        </div>
+	<main class="container">
+		<header class="py-3 mb-4 border-bottom">
+			<div class="d-flex flex-wrap justify-content-between">
+				<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+					<span class="fs-4">Shutter Controller</span>
+				  </a>			
+				  <div class="d-flex dropdown text-end align-items-center">
+					<a class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" href="#">
+						User
+					</a>
+					<ul class="dropdown-menu text-small">
+					  <li><a class="dropdown-item" href="/W">WASM-client</a></li>
+                	  <li><hr class="dropdown-divider"></li>
+					  <li><a class="dropdown-item" href="/O">Sign out</a></li>
+					</ul>
+				  </div>
+			  </div>
+		</header>
 
-        <div class="wrapper">
-            <div class="tabs-container">
-                <div class="tabs">
-                    <div class="tab active" onclick="showTab(0)">Setting</div>
-                    <div class="tab" onclick="showTab(1)">Timing</div>
-                    <div class="tab" onclick="showTab(2)">Zeroing</div>
-                </div>
-            </div>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-8 mx-auto">
+					<ul class="nav nav-underline justify-content-center">
+						<li class="nav-item col-3 d-flex justify-content-center">
+							<a class="nav-link active" data-bs-toggle="tab" href="#setting">Setting</a>
+						</li>
+						<li class="nav-item col-3 d-flex justify-content-center">
+							<a class="nav-link" data-bs-toggle="tab" href="#timing">Timing</a>
+						</li>
+						<li class="nav-item col-3 d-flex justify-content-center">
+							<a class="nav-link" data-bs-toggle="tab" href="#zeroing">Zeroing</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
 
-            <div class="tab-contents">
-                <div class="tab-content active">
-                    <div class="set-tab-content">
-                        <div class="range-container">
-                            <label class="range-label" for="range-input">Position:</label>
-                            <input type="range" id="seekbar" step="5" min="0" max="100" step="1" value=0>
-                            <span class="range-value" id="seekbarValueText">0%</span>
-                            <input id="setButton" type="button" value="Set">
-                        </div>
-                    </div>
-                </div>
+		<div class="tab-content mt-4">
+			<div class="tab-pane container active" id="setting">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-12 col-md-6 pt-2 pb-2 border">
+						<div class="row d-flex align-items-center justify-content-between">
+							<div class="col-2">
+								<label for="seekbar">Position:</label>
+							</div>
+							<div class="col-6 d-flex align-items-center">
+								<input type="range" id="seekbar" name="seekbar" class="form-range" step="5" min="0" max="100">
+							</div>
+							<div class="col-1">
+								<span class="range-value" id="seekbarValueText">0%</span>
+							</div>
+							<div class="col-2">
+								<button type="button" class="btn btn-primary btn-sm" id="setButton">Set</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane container fade" id="timing">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-12 col-md-6">
+						<div id="timings">
+							<template id="timingTemplate">
+								<div class="container mb-2 pb-2 pt-2 border">
+									<div class="row d-flex align-items-center">
+										<h5 class="col-1 d-flex align-items-center" id="timingId">-</h5>
+										<div class="col-5 col-md-3">
+											<input class="form-control text-center col-1" type="time" id="timeSet">
+										</div>
+										<div class="form-check col-4 col-md-2">
+											<label class="form-check-label" for="flexCheckDefault">active</label>
+											<input class="form-check-input" type="checkbox" value="" id="activeCheck">											
+										</div>
+									</div>
+									<div class="row ms-3" id="daySelector"></div>
+									<div class="row ms-1">
+										<div class="col-3 col-md-2">
+											<label for="seekbar">Position:</label>
+										</div>
+										<div class="col-6 d-flex align-items-center">
+											<input type="range" id="seekbar" name="seekbar" class="form-range" step="5" min="0" max="100">
+										</div>
+										<div class="col-1">
+											<span class="range-value" id="seekbarValueText">0%</span>
+										</div>
+									</div>
 
-                <div class="tab-content">
-                    <div id="timings">
+								</div>
+							</template>
+							<template id="checkboxTemplate">
+								<div class="form-check col-3">
+									<label class="form-check-label" for="flexCheckDefault" id="dayLabel">-</label>
+									<input class="form-check-input day-check" type="checkbox" value="" id="dayCheck">											
+								</div>
+							</template>
+						</div>
+						<div class="row justify-content-center">
+							<div class="col-2">
+								<button type="button" class="btn btn-primary" id="timingButton">Set</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="tab-pane container fade" id="zeroing">
+				<div class="row justify-content-center align-items-center">
+					<div class="col-12 col-md-6 pt-2 pb-2 border">
+						<div class="row d-flex align-items-center justify-content-between">
+							<div class="col-3 d-flex justify-content-center">
+								<button type="button" class="btn btn-primary" id="upButton">Up</button>
+							</div>
+							<div class="col-3 d-flex justify-content-center">
+								<button type="button" class="btn btn-primary" id="downButton">Down</button>
+							</div>
+							<div class="col-3 d-flex justify-content-center">
+								<button type="button" class="btn btn-primary" id="autoButton">Find</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-                    </div>
-                    <input type="submit" value="Send" id="timingButton">
-                </div>
+		<div class="container-fluid mt-3">
+			<div class="row">
+				<div class="col-md-6 col-12 mx-auto">
+					<div class="row">
+						<p class="col-md-3 col-4">Current position: </p>
+						<p class="col-md-2 col-2" id="curVal"></p>
+					</div>
+						
+					<div class="row">
+						<p class="col-md-3 col-4">Server state: </p>
+						<p class="col-8" id="stat"></p>
+					</div>
 
-                <div class="tab-content">
-                    <div class="zero-content">
-                        <button class="zero-button" id="upButton">Up</button>
-                        <button class="zero-button" id="downButton">Down</button>
-                        <button class="zero-button" id="autoButton">Find</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+					<div class="row">
+						<p class="col-md-3 col-4">Server start time: </p>
+						<p class="col-6" id="startup"></p>
+					</div>
+				</div>
+			</div>
+		</div>
 
-        <div class="additional-section">
-            <div class="state-section">
-                <div class="state-line">
-                    <div>Current position:</div>
-                    <div id="curVal"> - </div>
-                </div>
-                <div class="state-line">
-                    <div>Server state:</div>
-                    <div id="stat"> - </div>
-                </div>
-                <div class="state-line">
-                    <div>Server startup time:</div>
-                    <div id="startup"> - </div>
-                </div>
-            </div>
-            <div class="message-column">
-                <h5>Messages:</h5>
-                <table id="messages">
-                    <tr>
-                        <th class="message-index-width">ID</th>
-                        <th class="message-content-width">Message</th>
-                        <th class="message-date-width">Date</th>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
+		<div class="container-fluid mt-3">
+			<div class="row">
+				<div class="col-md-6 col-12 mx-auto">
+					<table class="table">
+						<thead>
+						  <tr>
+							<th scope="col">ID</th>
+							<th scope="col">Event</th>
+							<th scope="col">Date</th>
+						  </tr>
+						</thead>
+						<tbody id="messages">
+							<template id="messageTemplate">
+								<tr>
+									<th scope="row" id="id">1</th>
+									<td id="event"></td>
+									<td id="date"></td>
+								</tr>
+							</template>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</main>	
 </body>
 </html>

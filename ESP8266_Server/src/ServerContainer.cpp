@@ -342,9 +342,9 @@ void ServerContainer::handleRedirectSecure() {
 
 void ServerContainer::createGenericResponse(int waitTime, JsonDocument& document) {
     JsonObject genericResponse = document.createNestedObject("G");
+    genericResponse["R"] = waitTime;
     
     if (waitTime > 0) {
-        genericResponse["R"] = waitTime;
         return;
     }
 
@@ -354,7 +354,6 @@ void ServerContainer::createGenericResponse(int waitTime, JsonDocument& document
     esp_yield();
 
     genericResponse["V"] = (int) (processQueue.getCurrentValue() * 100);
-    genericResponse["R"] = waitTime;
 }
 
 bool ServerContainer::authenticationCheck() {

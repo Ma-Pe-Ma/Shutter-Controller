@@ -198,6 +198,9 @@ void MainWindow::handleTimings()
         ImGui::Text(id.c_str());
         ImGui::SameLine();
 
+        ImGui::Text("\t");
+        ImGui::SameLine();
+
         int& hour = timings[i].hour;
         int& minute = timings[i].minute;
 
@@ -213,32 +216,43 @@ void MainWindow::handleTimings()
             minute = minute < 0 ? 0 : minute;
             minute = minute > 59 ? 59 : minute;
         }
-
-        ImGui::PopItemWidth();
+        
+        ImGui::PopItemWidth();       
 
         ImGui::SameLine();
+        ImGui::Text("\t");
+        ImGui::SameLine();
+        ImGui::Checkbox((*translation)["active"].c_str(), &timings[i].active);
+
+        ImGui::NewLine();
+        ImGui::Text("\t\t");
+
+        for (int j = 0; j < 7; j++) {
+            if (j == 5) {
+                ImGui::NewLine();
+                ImGui::Text("\t\t");
+            }
+            
+            ImGui::SameLine();            
+            ImGui::Checkbox(Timing::nameMap[j].c_str(), &(timings[i].days[j]));
+        }
+
+        ImGui::NewLine();
+        ImGui::Text("\t\t");
+        ImGui::SameLine();
+
         ImGui::PushItemWidth(150);
         if (ImGui::SliderInt((*translation)["value"].c_str(), &timings[i].value, 0, 100))
         {
             int digit = timings[i].value % 5;
             timings[i].value = digit < 3 ? timings[i].value - digit : timings[i].value - digit + 5;
         }
+
         ImGui::PopItemWidth();
-
-        ImGui::SameLine();
-        ImGui::Checkbox((*translation)["active"].c_str(), &timings[i].active);
-
-        ImGui::NewLine();       
-        ImGui::Text("\t\t\t\t");
-
-        for (int j = 0; j < 7; j++)
-        {
-            ImGui::SameLine();
-            ImGui::Checkbox(Timing::nameMap[j].c_str(), &(timings[i].days[j]));
-        }
         
         ImGui::PopID();
         ImGui::NewLine();
+        ImGui::Separator();
     }
 
     if (ImGui::Button((*translation)["update"].c_str()))
@@ -339,7 +353,7 @@ void MainWindow::handleMessages() {
 
     ImGui::Columns(3);
     ImGui::SetColumnWidth(0, 30);
-    ImGui::SetColumnWidth(1, 185);
+    ImGui::SetColumnWidth(1, 150);
     ImGui::SetColumnWidth(2, 140);
 
     ImGui::Text(((*translation)["mid"]).c_str());

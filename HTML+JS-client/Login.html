@@ -1,19 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shutter Controller - Login</title>
-  <link rel="stylesheet" type="text/css" href="./login.css"/>
+<html lang="en" data-bs-theme="light"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="author" content="Péter Máté Margitai">
+<title>Shutter Controller - login</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
+
 </head>
 <body>
-  <div class="login-container">
-    <h2>Shutter Controller - Login</h2>
-    <form class="login-form" action="./L" method="POST">
-      <input type="text" placeholder="Username" name="username">
-      <input type="password" placeholder="Password" name="password">
-      <button type="submit">Sign In</button>
-    </form>
-  </div>
+	<main class="container">
+		<header class="py-3 mb-4 border-bottom">
+				<div class="d-flex flex-wrap justify-content-between">
+					<a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+						<span class="fs-4">Shutter Controller</span>
+					</a>
+				</div>
+		</header>
+		<div class="form-signin w-100 m-auto d-flex justify-content-center">
+			<form class="col-8 col-md-6" method="POST" action="./L">
+			<h1 class="h3 mb-3 fw-normal">Sign in</h1> 
+
+			<div class="form-floating">
+				<input type="text" class="form-control" id="floatingInput" placeholder="username" name="username" style="cursor: auto;">
+				<label for="floatingInput">Username</label>
+			</div>
+			<div class="form-floating">
+				<input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" style="cursor: auto;">
+				<label for="floatingPassword">Password</label>
+			</div>
+	   
+			<button class="btn btn-primary w-100 py-2 col-6 form-group" type="submit">Sign in</button>
+			</form>
+		</div>
+	</main>
 </body>
 </html>

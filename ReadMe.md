@@ -4,7 +4,9 @@
 
 ![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/HTML+JS%20client/working/green) ![Desktop](https://badgen.net/badge/WASM%20client/working/green) 
 
-This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller. Demos for the clients can be tried out [here](https://mapema.hu/wasm/shutter-controller/HtmlJsClient.html).
+This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller.
+
+Demos for the clients can be tried out [here](https://mapema.hu/wasm/shutter-controller/HtmlJsClient.html).
 
 ## Features
 
@@ -25,12 +27,12 @@ An additional handy function is timing the setting operations: you can schedule 
 The ESP acts as an HTTPS server to which the clients can POST settings and GET the current state.
 
 There are two clients, both can be accessed from browsers: 
-* [HTML+JS](./HTML+JS-client/) - pure HTML + CSS + JavaScript solution
+* [HTML+JS](./HTML+JS-client/) - HTML + JavaScript solution with Bootstrap styling
 * [Wasm client](./Wasm-client) - WASM application embedded into an HTML page
 
 The Wasm client uses [DearImGui](https://github.com/ocornut/imgui) for the gui and it can be built as a desktop application.
 
-The GUI becomes disabled on both platfroms when a request/shutter setting operation is in progress, this prevents the user to send multiple commands which may contradict each other. On the server side it's also ensured that two operations can't be executed at the same time as they are queued so they get executed one after other.
+The GUI becomes disabled on both platfroms when a request/shutter setting operation is in progress, this prevents the user to send multiple commands which may contradict each other. On the server side it's also ensured that two operations can't be executed at the same time as they are queued so they get executed one after another.
 
 For images of the clients [see the gallery](#gallery).
 
@@ -38,10 +40,9 @@ For images of the clients [see the gallery](#gallery).
 
    --   |   HTML+JS   |  WASM
 |:----------------------:|:----------------------:|:----------------------:
-Control | <img src="./Images/HTML+JS client/set.png" alt="drawing"/> | <img src="./Images/Wasm client/set.png" alt="drawing"/>
-Timings | <img src="./Images/HTML+JS client/timings.png" alt="drawing"/> | <img src="./Images/Wasm client/timings.png" alt="drawing"/>
-Zeroing | <img src="./Images/HTML+JS client/zeroing.png" alt="drawing"/> | <img src="./Images/Wasm client/zeroing.png" alt="drawing"/>
-
+Control | <img src="./Images/HTML+JS client/set.png" alt="drawing" width="75%"/> | <img src="./Images/Wasm client/set.png" alt="drawing" width="75%"/>
+Timings | <img src="./Images/HTML+JS client/timings.png" alt="drawing" width="75%"/> | <img src="./Images/Wasm client/timings.png" alt="drawing" width="75%"/>
+Zeroing | <img src="./Images/HTML+JS client/zeroing.png" alt="drawing" width="75%"/> | <img src="./Images/Wasm client/zeroing.png" alt="drawing" width="75%"/>
 
 ## Setting Up 
 ### Software

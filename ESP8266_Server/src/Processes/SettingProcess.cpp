@@ -3,8 +3,6 @@
 #include "../LittleFSHelper.h"
 #include "ZeroProcess.h"
 
-
-
 void SettingProcess::start(const float currentValue) {
     processStartTime = millis();
     processTime = 0;

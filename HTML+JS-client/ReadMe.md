@@ -9,6 +9,6 @@ As the certificate was generated manually, you have to confirm in your browser t
 This client does not need specific configuring.
 
 However the html files in this directory have to be included in the [server's code](../ESP8266_Server/src/BrowserClient.h).
-Make sure that the quotation mark characters are escaped and add quotation marks at the start + end of the lines before copying to the ESP's source code. 
+Make sure that the quotation mark and the backslash characters are escaped and add quotation marks at the start + end of the lines before copying to the ESP's source code. 
 
 The resources for this page have to be served from an external server (see the [server's ReadMe](../ESP8266_Server/ReadMe.md#Setting-up-the-external-resource-provider-server))
