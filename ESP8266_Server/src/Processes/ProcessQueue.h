@@ -6,6 +6,8 @@
 #include "SettingProcess.h"
 #include "ZeroProcess.h"
 
+#include "../Shutter.pb.h"
+
 class ProcessQueue {
     SettingProcess currentSettingByClient;
     ZeroProcess zeroProcess;
@@ -20,13 +22,13 @@ class ProcessQueue {
     int8_t lastSetMin = -1;
     int8_t lastSetDay = -1;
     
-    std::function<void(RawMessage)> messageProcessor;
+    std::function<void(Shutter_Event, int)> messageProcessor;
 public:
     void processQueue();
     int getQueueCount();
     
     void addSettingToQueue(SettingProcess* newSetting);
-    void processZero(ZeroState);
+    void processZero(Shutter_Zero);
 
     SettingProcess* getCurrentSettingProcess();
     float getCurrentValue();
@@ -42,7 +44,7 @@ public:
     void saveCurrentStateToFlash();
     void loadCurrentStateFromFlash();
 
-    void setMessageProcessor(std::function<void(RawMessage)> messageProcessor) {this->messageProcessor = messageProcessor; }
+    void setMessageProcessor(std::function<void(Shutter_Event, int)> messageProcessor) {this->messageProcessor = messageProcessor; }
 };
 
 #endif

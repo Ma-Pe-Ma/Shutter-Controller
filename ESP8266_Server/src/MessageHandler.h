@@ -2,27 +2,23 @@
 #define MESSAGEHANDLER_H
 
 #include "Arduino.h"
-#include <ArduinoJson.h>
-#include "LittleFSHelper.h"
-#include "RawMessage.h"
+#include "LittleFSHandler.h"
 
 #include "../Configuration.h"
 
+#include "Shutter.pb.h"
+
 class MessageHandler {
-    String messages[NR_OF_MESSAGES];
-    unsigned int unseenNr = 0;
-    String startupMessage;
+    Shutter_MessageContainer messageContainer = Shutter_MessageContainer_init_default;
+
+    void saveMessagesToFlash();
+    void loadMessagesFromFlash();
+
 public:
     void initialize();
-    void getEveryMessage(JsonObject&);
-    void addNewMessage(RawMessage);
-    void createNewMessage(String&, String&, String&, String&);
-    void serializeMessages();
-    void resetUnseenCounter();
+    void addNewMessage(Shutter_Event, int);
 
-    void saveMessagesToFlash(String&);
-    void loadMessagesFromFlash();
-    void readMessagesFromFlash(String&);
+    Shutter_MessageContainer getMessageContainer() { return this->messageContainer; }
 };
 
 #endif

@@ -1,5 +1,8 @@
 #include "TimingContainer.h"
 
+#include "../pb_encode.h"
+#include "../pb_decode.h"
+
 void TimingContainer::initialize(ProcessQueue* processQueue) {
     loadTimingsFromFlash();
     this->processQueue = processQueue;
@@ -33,30 +36,26 @@ void TimingContainer::checkTimings(int day, int hour, int minute) {
 }
 
 void TimingContainer::readTimingsFromFlash(String& target) {
-    LittleFSHelper::readFile("timings.txt", target);
+    LittleFSHandler::readFile("timings.txt", target);
 }
 
 void TimingContainer::saveTimingsToFlash(const String& timingsString) {
-    LittleFSHelper::writeFile("timings.txt", timingsString);
+    LittleFSHandler::writeFile("timings.txt", timingsString);
 }
 
 void TimingContainer::loadTimingsFromFlash() {
     String timingsSerialized;
-    LittleFSHelper::readFile("timings.txt", timingsSerialized);
+    LittleFSHandler::readFile("timings.txt", timingsSerialized);
 
     if (timingsSerialized != "") {
-        StaticJsonDocument<1024> doc;
+        Shutter_Request timingContainer = Shutter_Request_init_default;
 
-        DeserializationError err = deserializeJson(doc, timingsSerialized);
+        pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) timingsSerialized.c_str(), timingsSerialized.length());
+        if(!pb_decode(&istream, Shutter_Request_fields, &timingContainer)) {
 
-        if (err == DeserializationError::Ok) {
-            JsonObject timingsObject = doc.as<JsonObject>();
-            this->parseTimings(timingsObject);
         }
-        else {
-            Serial.print("Error parsing timing json: ");
-            Serial.println(err.c_str());
-        }        
+        
+        this->parseTimings(timingContainer);
 
         Timing* possibleMissedTiming = nullptr;
         int8_t currentDay = 0;
@@ -101,55 +100,18 @@ void TimingContainer::loadTimingsFromFlash() {
             }
         }
     }
-    else {
-        /*StaticJsonDocument<1024> doc;
-        JsonObject object = doc.to<JsonObject>();
-        createJsonObject(object);
-
-        String serialized;
-        serializeJson(doc, serialized);
-        Serial.println("Saving: " + serialized);
-        saveTimingsToFlash(serialized);
-        doc.clear();
-        Serial.println("Timings saved to flash: "+serialized);*/
-    }
 }
 
-void TimingContainer::parseTimings(JsonObject& timingsObject) {
+void TimingContainer::parseTimings(Shutter_Request& timingContainer) {
     for (int i = 0; i < NR_OF_TIMINGS; i++) {
         Timing& modifiableTiming = timings[i];
+        Shutter_Timing& timingObject = timingContainer.timing[i];
 
-        String ID = String(i);
-        JsonObject timingObject = timingsObject[ID].as<JsonObject>();
+        timingObject.value = timingObject.value > 100 ? 100 : (timingObject.value < 0 ? 0 : timingObject.value);
+        timingObject.value -= timingObject.value % 5 - (timingObject.value % 5 < 3 ? 0 : 5);
 
-        int intValue = timingObject["V"].as<int>();
-        int digit = intValue % 5;
-
-        if (digit != 0)
-        {
-            intValue = digit < 3 ? intValue - digit : intValue - digit + 5;
-        }
-
-        modifiableTiming.setTargetValue(1.0f * intValue / 100);
-        modifiableTiming.setHour(timingObject["H"].as<int>());
-        modifiableTiming.setMinute(timingObject["M"].as<int>());
-        modifiableTiming.parseDayStates(timingObject["D"].as<String>());
-        modifiableTiming.setActive(timingObject["A"].as<bool>());
+        modifiableTiming.setTargetValue(1.0f * timingObject.value / 100);
         modifiableTiming.setID(i);
-    }
-}
-
-void TimingContainer::createJsonObject(JsonObject& object) {
-    for (int i = 0; i < NR_OF_TIMINGS; i++) {
-        String ID = String(i);
-        Timing& timing = timings[i];
-        timing.setID(i);
-        JsonObject timingObject = object.createNestedObject(ID);
-        timingObject["V"] = int (timing.getTargetValue() * 100);
-        timingObject["H"] = timing.getHour();
-        timingObject["M"] = timing.getMinute();
-        timingObject["A"] = timing.getActive();
-        timingObject["D"] = timing.serializeDayStates();
     }
 }
 

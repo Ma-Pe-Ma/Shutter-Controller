@@ -48,5 +48,10 @@ The server has to serve the files with the following headers:
 * `Cross-Origin-Resource-Policy: cross-origin` - enable other sites to use these files as resources
 * `Cache-Control: max-age=31536000` - cache the resources for at least a year as they will not change
 
+### Protobuf
+
+    set proto_path=/ShutterController/ESP8266_Server/src/
+    protoc --nanopb_out=%proto_path% --nanopb_opt=-I%proto_path% -I%proto_path% Shutter.proto
+
 ## Backlog
 * implement configuring automatic zeroing at given time? (+clients too?)

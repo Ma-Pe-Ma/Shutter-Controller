@@ -47,7 +47,9 @@ export class TestRequestQueue extends RequestQueue {
     serializeDate(date) {
         var h = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
         var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-        return `${date.getFullYear()}. ${date.getMonth() + 1}. ${date.getDate()}. ${h}:${m}`;
+        var mo = date.getMonth() + 1 < 10 ? '0 ' + date.getMonth() + 1 : date.getMonth() + 1;
+        var d = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+        return `${date.getFullYear()}. ${mo}. ${d}. ${h}:${m}`;
     }
 
     constructor(guiElements) {

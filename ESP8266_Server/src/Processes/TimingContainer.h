@@ -10,15 +10,16 @@ class TimingContainer {
     ProcessQueue* processQueue;
 
     void loadTimingsFromFlash();
-    void createJsonObject(JsonObject&);
 public:
     void readTimingsFromFlash(String& target);
     void saveTimingsToFlash(const String&);
-    void parseTimings(JsonObject&);
+    void parseTimings(Shutter_Request&);
 
     void checkTimings(int, int, int); 
     void initialize(ProcessQueue*);
     void disableEarlierSettings();
+
+    Timing& getTiming(int id) { return this->timings[id]; }
 };
 
 #endif

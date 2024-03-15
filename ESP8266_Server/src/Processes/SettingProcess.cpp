@@ -1,6 +1,6 @@
 #include "SettingProcess.h"
 #include "../TimeCalibration.h"
-#include "../LittleFSHelper.h"
+#include "../LittleFSHandler.h"
 #include "ZeroProcess.h"
 
 void SettingProcess::start(const float currentValue) {
@@ -64,10 +64,9 @@ bool SettingProcess::checkFinished() {
     return false;
 }
 
-RawMessage SettingProcess::generateMessage() {
-    int intCurrent = (int) (targetValue * 100);
-
-    return {"S", "M", String(intCurrent)};
+std::tuple<Shutter_Event, int> SettingProcess::generateMessage() {
+    //TODO: 
+    return {Shutter_Event_set, (int) (targetValue * 100)};
 }
 
 int SettingProcess::getRemainingTime() { 

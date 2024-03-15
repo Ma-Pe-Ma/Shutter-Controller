@@ -1,7 +1,7 @@
-#include "LittleFSHelper.h"
+#include "LittleFSHandler.h"
 #include "TimeCalibration.h"
 
-namespace LittleFSHelper {
+namespace LittleFSHandler {
 
     void initialize(bool format) {
         LittleFS.begin();
@@ -10,10 +10,40 @@ namespace LittleFSHelper {
         if (format) {
             LittleFS.format();
         }
+
+        String failedStartupCount;
+        readFile("fail.txt", failedStartupCount);
+        int retryCount = failedStartupCount.toInt() < 1 ? 1 : failedStartupCount.toInt() + 1;
+
+        if (retryCount > 4) {
+            LittleFS.format();
+        }
+        else {
+            writeFile("fail.txt", String(retryCount));
+        }        
     }
 
     void writeFile(const char* path, const String& message) {
         writeFile(path, message.c_str());
+    }
+
+    void writeFile(const char* path, uint8_t* message, size_t size) {
+        File file = LittleFS.open(path, "w");
+        if (!file) {
+            Serial.println("\t\tFailed to open file for writing");
+            return;
+        }
+        file.setTimeCallback(TimeCalibration::customTimeSetter);
+
+        if (file.write(message, size)) {
+            Serial.println("\t\tFile written");
+        }
+        else {
+            Serial.println("\t\tWrite failed");
+        }
+
+        delay(2000);
+        file.close();
     }
 
     void writeFile(const char * path, const char * message) {
