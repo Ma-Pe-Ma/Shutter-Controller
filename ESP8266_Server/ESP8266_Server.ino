@@ -2,7 +2,7 @@
 #include <NTPClient.h>
 #include <EasyDDNS.h>
 
-#include "src/LittleFSHelper.h"
+#include "src/LittleFSHandler.h"
 #include "src/Processes/SettingProcess.h"
 #include "src/Processes/Timing.h"
 #include "src/TimeCalibration.h"
@@ -12,7 +12,7 @@
 
 ServerContainer serverContainer;
 
-void setup() {    
+void setup() {
     // setup pins
     //This is needed when rx/gpio3 pin is used!
     //pinMode(UP_PIN, FUNCTION_3);
@@ -49,8 +49,9 @@ void setup() {
 
     // setup tools and the server itself
     TimeCalibration::initializeDateTime();
-    LittleFSHelper::initialize(FORMAT_FS_ONSTARTUP);
+    LittleFSHandler::initialize(FORMAT_FS_ONSTARTUP);
     serverContainer.initialize();
+    LittleFSHandler::deleteFile("fail.txt");
 
     float value = serverContainer.getProcessQueue().getCurrentValue();
     String date = serverContainer.getProcessQueue().getLastSetDate();
@@ -73,7 +74,7 @@ void setup() {
 unsigned long lasttime = 0;
 
 void loop() {
-    unsigned long current = millis();    
+    unsigned long current = millis();
 
     //if WiFi disconnected and no process is in progress, try to reccnnect
     if (WiFi.status() != WL_CONNECTED && serverContainer.getProcessQueue().getQueueCount() == 0) {

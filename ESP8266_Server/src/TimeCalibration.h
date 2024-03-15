@@ -26,10 +26,10 @@ namespace TimeCalibration {
     bool isDST(int, int, int, int);
     int getLastSundayOfMonth(int, int);
     String getFormattedString();
-    String getFormattedStringByEpoch(time_t);
     time_t customTimeSetter();
 
     void getCurrentTime(int8_t&, int8_t&, int8_t&);
+    void getDatetime(int32_t& year, int32_t& month, int32_t& day, int32_t& hour, int32_t& minute);
 }
 
 #endif

@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package Shutter;
+
+enum Event {
+    empty = 0;
+    start = 1;
+    set = 2;
+    timing = 3;
+    zero = 4;
+    zero_fail = 5;
+    zero_find = 6;
+    timings_updated = 7;
+}
+
+enum Zero {
+    current = 0;
+    up = 1;
+    down = 2;
+}
+
+message Timing {
+    int32 value = 1;
+
+    int32 hour = 2;
+    int32 minute = 3;
+    
+    repeated bool days = 4;
+    bool active = 5;
+}
+
+message Datetime {
+	int32 year = 1;
+	int32 month = 2;
+	int32 day = 3;
+	
+	int32 hour = 4;
+	int32 minute = 5;
+}
+
+message GenericMessage {
+    int32 value = 1;
+    Event event = 2;
+    Datetime datetime = 3;
+}
+
+message MessageContainer {
+    repeated GenericMessage genericMessage = 1;
+    Datetime startTime = 2;
+}
+
+message Response{
+    repeated Timing timing = 1;
+    int32 value = 2;
+    int32 retryTime = 3;
+    MessageContainer messageContainer = 4;
+}
+
+message Request {
+    repeated Timing timing = 1;
+    int32 value = 2;
+    Zero zero = 3;
+}
+
+message CurrentState {
+    float value = 1;
+    int32 day = 2;
+    int32 hour = 3;
+    int32 minute = 4;
+}

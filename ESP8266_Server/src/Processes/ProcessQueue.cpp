@@ -1,6 +1,9 @@
 #include "ProcessQueue.h"
 #include "../TimeCalibration.h"
 
+#include "../pb_encode.h"
+#include "../pb_decode.h"
+
 void ProcessQueue::processQueue() { 
     if (currentProcess == nullptr && !settingQueue.isEmpty()) {
         currentProcess = settingQueue.dequeue();
@@ -16,7 +19,8 @@ void ProcessQueue::processQueue() {
 
             this->saveCurrentStateToFlash();
             esp_yield();
-            this->messageProcessor(currentProcess->generateMessage());
+            std::tuple<Shutter_Event, int> processMessage = currentProcess->generateMessage();
+            this->messageProcessor(std::get<0>(processMessage), std::get<1>(processMessage));
             currentProcess = nullptr;
             Serial.println("Process finished!");
         }
@@ -62,45 +66,54 @@ int ProcessQueue::getQueueCount() {
 }
 
 void ProcessQueue::saveCurrentStateToFlash() {
-    StaticJsonDocument<256> doc;
-    doc["V"] = currentValue;
-    doc["D"] = lastSetDay;
-    doc["H"] = lastSetHour;
-    doc["M"] = lastSetMin;
+    Shutter_CurrentState currentState = Shutter_CurrentState_init_default;
+    currentState.value = currentValue;
+    currentState.day = lastSetDay;
+    currentState.hour = lastSetHour;
+    currentState.minute = lastSetMin;
 
-    String out = "";
-    serializeJson(doc, out);
+    uint8_t buffer[20];
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, 20);
+    
+    if (!pb_encode(&stream, Shutter_CurrentState_fields, &currentState)) {
+                
+    }
+    
     esp_yield();
-    LittleFSHelper::writeFile("state.txt", out);
+    LittleFSHandler::writeFile("state.txt", buffer, stream.bytes_written);
 }
 
 void ProcessQueue::loadCurrentStateFromFlash() {
-    String currentState;
-    LittleFSHelper::readFile("state.txt", currentState);
+    String currentStateSerialized;
+    LittleFSHandler::readFile("state.txt", currentStateSerialized);
 
-    if (currentState != "") {
-        StaticJsonDocument<256> doc;
-        deserializeJson(doc, currentState);
+    if (currentStateSerialized != "") {
+        Shutter_CurrentState currentState = Shutter_CurrentState_init_default;
+
+        pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) currentStateSerialized.c_str(), currentStateSerialized.length());
+        if (!pb_decode(&istream, Shutter_CurrentState_fields, &currentState)) {
+
+        }
  
-        currentValue =  doc["V"].as<float>();
-        lastSetDay = doc["D"].as<int8_t>();
-        lastSetHour = doc["H"].as<int8_t>();
-        lastSetMin = doc["M"].as<int8_t>();
+        currentValue = currentState.value;
+        lastSetDay = currentState.day;
+        lastSetHour = currentState.hour;
+        lastSetMin = currentState.minute;;
     }
     else {
         this->setCurrentValue(0.5f);        
-        processZero(ZeroState::find);
+        processZero(Shutter_Zero_current);
     }
 }
 
-void ProcessQueue::processZero(ZeroState zeroState) {
+void ProcessQueue::processZero(Shutter_Zero zeroState) {
     switch (zeroState) {
-        case ZeroState::up:
+        case Shutter_Zero_up:
             currentValue = 1.0f;
             TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
             saveCurrentStateToFlash();
             break;
-        case ZeroState::down:
+        case Shutter_Zero_down:
             currentValue = 0.0f;
             TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
             saveCurrentStateToFlash();
@@ -108,5 +121,5 @@ void ProcessQueue::processZero(ZeroState zeroState) {
         default:
             settingQueue.enqueue(&zeroProcess);
             break;
-    }    
+    }
 }

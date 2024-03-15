@@ -4,7 +4,9 @@
 #include "../MessageHandler.h"
 #include "../../Configuration.h"
 
-#include "../RawMessage.h"
+#include "../Shutter.pb.h"
+
+#include <tuple>
 
 class SettingProcess {
    
@@ -20,8 +22,8 @@ public:
 
     void setTargetValue(float targetValue) {this->targetValue = targetValue;}
     float getTargetValue() {return this->targetValue; }
-    virtual RawMessage generateMessage();
-    
+    virtual std::tuple<Shutter_Event, int> generateMessage();
+
     int getRemainingTime();
 
     static inline const float upSpeed = 1.0f / UP_TIME;

@@ -145,10 +145,7 @@ namespace TimeCalibration {
     }
 
     String getFormattedString() {
-        return getFormattedStringByEpoch(dateTime.getEpochTime());
-    }
-
-    String getFormattedStringByEpoch(time_t epochTime) {
+        time_t epochTime = dateTime.getEpochTime();
         struct tm *ptm = gmtime ((time_t *) & epochTime);
 
         int year = ptm->tm_year;
@@ -164,6 +161,17 @@ namespace TimeCalibration {
         minutes = minutes.length() == 1 ? "0" + minutes : minutes;
 
         return String(year + 1900) + ". " + month + ". " + day + ". " + hours + ":" + minutes;
+    }
+
+    void getDatetime(int32_t& year, int32_t& month, int32_t& day, int32_t& hour, int32_t& minute) {
+        time_t epochTime = dateTime.getEpochTime();
+        struct tm *ptm = gmtime ((time_t *) & epochTime);
+
+        year = 1900 + ptm->tm_year;
+        month = ptm->tm_mon + 1;
+        day = ptm->tm_mday;
+        hour = ptm->tm_hour;
+        minute = ptm->tm_min;
     }
 
     time_t customTimeSetter() {

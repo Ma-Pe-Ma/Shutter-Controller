@@ -4,7 +4,6 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WebServerSecure.h>
-#include <ArduinoJson.h>
 
 #include "MessageHandler.h"
 #include "TimeCalibration.h"
@@ -12,6 +11,8 @@
 #include "Processes/TimingContainer.h"
 #include "Processes/ProcessQueue.h"
 #include "Processes/ZeroProcess.h"
+
+#include "Shutter.pb.h"
 
 #include "../Configuration.h"
 
@@ -29,7 +30,9 @@ private:
     const String secureAddress = "https://" + String(DDNS_DOMAIN);
 
     void handleRedirectSecure();
-    void createGenericResponse(int retryTime, JsonDocument& outDoc);
+
+    bool parseRequestContent(String& content, Shutter_Request request);
+    int serializeResponseContent(uint8_t* buffer, Shutter_Response&, int waitTime = 0);
 
     unsigned long lastCookieUsage = 0;
     unsigned long cookieStartTime = 0;

@@ -1,101 +1,61 @@
 #include "MessageHandler.h"
 #include "TimeCalibration.h"
 
+#include "pb_decode.h"
+#include "pb_encode.h"
+
 void MessageHandler::initialize() {
-    startupMessage = TimeCalibration::getFormattedString();
-    loadMessagesFromFlash();        
-    addNewMessage({"I", "I", "I"});
+    loadMessagesFromFlash();
+    //TODO: add proper value for start
+    addNewMessage(Shutter_Event_start, 0);
 }
 
-void MessageHandler::getEveryMessage(JsonObject& messageObject) {
-    messageObject["S"] = startupMessage;
-
-    JsonObject genericMessages = messageObject.createNestedObject("M");
-
-    for (int i = 0; i < NR_OF_MESSAGES; i++) {
-        genericMessages[String(i)] = serialized(messages[i].c_str());
-    }
-}
-
-void MessageHandler::resetUnseenCounter() {
-    if (unseenNr > 0) {
-        unseenNr = 0;
-        serializeMessages();
-    }
-}
-
-void MessageHandler::addNewMessage(RawMessage rawMessage) {
+void MessageHandler::addNewMessage(Shutter_Event event, int value) {
     for (int i = 0; i < NR_OF_MESSAGES - 1; i++) {
-        messages[NR_OF_MESSAGES - 1 - i] = messages[NR_OF_MESSAGES - 1 - i - 1];
+        messageContainer.genericMessage[NR_OF_MESSAGES - 1 - i] = messageContainer.genericMessage[NR_OF_MESSAGES - 1 - i - 1];
     }
 
-    createNewMessage(rawMessage.type, rawMessage.result, rawMessage.additional, messages[0]);
+    Shutter_GenericMessage genericMessage = Shutter_GenericMessage_init_default;
+    genericMessage.event = event;
+    genericMessage.value = value;
+    
+    genericMessage.datetime = Shutter_Datetime_init_default;
+    TimeCalibration::getDatetime(genericMessage.datetime.year, genericMessage.datetime.month, genericMessage.datetime.day, genericMessage.datetime.hour, genericMessage.datetime.minute);
 
-    if (++unseenNr > 10) {
-        unseenNr = 10;
-    }
-
-    serializeMessages();
+    messageContainer.genericMessage[0] = genericMessage;
 }
 
-void MessageHandler::serializeMessages() {
-    StaticJsonDocument<1024> doc;
+void MessageHandler::saveMessagesToFlash() {
+    uint8_t buffer[300];
 
-    //doc["C"] = unseenNr;
-    doc["S"] = startupMessage;
-    JsonObject genericMessages = doc.createNestedObject("M");
-
-    for (int i = 0; i < NR_OF_MESSAGES; i++) {
-        genericMessages[String(i)] = serialized(messages[i]);
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, 300);
+    
+    if (!pb_encode(&stream, Shutter_MessageContainer_fields, &messageContainer)) {
+        Serial.println("Failed to encode");        
     }
 
-    String messagesDump;
-    serializeJson(doc, messagesDump);
-    saveMessagesToFlash(messagesDump);
-}
-
-void MessageHandler::createNewMessage(String& type, String& result, String& additional, String& target) {
-    target = "";
-    StaticJsonDocument<128> newDoc;
-
-    newDoc["T"] = type;
-    newDoc["R"] = result;
-    newDoc["A"] = additional;
-    newDoc["D"] = TimeCalibration::getFormattedString();
-
-    serializeJson(newDoc, target);
+    LittleFSHandler::writeFile("messages.txt", buffer, stream.bytes_written);
 }
 
 void MessageHandler::loadMessagesFromFlash() {
-    StaticJsonDocument<1024> doc;
     String messagesDump;
-    LittleFSHelper::readFile("messages.txt", messagesDump);
-    Serial.println("Loaded message dump: " + messagesDump);
-    if (messagesDump != "") {
-        deserializeJson(doc, messagesDump);
-        //unseenNr = doc["C"].as<unsigned int>();
-        JsonObject genericMessages =  doc["M"].as<JsonObject>();
+    LittleFSHandler::readFile("messages.txt", messagesDump);
 
-        for (int i = 0; i < NR_OF_MESSAGES; i++) {
-            messages[i] = genericMessages[String(i)].as<String>();
-        }
+    if (messagesDump != "") {
+        pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) messagesDump.c_str(), messagesDump.length());
+        
+        if (!pb_decode(&istream, Shutter_MessageContainer_fields, &messageContainer)) {
+
+        }        
     }
     else {
-        String t = "E";
-        String r = "E";
-        String a = "E";
+        messageContainer.genericMessage_count = NR_OF_MESSAGES;
 
         for (int i = 0; i < NR_OF_MESSAGES; i++) {
-            createNewMessage(t, r, a, messages[i]);
+            messageContainer.genericMessage[i].event = Shutter_Event_empty;
         }
     }
-}
 
-void MessageHandler::saveMessagesToFlash(String& messagesString) {
-    //Serial.println("Saving messages:" + messagesString);
-    LittleFSHelper::writeFile("messages.txt", messagesString);
-}
-
-void MessageHandler::readMessagesFromFlash(String& target) {
-    LittleFSHelper::readFile("messages.txt", target);
+    Shutter_Datetime& startTime = messageContainer.startTime;
+    TimeCalibration::getDatetime(startTime.year, startTime.month, startTime.day, startTime.hour, startTime.minute);
 }

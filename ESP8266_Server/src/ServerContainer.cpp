@@ -4,13 +4,16 @@
 #include "BrowserClient.h"
 #include "Hash.h"
 
+#include "pb_encode.h"
+#include "pb_decode.h"
+
 void ServerContainer::initialize() {
     messageHandler.initialize();
     processQueue.initialize();
     timingContainer.initialize(&processQueue);
 
-    processQueue.setMessageProcessor([this](RawMessage rawMessage) -> void {
-        this->messageHandler.addNewMessage(rawMessage);
+    processQueue.setMessageProcessor([this](Shutter_Event event, int value) -> void {
+        this->messageHandler.addNewMessage(event, value);
     });
 
     secureServer.getServer().setRSACert(new BearSSL::X509List(serverCert), new BearSSL::PrivateKey(serverKey));
@@ -62,26 +65,12 @@ void ServerContainer::initialize() {
     //handle getting the current value, message history
     secureServer.on("/S", HTTP_GET, [this]() -> void {
         if (this->authenticationCheck()) {
-            DynamicJsonDocument docOut(1024);
-
             SettingProcess* current = this->processQueue.getCurrentSettingProcess();
+            uint8_t buffer[300];
+            Shutter_Response response = Shutter_Response_init_default;
 
-            if (current != nullptr) {
-                this->createGenericResponse(current->getRemainingTime(), docOut);
-            }
-            else {
-                this->createGenericResponse(0, docOut);
-            }
-
-            String response;
-            serializeJson(docOut, response);
-
-            this->secureServer.send(200, "text/plain", response);
-            response = "";
-
-            //if (current == nullptr) {
-            //    messageHandler.ResetUnseenCounter();
-            //}        
+            int bytesWritten = this->serializeResponseContent(buffer, response, current != nullptr ? current->getRemainingTime() : 0);
+            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
 
             Serial.println("Status was sent!");   
         }
@@ -93,31 +82,17 @@ void ServerContainer::initialize() {
     // handle getting the dump: current value, message history and the timings
     secureServer.on("/D", HTTP_GET, [this]() -> void {
         if (this->authenticationCheck()) {
-            DynamicJsonDocument docOut(2048);
-
-            String timingsString;
-            this->timingContainer.readTimingsFromFlash(timingsString);
-
-            if (timingsString != "") {
-                docOut["T"] = serialized(timingsString.c_str());
-            }            
-            
+            uint8_t buffer[300];
+            Shutter_Response response = Shutter_Response_init_default;
             SettingProcess* current = processQueue.getCurrentSettingProcess();
-            if (current != nullptr) {
-                this->createGenericResponse(current->getRemainingTime(), docOut);
+
+            response.timing_count = NR_OF_TIMINGS;
+            for (int i = 0; i < NR_OF_TIMINGS; i++) {
+                response.timing[i] = timingContainer.getTiming(i).getTiming();
             }
-            else {
-                this->createGenericResponse(0, docOut);
-            }
 
-            String response;
-            serializeJson(docOut, response);
-
-            //if (current == nullptr) {
-                // messageHandler.ResetUnseenCounter();
-            //}
-
-            this->secureServer.send(200, "text/plain", response);
+            int bytesWritten = this->serializeResponseContent(buffer, response, current != nullptr ? current->getRemainingTime() : 0);            
+            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
             Serial.println("Dump sent back!");
         }
         else {
@@ -128,43 +103,22 @@ void ServerContainer::initialize() {
     // handle posting simple value
     secureServer.on("/V", HTTP_POST, [this]() -> void {
         if (this->authenticationCheck()) {
-            DynamicJsonDocument docOut(1024);
-            StaticJsonDocument<512> docIn;
+            String content = this->secureServer.arg("plain");
+            Shutter_Request request = Shutter_Request_init_default; 
+            this->parseRequestContent(content, request);
 
-            DeserializationError err = deserializeJson(docIn, this->secureServer.arg("plain"));
+            request.value = request.value > 100 ? 100 : (request.value < 0 ? 0 : request.value);
+            request.value -= request.value % 5 - (request.value % 5 < 3 ? 0 : 5);
 
-            int wait = 0;
-            int intValue = -1;
+            processQueue.setClientValue(1.0f * request.value / 100);
+            int wait = 3;
 
-            if (err == DeserializationError::Ok) {
-                JsonObject setting = docIn.as<JsonObject>();
-                intValue = setting["V"].as<int>();
+            uint8_t buffer[300];
+            Shutter_Response response = Shutter_Response_init_default;
+            SettingProcess* current = processQueue.getCurrentSettingProcess();
 
-                int digit = intValue % 5;
-
-                if (digit != 0)
-                {
-                    intValue = digit < 3 ? intValue - digit : intValue - digit + 5;
-                }
-
-                float newValue = 1.0f * intValue / 100;
-                processQueue.setClientValue(newValue);
-                wait = 3;
-            }
-            else {
-                messageHandler.addNewMessage({"J","S", err.c_str()}); 
-                wait = 0;
-            }
-
-            createGenericResponse(wait, docOut);
-
-            String response;
-            serializeJson(docOut, response);
-    
-            this->secureServer.send(200, "text/plain", response);
-            response = "";
-
-            Serial.println("New value was posted: " + String(intValue));
+            int bytesWritten = this->serializeResponseContent(buffer, response, wait);
+            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
         }
         else {
             this->handleRedirectSecure();
@@ -174,38 +128,23 @@ void ServerContainer::initialize() {
     //handle posting timings
     secureServer.on("/T", HTTP_POST, [this]() -> void {
         if (this->authenticationCheck()) {
-            DynamicJsonDocument docOut(1024);
-            StaticJsonDocument<768> docIn;
+            String content = this->secureServer.arg("plain");
+            Shutter_Request request = Shutter_Request_init_default; 
+            this->parseRequestContent(content, request);
 
-            DeserializationError err = deserializeJson(docIn, this->secureServer.arg("plain"));
+            timingContainer.parseTimings(request);
+            timingContainer.disableEarlierSettings();
+            messageHandler.addNewMessage(Shutter_Event_timings_updated, 0);
 
-            if (err == DeserializationError::Ok) {
-                JsonObject timingConfig = docIn.as<JsonObject>();
-                timingContainer.parseTimings(timingConfig);
-                timingContainer.disableEarlierSettings();
-                messageHandler.addNewMessage({"S", "T", "O"});
-            } 
-            else {
-                this->messageHandler.addNewMessage({"J", "T", err.c_str()});
-            }
-            
-            docIn.clear();
-            esp_yield();
+            uint8_t buffer[300];
+            Shutter_Response response = Shutter_Response_init_default;
+            SettingProcess* current = processQueue.getCurrentSettingProcess();
 
-            createGenericResponse(0, docOut);
-
-            String response;
-            serializeJson(docOut, response);
-            docOut.clear();
+            int bytesWritten = this->serializeResponseContent(buffer, response);
+            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
 
             esp_yield();
-
-            this->secureServer.send(200, "text/plain", response);
-            response = "";
-
-            esp_yield();
-
-            this->timingContainer.saveTimingsToFlash(this->secureServer.arg("plain"));
+            this->timingContainer.saveTimingsToFlash(content);
             Serial.println("Timings were updated!");
         }
         else {
@@ -216,56 +155,39 @@ void ServerContainer::initialize() {
     //handle zeroing
     secureServer.on("/Z", HTTP_POST, [this]() -> void {
         if (this->authenticationCheck()) {
-            DynamicJsonDocument docOut(1024);
-            StaticJsonDocument<512> docIn;    
-            
+            String content = this->secureServer.arg("plain");
+            Shutter_Request request = Shutter_Request_init_default; 
+            this->parseRequestContent(content, request);
+
             int8_t retryTime = 0;
-
-            String zeroState = "";
-
-            DeserializationError err = deserializeJson(docIn, this->secureServer.arg("plain"));
-            esp_yield();
-
-            if (err == DeserializationError::Ok) {
-                JsonObject zeroObject = docIn.as<JsonObject>();
-                zeroState = zeroObject["Z"].as<String>();
-
-                if (zeroState == "find") {
-                    this->processQueue.processZero(ZeroState::find);
-                    retryTime = 3;
-                }
-                else {
-                    if (this->processQueue.getCurrentSettingProcess() != nullptr) {
-                        this->messageHandler.addNewMessage({"Z", "F", "B"});
-                        retryTime = 3;
-                    }
-                    else {
-                        if(zeroState == "up") {
-                            this->processQueue.processZero(ZeroState::up);
-                            this->messageHandler.addNewMessage({"Z", "O", "U"});
-                            retryTime = 0;
-                        }
-
-                        if(zeroState == "down") {
-                            this->processQueue.processZero(ZeroState::down);
-                            this->messageHandler.addNewMessage({"Z", "O", "D"});
-                            retryTime = 0;
-                        }
-                    }
-                }
+            
+            if (request.zero == Shutter_Zero_current) {
+                this->processQueue.processZero(request.zero);
+                retryTime = 3;
             }
-            else {
-                this->messageHandler.addNewMessage({"J","Z", err.c_str()});
+            else if (this->processQueue.getCurrentSettingProcess() != nullptr) {
+                this->messageHandler.addNewMessage(Shutter_Event_zero_fail, 0);
+                retryTime = 3;
+            }
+            else if(request.zero == Shutter_Zero_up) {
+                this->processQueue.processZero(request.zero);
+                this->messageHandler.addNewMessage(Shutter_Event_zero, 100);
                 retryTime = 0;
             }
+            else if(request.zero == Shutter_Zero_down) {
+                this->processQueue.processZero(request.zero);
+                this->messageHandler.addNewMessage(Shutter_Event_zero, 0);
+                retryTime = 0;
+            }
+    
+            uint8_t buffer[300];
+            Shutter_Response response = Shutter_Response_init_default;
+            SettingProcess* current = processQueue.getCurrentSettingProcess();
 
-            createGenericResponse(retryTime, docOut);
-            String response;
-            serializeJson(docOut, response);
-            esp_yield();
-            this->secureServer.send(200, "text/plain", response);
+            int bytesWritten = this->serializeResponseContent(buffer, response);
+            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
 
-            Serial.println("Zeroing was set: " + zeroState);
+            Serial.println("Zeroing was set: " + String(request.zero));
         }
         else {
             this->handleRedirectSecure();
@@ -328,6 +250,31 @@ void ServerContainer::initialize() {
     server.begin();
 }
 
+bool ServerContainer::parseRequestContent(String& content, Shutter_Request request) {    
+    pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) content.c_str(), content.length());
+    return pb_decode(&istream, Shutter_Request_fields, &request);
+}
+
+int ServerContainer::serializeResponseContent(uint8_t* buffer, Shutter_Response& response, int waitTime) {
+    response.retryTime = waitTime;
+
+    if (waitTime == 0) {
+        response.value = (int) (processQueue.getCurrentValue() * 100);
+        response.messageContainer = messageHandler.getMessageContainer();
+    }    
+
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, 300);
+    
+    if (!pb_encode(&stream, Shutter_Response_fields, &response)) {
+        Serial.println("Failed to encode");
+        return 0;
+    }
+
+    esp_yield();
+
+    return stream.bytes_written;
+}
+
 void ServerContainer::listen() {
     server.handleClient();
     secureServer.handleClient();
@@ -338,22 +285,6 @@ void ServerContainer::handleRedirectSecure() {
     this->secureServer.sendHeader("Location", String("/"), true);
     this->secureServer.send(302, "text/plain", "");
     Serial.println("Redirect to root secure!");
-}
-
-void ServerContainer::createGenericResponse(int waitTime, JsonDocument& document) {
-    JsonObject genericResponse = document.createNestedObject("G");
-    genericResponse["R"] = waitTime;
-    
-    if (waitTime > 0) {
-        return;
-    }
-
-    JsonObject messageObject = genericResponse.createNestedObject("M");
-    messageHandler.getEveryMessage(messageObject);
-
-    esp_yield();
-
-    genericResponse["V"] = (int) (processQueue.getCurrentValue() * 100);
 }
 
 bool ServerContainer::authenticationCheck() {

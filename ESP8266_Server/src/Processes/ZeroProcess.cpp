@@ -56,7 +56,7 @@ bool ZeroProcess::checkFinished() {
     return false;
 }
 
-RawMessage ZeroProcess::generateMessage() {
-    int intCurrent = (int) (targetValue * 100);
-    return {"S", "Z", String(intCurrent)};
+std::tuple<Shutter_Event, int> ZeroProcess::generateMessage() {
+    //TODO: 
+    return {Shutter_Event_zero_find, (int) (targetValue * 100)};
 }
