@@ -29,31 +29,25 @@ message Timing {
     bool active = 5;
 }
 
-message Datetime {
-	int32 year = 1;
-	int32 month = 2;
-	int32 day = 3;
-	
-	int32 hour = 4;
-	int32 minute = 5;
+message TimingContainer {
+    repeated Timing timing = 1;
 }
 
 message GenericMessage {
     int32 value = 1;
     Event event = 2;
-    Datetime datetime = 3;
+    string datetime = 3;
 }
 
 message MessageContainer {
     repeated GenericMessage genericMessage = 1;
-    Datetime startTime = 2;
+    string startTime = 2;
 }
 
 message Response{
-    repeated Timing timing = 1;
-    int32 value = 2;
-    int32 retryTime = 3;
-    MessageContainer messageContainer = 4;
+    int32 value = 1;
+    int32 retryTime = 2;
+    MessageContainer messageContainer = 3;
 }
 
 message Request {

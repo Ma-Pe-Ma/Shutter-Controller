@@ -66,7 +66,7 @@ void ServerContainer::initialize() {
     secureServer.on("/S", HTTP_GET, [this]() -> void {
         if (this->authenticationCheck()) {
             SettingProcess* current = this->processQueue.getCurrentSettingProcess();
-            uint8_t buffer[300];
+            uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
 
             int bytesWritten = this->serializeResponseContent(buffer, response, current != nullptr ? current->getRemainingTime() : 0);
@@ -82,17 +82,20 @@ void ServerContainer::initialize() {
     // handle getting the dump: current value, message history and the timings
     secureServer.on("/D", HTTP_GET, [this]() -> void {
         if (this->authenticationCheck()) {
-            uint8_t buffer[300];
-            Shutter_Response response = Shutter_Response_init_default;
-            SettingProcess* current = processQueue.getCurrentSettingProcess();
+            uint8_t buffer[Shutter_TimingContainer_size];
+            Shutter_TimingContainer timingContainerResponse = Shutter_TimingContainer_init_default;
+            timingContainerResponse.timing_count = NR_OF_TIMINGS;
 
-            response.timing_count = NR_OF_TIMINGS;
             for (int i = 0; i < NR_OF_TIMINGS; i++) {
-                response.timing[i] = timingContainer.getTiming(i).getTiming();
+                timingContainerResponse.timing[i] = timingContainer.getTiming(i).getTiming();
             }
 
-            int bytesWritten = this->serializeResponseContent(buffer, response, current != nullptr ? current->getRemainingTime() : 0);            
-            this->secureServer.send(200, "text/plain", buffer, bytesWritten);
+            pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_TimingContainer_size);    
+            if (!pb_encode(&stream, Shutter_TimingContainer_fields, &timingContainerResponse)) {
+                Serial.println("Failed to encode");
+            }
+
+            this->secureServer.send(200, "text/plain", buffer, stream.bytes_written);
             Serial.println("Dump sent back!");
         }
         else {
@@ -113,7 +116,7 @@ void ServerContainer::initialize() {
             processQueue.setClientValue(1.0f * request.value / 100);
             int wait = 3;
 
-            uint8_t buffer[300];
+            uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
             SettingProcess* current = processQueue.getCurrentSettingProcess();
 
@@ -136,15 +139,14 @@ void ServerContainer::initialize() {
             timingContainer.disableEarlierSettings();
             messageHandler.addNewMessage(Shutter_Event_timings_updated, 0);
 
-            uint8_t buffer[300];
+            uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
-            SettingProcess* current = processQueue.getCurrentSettingProcess();
 
             int bytesWritten = this->serializeResponseContent(buffer, response);
             this->secureServer.send(200, "text/plain", buffer, bytesWritten);
 
             esp_yield();
-            this->timingContainer.saveTimingsToFlash(content);
+            LittleFSHandler::writeFile("timings.txt", (uint8_t*) content.c_str(), content.length());
             Serial.println("Timings were updated!");
         }
         else {
@@ -180,9 +182,8 @@ void ServerContainer::initialize() {
                 retryTime = 0;
             }
     
-            uint8_t buffer[300];
+            uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
-            SettingProcess* current = processQueue.getCurrentSettingProcess();
 
             int bytesWritten = this->serializeResponseContent(buffer, response);
             this->secureServer.send(200, "text/plain", buffer, bytesWritten);
@@ -250,7 +251,7 @@ void ServerContainer::initialize() {
     server.begin();
 }
 
-bool ServerContainer::parseRequestContent(String& content, Shutter_Request request) {    
+bool ServerContainer::parseRequestContent(String& content, Shutter_Request& request) {
     pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) content.c_str(), content.length());
     return pb_decode(&istream, Shutter_Request_fields, &request);
 }
@@ -260,10 +261,18 @@ int ServerContainer::serializeResponseContent(uint8_t* buffer, Shutter_Response&
 
     if (waitTime == 0) {
         response.value = (int) (processQueue.getCurrentValue() * 100);
-        response.messageContainer = messageHandler.getMessageContainer();
-    }    
+        Shutter_MessageContainer& messageContainer = messageHandler.getMessageContainer();
+        response.messageContainer.genericMessage_count = messageContainer.genericMessage_count;
+        response.has_messageContainer = true;
 
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, 300);
+        for (int i = 0; i < NR_OF_MESSAGES; i++) {
+            response.messageContainer.genericMessage[i] = messageContainer.genericMessage[i];
+        }
+
+       strncpy(response.messageContainer.startTime, messageContainer.startTime, 20);
+    }
+
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_Response_size);
     
     if (!pb_encode(&stream, Shutter_Response_fields, &response)) {
         Serial.println("Failed to encode");

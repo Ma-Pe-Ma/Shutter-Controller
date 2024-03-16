@@ -20,7 +20,7 @@ namespace TimeCalibration {
         return correctedDay;
     }
     
-    void getCurrentTime(int8_t& day, int8_t& hour, int8_t& minute) {
+    void getCurrentTime(int& day, int& hour, int& minute) {
         time_t epochTime = dateTime.getEpochTime();
         struct tm* ti = gmtime(&epochTime);
 

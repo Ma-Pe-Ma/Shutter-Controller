@@ -28,7 +28,7 @@ namespace TimeCalibration {
     String getFormattedString();
     time_t customTimeSetter();
 
-    void getCurrentTime(int8_t&, int8_t&, int8_t&);
+    void getCurrentTime(int&, int&, int&);
     void getDatetime(int32_t& year, int32_t& month, int32_t& day, int32_t& hour, int32_t& minute);
 }
 

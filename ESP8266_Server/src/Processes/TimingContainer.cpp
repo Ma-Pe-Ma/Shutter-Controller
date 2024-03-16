@@ -19,10 +19,11 @@ void TimingContainer::checkTimings(int day, int hour, int minute) {
 
     for (int i = 0; i < NR_OF_TIMINGS; i++) {
         Timing& checkableTiming = timings[i];
+        Shutter_Timing shutter_timing = checkableTiming.getTiming();
 
-        int timingMinute = 60 * checkableTiming.getHour() + checkableTiming.getMinute();
+        int timingMinute = 60 * shutter_timing.hour + shutter_timing.hour;
 
-        if (checkableTiming.getActive() && checkableTiming.getActivityByDay(day) && !checkableTiming.getQueued()) {
+        if (shutter_timing.active && shutter_timing.days[day] && !checkableTiming.getQueued()) {
             //normal behaviour, spring DST change not implemented
             //only one case, when clock goes from 2 to 3 at the end of march!
             if (timingMinute <= currentMinuteTime) {
@@ -33,14 +34,6 @@ void TimingContainer::checkTimings(int day, int hour, int minute) {
             }
         }
     }
-}
-
-void TimingContainer::readTimingsFromFlash(String& target) {
-    LittleFSHandler::readFile("timings.txt", target);
-}
-
-void TimingContainer::saveTimingsToFlash(const String& timingsString) {
-    LittleFSHandler::writeFile("timings.txt", timingsString);
 }
 
 void TimingContainer::loadTimingsFromFlash() {
@@ -58,9 +51,9 @@ void TimingContainer::loadTimingsFromFlash() {
         this->parseTimings(timingContainer);
 
         Timing* possibleMissedTiming = nullptr;
-        int8_t currentDay = 0;
-        int8_t currentHour = 0;
-        int8_t currentMinute = 0;
+        int currentDay = 0;
+        int currentHour = 0;
+        int currentMinute = 0;
 
         TimeCalibration::getCurrentTime(currentDay, currentHour, currentMinute);        
 
@@ -68,15 +61,17 @@ void TimingContainer::loadTimingsFromFlash() {
 
         for (int i = 0; i < NR_OF_TIMINGS; i++) {
             Timing& timing = timings[i];
+            Shutter_Timing shutter_timing = timing.getTiming();
 
-            int timingSumMinutes = timing.getHour() * 60 + timing.getMinute(); 
+            int timingSumMinutes = shutter_timing.hour * 60 + shutter_timing.minute;
 
-            if (timing.getActivityByDay(currentDay) && timing.getActive() && timingSumMinutes <= currentSumMinutes) {
+            if (shutter_timing.days[currentDay] && shutter_timing.active && timingSumMinutes <= currentSumMinutes) {
                 if (possibleMissedTiming == nullptr) {
                     possibleMissedTiming = &timing;
                 }
                 else {
-                    int otherMinutes = possibleMissedTiming->getHour() * 60 + possibleMissedTiming->getMinute();
+                    Shutter_Timing possible_shutter_timing = possibleMissedTiming->getTiming();
+                    int otherMinutes = possible_shutter_timing.hour * 60 + possible_shutter_timing.minute;
                     if (timingSumMinutes > otherMinutes) {
                         possibleMissedTiming = &timing;
                     }
@@ -87,10 +82,12 @@ void TimingContainer::loadTimingsFromFlash() {
         }
 
         if (possibleMissedTiming != nullptr) {
-            int latestSettingMinutes = processQueue->getLastSetHour() * 60 + processQueue->getLastSetMin();
-            int possibleMinutes = possibleMissedTiming->getHour() * 60 + possibleMissedTiming->getMinute();
+            Shutter_CurrentState& currentState = processQueue->getCurrentState();
+            int latestSettingMinutes = currentState.hour * 60 + currentState.minute;
+            Shutter_Timing possible_shutter_timing = possibleMissedTiming->getTiming();
+            int possibleMinutes = possible_shutter_timing.hour * 60 + possible_shutter_timing.minute;
 
-            if (processQueue->getLastSetDay() != currentDay || possibleMinutes > latestSettingMinutes) {
+            if (currentState.day != currentDay || possibleMinutes > latestSettingMinutes) {
                 for (int i = 0; i < NR_OF_TIMINGS; i++) {
                     if (possibleMissedTiming == &timings[i]) {
                         timingsBuffer[i] = timings[i];
@@ -111,14 +108,15 @@ void TimingContainer::parseTimings(Shutter_Request& timingContainer) {
         timingObject.value -= timingObject.value % 5 - (timingObject.value % 5 < 3 ? 0 : 5);
 
         modifiableTiming.setTargetValue(1.0f * timingObject.value / 100);
+        modifiableTiming.setTiming(timingObject);
         modifiableTiming.setID(i);
     }
 }
 
 void TimingContainer::disableEarlierSettings() {
-    int8_t currentDay = 0;
-    int8_t currentHour = 0;
-    int8_t currentMinute = 0;
+    int currentDay = 0;
+    int currentHour = 0;
+    int currentMinute = 0;
 
     TimeCalibration::getCurrentTime(currentDay, currentHour, currentMinute);
 
@@ -126,9 +124,10 @@ void TimingContainer::disableEarlierSettings() {
 
     for (int i = 0; i < NR_OF_TIMINGS; i++) {
         Timing& timing = timings[i];
+        Shutter_Timing shutter_timing = timing.getTiming();
         
-        if (timing.getActivityByDay(currentDay)) {
-            int timingMinute = timing.getHour() * 60 + timing.getMinute();
+        if (shutter_timing.days[currentDay]) {
+            int timingMinute = shutter_timing.hour * 60 + shutter_timing.minute;
 
             if (timingMinute <= currentSumMinutes) {
                 timing.setQueued(true);

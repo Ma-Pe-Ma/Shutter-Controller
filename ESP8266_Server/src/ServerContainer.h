@@ -31,7 +31,7 @@ private:
 
     void handleRedirectSecure();
 
-    bool parseRequestContent(String& content, Shutter_Request request);
+    bool parseRequestContent(String& content, Shutter_Request& request);
     int serializeResponseContent(uint8_t* buffer, Shutter_Response&, int waitTime = 0);
 
     unsigned long lastCookieUsage = 0;
