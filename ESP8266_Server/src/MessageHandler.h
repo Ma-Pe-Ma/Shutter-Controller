@@ -18,7 +18,7 @@ public:
     void initialize();
     void addNewMessage(Shutter_Event, int);
 
-    Shutter_MessageContainer getMessageContainer() { return this->messageContainer; }
+    Shutter_MessageContainer& getMessageContainer() { return this->messageContainer; }
 };
 
 #endif

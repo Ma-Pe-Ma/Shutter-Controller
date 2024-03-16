@@ -8,6 +8,12 @@ const NR_OF_MESSAGES = 10;
 var requestQueue;
 var guiElements;
 
+var shResponse;
+var shRequest;
+var shZero;
+var shTiming;
+var shTimingContainer;
+
 class GuiElements {
     constructor() {
         this.dayAbbreviationMap = ["M", "Tu", "W", "Th", "F", "Sa", "Su"];
@@ -64,83 +70,52 @@ class GuiElements {
     }
     
     initTimings() {
-        var defualtTimings = {
-            "0" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
-            "1" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
-            "2" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
-            "3" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
-            "4" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0},
-            "5" : {"H" : null, "M" : null, "D" : "FFFFFFF", "A" : false, "V" : 0}
-        };
+        var timingContainer = shTimingContainer.create({
+            "timing" : []
+        });
+
+        for (var i = 0; i < NR_OF_TIMINGS; i++) {
+            timingContainer["timing"].push(shTiming.create({"hour" : null, "minute" : null, "days" : [false, false, false, false, false, false, false], "active" : true}));
+        }
 
         this.timings = document.getElementById("timings");
         this.timingTemplate = document.getElementById("timingTemplate");
         this.checkboxTemplate = document.getElementById("checkboxTemplate");
 
-        this.parseTimings(defualtTimings);
+        this.parseTimings(shTimingContainer.encode(timingContainer).finish());
     }
 
     serializeTimings() {
-        var timingsObject = {};
+        var timingRequest = shRequest.create({
+            "timing" : []
+        });
 
-        var index = 0;
         for (var timing of timings.children) {
             var times = timing.querySelector("#timeSet").value.split(":");
             if (times[0] == null || times[1] == null) {
                 return null;
             }
 
-            var days = "";
+            var days = [];
             for (var day of timing.querySelectorAll("#dayCheck")) {
-                days += day.checked ? "T" : "F";
+                days.push(day.checked);
             }
 
-            timingsObject[String(index++)] = {
-                "H" : parseInt(times[0]),
-                "M" : parseInt(times[1]),
-                "D" : days,
-                "A" : timing.querySelector("#activeCheck").checked,
-                "V" : parseInt(timing.querySelector("#seekbar").value)
-            };
+            timingRequest["timing"].push(
+                shTiming.create({
+                    "hour" : parseInt(times[0]),
+                    "minute" : parseInt(times[1]),
+                    "days" : days,
+                    "active" : timing.querySelector("#activeCheck").checked,
+                    "value" : parseInt(timing.querySelector("#seekbar").value)
+                })
+            );            
         }
-    
-        return timingsObject;
+
+        return shRequest.encode(timingRequest).finish();
     }
 
-    parseResponse(responseObject) {
-        var newRequest = null;
-        
-        if (Object.keys(responseObject).length == 0) {
-            this.stateMessage.innerText = "Invalid response from the server!";
-        }
-        else {
-            var isDump = responseObject.hasOwnProperty("T");
-
-            if (isDump)
-            {
-                var timingsObject = responseObject["T"];
-                this.parseTimings(timingsObject)
-            }            
-
-            var genericResponse = responseObject["G"];
-            var retrytime = genericResponse["R"];
-            retrytime = parseInt(retrytime);
-
-            if (retrytime > 0)
-            {
-                newRequest = new CustomRequest();
-                newRequest.setLocation("/S");
-                newRequest.setDelay(retrytime);   
-            }
-            else
-            {
-               this.parseGenericResponse(genericResponse);
-            }
-        } 
-        return newRequest;      
-    };
-
-    parseTimings(timingsObject) {
+    parseTimings(byteArray) {
         this.disableables = []
         timings.innerHTML = "";
 
@@ -149,24 +124,26 @@ class GuiElements {
             return valueString.length == 1 ? "0" + valueString : valueString;
         }
 
-        var j = 0;
-        for (var timing of Object.values(timingsObject)) {
+        var timingContainer = shTimingContainer.decode(byteArray);
+
+        for (var i = 0; i < timingContainer.timing.length; i++) {
+            var timing = timingContainer.timing[i];
             var timingElement = this.timingTemplate.content.cloneNode(true);
 
-            timingElement.getElementById("timingId").innerText = `${j++ + 1}.`;
+            timingElement.getElementById("timingId").innerText = `${i + 1}.`;
             
-            timingElement.getElementById("timeSet").value = formatTimeValue(timing["H"]) + ":" + formatTimeValue(timing["M"]);
+            timingElement.getElementById("timeSet").value = formatTimeValue(timing["hour"]) + ":" + formatTimeValue(timing["minute"]);
             this.disableables.push(timingElement.getElementById("timeSet"));
 
-            timingElement.getElementById("activeCheck").checked = timing["A"];
+            timingElement.getElementById("activeCheck").checked = timing["active"];
             this.disableables.push(timingElement.getElementById("activeCheck"));
 
             var inputText = timingElement.getElementById("seekbarValueText");
-            inputText.innerText = `${timing["V"]}%`;
+            inputText.innerText = `${timing["value"]}%`;
 
             var input = timingElement.getElementById("seekbar");
             input.textHolder = inputText;
-            input.value = timing["V"];
+            input.value = timing["value"];
             input.oninput = function() {
                 this.textHolder.innerText = `${this.value}%`;
             }
@@ -174,11 +151,11 @@ class GuiElements {
 
             var daySelector = timingElement.getElementById("daySelector");            
 
-            var i = 0;
+            var j = 0;
             for (const dayID of this.dayAbbreviationMap) {
                 var dayCheckBox = this.checkboxTemplate.content.cloneNode(true);
                 dayCheckBox.getElementById("dayLabel").innerText = dayID;
-                dayCheckBox.getElementById("dayCheck").checked = timing["D"][i++] == "T";
+                dayCheckBox.getElementById("dayCheck").checked = timing["days"][j++];
                 this.disableables.push(dayCheckBox.getElementById("dayCheck"));
                 daySelector.appendChild(dayCheckBox);
             }
@@ -187,76 +164,52 @@ class GuiElements {
         }
     }
 
-    parseGenericResponse(genericResponse) {
-        this.seekbar.value = parseInt(genericResponse["V"]);
+    parseGenericResponse(byteArray) {
+        var genericResponse = shResponse.decode(byteArray);
+
+        if (genericResponse["retryTime"] > 0) {
+            var newRequest = new CustomRequest();
+            newRequest.setLocation("/S");
+            newRequest.setDelay(genericResponse["retryTime"]);
+            return newRequest;
+        }
+
+        this.seekbar.value = genericResponse["value"];
         this.seekbarValueText.innerText = this.seekbar.value + "%"; 
 
         this.currentValue.innerText = this.seekbar.value + "%";
 
-        var messagesObject = genericResponse["M"];
+        var messageContainer = genericResponse["messageContainer"];
         
-        this.startupTimeText.innerText = messagesObject["S"];
-    
-        messages.innerHTML = "";
-        for (const message of Object.entries(messagesObject["M"])) {
-            let[key, messageObject] = message;
-            var keyInt = parseInt(key);
+        this.startupTimeText.innerText = messageContainer["startTime"];
 
+        messages.innerHTML = "";
+
+        for (var i = 0; i < messageContainer.genericMessage.length; i++) {
             var messageElement = messageTemplate.content.cloneNode(true);
-            messageElement.getElementById("id").innerText =`${keyInt+1}`;
-            messageElement.getElementById("event").innerText = this.getFormattedMessage(messageObject["T"], messageObject["R"], messageObject["A"]);
-            messageElement.getElementById("date").innerText = messageObject["D"];
+            messageElement.getElementById("id").innerText =`${i+1}`;
+            messageElement.getElementById("event").innerText = this.getFormattedMessage(messageContainer.genericMessage[i]);
+            messageElement.getElementById("date").innerText = messageContainer.genericMessage[i].datetime;
             messages.appendChild(messageElement);
         }
+
+        return null;
     }
 
-    getFormattedMessage(T, R, A) {
-        if (T == "E") {
-            return "-";
-        }
-    
-        if (T == "I") {
-            return "Server start.";
-        }
-    
-        if (T == "J") {
-            return "JSON Error: " + R + ", " + A;
-        }
-    
-        if (T == "Z") {
-            if (R == "F") {
-                return "Zeroing failed.";
-            }
-    
-            if (R == "O") {
-                if (A == "U") {
-                    return "Zeroing: up.";
-                }
-                else if (A == "D") {
-                    return "Zeroing: down.";
-                }
-            }
-        }
-    
-        if (T == "T") {
-            return "" + R + ". timing set: " + A + "%.";
-        }
-    
-        if (T == "S") {
-            if (R == "M") {
-                return "Manual set: " + A + "%";
-            }
-    
-            if (R == "Z") {
-                return "Position found: " + A + "%";
-            }
-    
-            if (R == "T") {
-                return "Timings updated.";
-            }
-        }
-    
-        return "Unknown event: " + T + ", " + R + ", " + A;
+    messageMap = {
+        0 : "-",
+        1 : "Server start.",
+        2 : "Manual set: %1$s%%",
+        3 : "Timing set: %1$s%%.",
+        4 : "Zeroing: %1$s%%",
+        5 : "Zeroing failed.",
+        6 : "Position found: %1$s%%",
+        7 : "Timings updated."
+    }
+
+    getFormattedMessage(genericMessage) {
+        var formattableString = this.messageMap[genericMessage["event"]];
+        return sprintf(formattableString, genericMessage["value"]);
     }
 
     bindGUIElements()
@@ -264,9 +217,14 @@ class GuiElements {
         function sendZero(state)
         {
             var request = new CustomRequest();
-            request.setPostData({"Z" : state});
+            
+            var zeroRequest = shRequest.create({
+                "zero" : state
+            });
+
+            request.setPostData(shRequest.encode(zeroRequest).finish());
             request.setLocation("/Z");
-            requestQueue.addNewRequest(request)
+            requestQueue.addNewRequest(request);
         }
 
         this.currentValue = document.getElementById("curVal");
@@ -297,30 +255,36 @@ class GuiElements {
         this.setButton = document.getElementById("setButton");
         this.setButton.onclick = function() {
             var request = new CustomRequest();
-            request.setPostData({"V" : document.getElementById("seekbar").value});
+
+            var valueRequest = shRequest.create({
+                "value" : document.getElementById("seekbar").value
+            });
+
+            request.setPostData(shRequest.encode(valueRequest).finish());
 			request.setLocation("/V");
             requestQueue.addNewRequest(request);
         };
         this.upButton = document.getElementById("upButton");
         this.upButton.onclick = function() {
-            sendZero("up");
+            sendZero(shZero.values.up);
         };
 
         this.downButton = document.getElementById("downButton");
         this.downButton.onclick = function() {
-            sendZero("down");
+            sendZero(shZero.values.down);
         };       
         this.autoButton = document.getElementById("autoButton");
         this.autoButton.onclick = function() {
-            sendZero("find");
+            sendZero(shZero.values.current);
         };
     }
 }
 
 class CustomRequest {
-    #postData = null
-    #location = ""
-    #delay = 0
+    #postData = null;
+    #location = "";
+    #delay = 0;
+    parseResponse = (response) => {return guiElements.parseGenericResponse(response)};
 
     setPostData(postData) {
         this.#postData = postData;
@@ -348,13 +312,18 @@ class CustomRequest {
 
     launchRequest() {
         var request = new XMLHttpRequest();
+        request.container = this;
+        request.responseType = "arraybuffer";
         request.onload = function() {
             if (this.response == null || this.response == "") {
                 guiElements.stateMessage.innerText = "Error: bad response!";
             }
 
             try {
-                var newRequest = guiElements.parseResponse(JSON.parse(this.response));
+                const uint8Array = new Uint8Array(this.response);
+
+                var newRequest = this.container.parseResponse(uint8Array);
+
                 if (newRequest != null) {
                     requestQueue.addNewRequest(newRequest);
                     guiElements.setGuiState(false);
@@ -362,10 +331,10 @@ class CustomRequest {
                 else {
                     guiElements.setGuiState(true);
                     guiElements.stateMessage.innerText = "The server is up and running!";
-                }                
+                }
             }
             catch(e) {
-                guiElements.stateMessage.innerText = "Error while parsing json...";
+                guiElements.stateMessage.innerText = "Error decoding message...";
                 window.location.href = "/";
             }
 
@@ -399,9 +368,8 @@ class CustomRequest {
             request.send();
         }
         else {
-            request.body = JSON.stringify(this.#postData);
             request.open("POST", this.#location);
-            request.send(request.body);
+            request.send(this.#postData);
         }  
     }
 }
@@ -411,29 +379,45 @@ function tryDequeue() {
     window.requestAnimationFrame(tryDequeue);
 }
 
-window.onload = function() {
-    guiElements = new GuiElements();
-    requestQueue = testMode ? new TestRequestQueue(guiElements) : new RequestQueue(guiElements);
+window.onload = function() { 
+    protobuf.load("/Shutter.proto", function(err, root) {        
+        shResponse = root.lookupType("Shutter.Response");
+        //shGenericMessage = root.lookupType("Shutter.GenericMessage");
+        shRequest = root.lookupType("Shutter.Request");
+        //shEvent = root.lookup("Shutter.Event");
+        shZero = root.lookup("Shutter.Zero");    
+        shTiming = root.lookupType("Shutter.Timing");
+        //shMessageContainer = root.lookupType("Shutter.MessageContainer");
+        shTimingContainer = root.lookupType("Shutter.TimingContainer");
 
-    guiElements.bindGUIElements();
-    guiElements.initMessages();
-    guiElements.initTimings();
-    guiElements.setGuiState(false);
-    
-    // launch dump request
-    var dumpRequest = new CustomRequest();
-    dumpRequest.setLocation("/D");
-    requestQueue.addNewRequest(dumpRequest);
+        guiElements = new GuiElements();
+        requestQueue = testMode ? new TestRequestQueue(guiElements) : new RequestQueue(guiElements);
 
-    //check and dequeue new request if it is available at everyFrame
-    window.requestAnimationFrame(() => {tryDequeue();});
+        guiElements.bindGUIElements();
+        guiElements.initMessages();
+        guiElements.initTimings();
+        guiElements.setGuiState(false);
 
-    //Set periodic status request
-    var i = setInterval(function() {
-        if (requestQueue.launchPeriodicStatusRequest()) {
-            var statusRequest = new CustomRequest();
-            statusRequest.setLocation("/S");
-            requestQueue.addNewRequest(statusRequest);
-        }
-    }, 30 * 1000);
+        // launch dump request
+        var dumpRequest = new CustomRequest();
+        dumpRequest.setLocation("/D");
+        dumpRequest.parseResponse = (response) => {guiElements.parseTimings(response)};
+        requestQueue.addNewRequest(dumpRequest);
+
+        var statusRequest = new CustomRequest();
+        statusRequest.setLocation("/S");
+        requestQueue.addNewRequest(statusRequest);
+
+        //check and dequeue new request if it is available at everyFrame
+        window.requestAnimationFrame(() => {tryDequeue();});
+
+        //Set periodic status request
+        var i = setInterval(function() {
+            if (requestQueue.launchPeriodicStatusRequest()) {
+                var statusRequest = new CustomRequest();
+                statusRequest.setLocation("/S");
+                requestQueue.addNewRequest(statusRequest);
+            }
+        }, 30 * 1000);
+    });
 };

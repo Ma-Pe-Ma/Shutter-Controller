@@ -1,6 +1,6 @@
-Shutter.Response.timing max_count:6
+Shutter.TimingContainer.timing max_count:6
 Shutter.MessageContainer.genericMessage max_count:10
+Shutter.MessageContainer.startTime max_size:20
 Shutter.GenericMessage.datetime max_size:20
 Shutter.Timing.days max_count:7
 Shutter.Request.timing max_count:6
-

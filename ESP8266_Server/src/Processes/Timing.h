@@ -12,19 +12,8 @@ class Timing : public SettingProcess {
 
     Shutter_Timing timing = Shutter_Timing_init_default;
 public:
-    int8_t getID() { return this->id; }
     void setID(int8_t id) {this->id = id;}
 
-    int8_t getHour() { return timing.hour; }
-    void setHour(int8_t hour) {timing.hour = hour; }
-
-    int8_t getMinute() { return timing.minute; }
-    void setMinute(int8_t minute) {timing.minute = minute; }
-
-    void setActive(bool active) { timing.active = active; }
-    bool getActive() { return timing.active; }
-
-    bool getActivityByDay(int day) { return timing.days[day]; }
 
     void setQueued(bool queued) {this->queued = queued;}
     bool getQueued() { return this->queued; }
@@ -36,6 +25,10 @@ public:
 
     Shutter_Timing getTiming() {
         return this->timing;
+    }
+
+    void setTiming(Shutter_Timing timing) {
+        this->timing = timing;
     }
 };
 

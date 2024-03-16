@@ -11,8 +11,6 @@ class TimingContainer {
 
     void loadTimingsFromFlash();
 public:
-    void readTimingsFromFlash(String& target);
-    void saveTimingsToFlash(const String&);
     void parseTimings(Shutter_Request&);
 
     void checkTimings(int, int, int); 

@@ -7,22 +7,22 @@
 void ProcessQueue::processQueue() { 
     if (currentProcess == nullptr && !settingQueue.isEmpty()) {
         currentProcess = settingQueue.dequeue();
-        currentProcess->start(currentValue);
+        currentProcess->start(currentState.value);
         Serial.println("New process dequeud!");      
     }
     else if (currentProcess != nullptr) {
         //Serial.println("In progress....");
     
         if (currentProcess->checkFinished()) {
-            this->currentValue = currentProcess->getTargetValue();
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            currentState.value = currentProcess->getTargetValue();
+            TimeCalibration::getCurrentTime(currentState.day, currentState.hour, currentState.minute);
 
             this->saveCurrentStateToFlash();
             esp_yield();
             std::tuple<Shutter_Event, int> processMessage = currentProcess->generateMessage();
             this->messageProcessor(std::get<0>(processMessage), std::get<1>(processMessage));
             currentProcess = nullptr;
-            Serial.println("Process finished!");
+            Serial.println("Process finished: " + String(currentState.value));
         }
     }
 }
@@ -33,7 +33,7 @@ void ProcessQueue::initialize() {
     //Load state from before blackout, else zero to middle!
     loadCurrentStateFromFlash();
 
-    Serial.println("Queue size: "+String(settingQueue.itemSize())+", count: "+String(settingQueue.itemCount()));
+    Serial.println("Queue size: " + String(settingQueue.itemSize()) + ", count: " + String(settingQueue.itemCount()));
 }
 
 void ProcessQueue::addSettingToQueue(SettingProcess* newSetting) {
@@ -42,14 +42,6 @@ void ProcessQueue::addSettingToQueue(SettingProcess* newSetting) {
 
 SettingProcess* ProcessQueue::getCurrentSettingProcess() {
     return currentProcess;
-}
-
-float ProcessQueue::getCurrentValue() {
-    return currentValue;
-}
-
-void ProcessQueue::setCurrentValue(float currentValue) {
-    this->currentValue = currentValue;
 }
 
 void ProcessQueue::setClientValue(float targetValue) {
@@ -66,20 +58,13 @@ int ProcessQueue::getQueueCount() {
 }
 
 void ProcessQueue::saveCurrentStateToFlash() {
-    Shutter_CurrentState currentState = Shutter_CurrentState_init_default;
-    currentState.value = currentValue;
-    currentState.day = lastSetDay;
-    currentState.hour = lastSetHour;
-    currentState.minute = lastSetMin;
-
-    uint8_t buffer[20];
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, 20);
+    uint8_t buffer[Shutter_CurrentState_size];
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_CurrentState_size);
     
     if (!pb_encode(&stream, Shutter_CurrentState_fields, &currentState)) {
                 
     }
     
-    esp_yield();
     LittleFSHandler::writeFile("state.txt", buffer, stream.bytes_written);
 }
 
@@ -88,20 +73,15 @@ void ProcessQueue::loadCurrentStateFromFlash() {
     LittleFSHandler::readFile("state.txt", currentStateSerialized);
 
     if (currentStateSerialized != "") {
-        Shutter_CurrentState currentState = Shutter_CurrentState_init_default;
+        currentState = Shutter_CurrentState_init_default;
 
         pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) currentStateSerialized.c_str(), currentStateSerialized.length());
         if (!pb_decode(&istream, Shutter_CurrentState_fields, &currentState)) {
 
         }
- 
-        currentValue = currentState.value;
-        lastSetDay = currentState.day;
-        lastSetHour = currentState.hour;
-        lastSetMin = currentState.minute;;
     }
     else {
-        this->setCurrentValue(0.5f);        
+        currentState.value = 0.5f;
         processZero(Shutter_Zero_current);
     }
 }
@@ -109,13 +89,13 @@ void ProcessQueue::loadCurrentStateFromFlash() {
 void ProcessQueue::processZero(Shutter_Zero zeroState) {
     switch (zeroState) {
         case Shutter_Zero_up:
-            currentValue = 1.0f;
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            currentState.value = 1.0f;
+            TimeCalibration::getCurrentTime(currentState.day, currentState.hour, currentState.minute);
             saveCurrentStateToFlash();
             break;
         case Shutter_Zero_down:
-            currentValue = 0.0f;
-            TimeCalibration::getCurrentTime(lastSetDay, lastSetHour, lastSetMin);
+            currentState.value = 0.0f;
+            TimeCalibration::getCurrentTime(currentState.day, currentState.hour, currentState.minute);
             saveCurrentStateToFlash();
             break;
         default:
