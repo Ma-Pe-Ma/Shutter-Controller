@@ -39,6 +39,18 @@ void ServerContainer::initialize() {
         }        
     });
 
+    secureServer.on("/format", HTTP_GET, [this]() -> void {
+        if(this->authenticationCheck()) {
+            LittleFSHandler::format();
+
+            this->secureServer.send(200, "text/plain", "Server formatted and restarted!");
+            ESP.restart();
+        }
+        else{
+            this->handleRedirectSecure();
+        }        
+    });
+
     secureServer.on("/favicon.ico", HTTP_GET, [this]() -> void {
         this->secureServer.sendHeader("Location", RESOURCE_PROVIDER "/favicon.ico");
         this->secureServer.send(301, "image/x-icon", "");
@@ -92,7 +104,7 @@ void ServerContainer::initialize() {
 
             pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_TimingContainer_size);    
             if (!pb_encode(&stream, Shutter_TimingContainer_fields, &timingContainerResponse)) {
-                Serial.println("Failed to encode");
+                Serial.println("Failed to encode out timings..");
             }
 
             this->secureServer.send(200, "text/plain", buffer, stream.bytes_written);
@@ -262,20 +274,14 @@ int ServerContainer::serializeResponseContent(uint8_t* buffer, Shutter_Response&
     if (waitTime == 0) {
         response.value = (int) (processQueue.getCurrentValue() * 100);
         Shutter_MessageContainer& messageContainer = messageHandler.getMessageContainer();
-        response.messageContainer.genericMessage_count = messageContainer.genericMessage_count;
         response.has_messageContainer = true;
-
-        for (int i = 0; i < NR_OF_MESSAGES; i++) {
-            response.messageContainer.genericMessage[i] = messageContainer.genericMessage[i];
-        }
-
-       strncpy(response.messageContainer.startTime, messageContainer.startTime, 20);
+        response.messageContainer = messageContainer;
     }
 
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_Response_size);
     
     if (!pb_encode(&stream, Shutter_Response_fields, &response)) {
-        Serial.println("Failed to encode");
+        Serial.println("Failed to encode generic response...");
         return 0;
     }
 

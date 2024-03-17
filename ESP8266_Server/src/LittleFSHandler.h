@@ -11,6 +11,7 @@ namespace LittleFSHandler {
     void readFile(const char * path, String& target);
     void deleteFile(const char * path);
     void listDir(const char * dirname);
+    void format();
 }
 
 #endif

@@ -47,46 +47,57 @@ export class TestRequestQueue extends RequestQueue {
     serializeDate(date) {
         var h = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
         var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
-        var mo = date.getMonth() + 1 < 10 ? '0 ' + date.getMonth() + 1 : date.getMonth() + 1;
+        var mo = (date.getMonth() + 1) < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1);
         var d = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
         return `${date.getFullYear()}. ${mo}. ${d}. ${h}:${m}`;
     }
 
-    constructor(guiElements) {
+    constructor(guiElements, sh) {
         super(guiElements)
+        this.sh = sh;
 
-        for (var i = 0; i < 10; i++) {
-            var message = this.dummy_messages[String(i)];
-            var time  = message["D"];
-            message["D"] = this.serializeDate(new Date(Date.now() - 1000 * 60 * (time[0] * 60 + time[1])));
+        var that = this;
+
+        function createFakeDate(offsetHour, offsetMinute) {
+            return that.serializeDate(new Date(Date.now() - 1000 * 60 * (offsetHour * 60 + offsetMinute)));
         }
-        
+
+        this.dummy_timings = sh.TimingContainer.create({
+            "timing" : [
+                {"hour" :  6, "minute" : 0, "days" : [true, true, true, true, true, false, false], "active" : true, "value" : 100},
+                {"hour" : 18, "minute" : 0, "days" : [true, true, true, true, true, false, false], "active" : true, "value" : 0},
+                {"hour" :  8, "minute" : 0, "days" : [false, false, false, false, false, true, true], "active" : true, "value" : 100},
+                {"hour" : 22, "minute" : 0, "days" : [false, false, false, false, false, true, true], "active" : true, "value" : 0},
+                {"hour" : 15, "minute" : 30, "days" : [false, false, false, false, false, true, true], "active" : false, "value" : 50},
+                {"hour" : 12, "minute" : 45, "days" : [true, true, false, false, false, false, false], "active" : false, "value" : 50}
+            ]
+        })
+
+        this.dummy_response = sh.Response.create({
+            "value" : 45,
+            "retryTime" : 0,
+            "messageContainer" : {
+                "genericMessage" : [
+                    {"value" : 45, "event" : 2, "datetime" : createFakeDate(0, 17)},
+                    {"value" : 100, "event" : 4, "datetime" : createFakeDate(3, 4)},
+                    {"value" : 0, "event" : 7, "datetime" : createFakeDate(4, 37)},
+                    {"value" : 70, "event" : 3, "datetime" : createFakeDate(11, 11)},
+                    {"value" : 30, "event" : 2, "datetime" : createFakeDate(23, 2)},
+                    {"value" : 0, "event" : 1, "datetime" : createFakeDate(23, 5)},
+                    {"value" : 0, "event" : 7, "datetime" : createFakeDate(23, 28)},
+                    {"value" : 20, "event" : 2, "datetime" : createFakeDate(23, 50)},
+                    {"value" : 15, "event" : 6, "datetime" : createFakeDate(25, 3)},
+                    {"value" : 15, "event" : 2, "datetime" : createFakeDate(26, 18)}
+                ],
+                "startTime" : createFakeDate(23, 5)
+            }
+        })
+
         this.dummy_timing_setter();
     }
 
-    dummy_value = 45;
-
-    dummy_timings = {
-        "0" : {"H" :  6, "M" : 0, "D" : "TTTTTFF", "A" :  true, "V" : 100},
-        "1" : {"H" : 18, "M" : 0, "D" : "TTTTTFF", "A" :  true, "V" :  0},
-        "2" : {"H" :  8, "M" : 0, "D" : "FFFFFTT", "A" :  true, "V" : 100},
-        "3" : {"H" : 22, "M" : 0, "D" : "FFFFFTT", "A" :  true, "V" :   0},
-        "4" : {"H" : 15, "M" : 30, "D" : "FFFFFTT", "A" : false, "V" :  50},
-        "5" : {"H" : 12, "M" : 45, "D" : "TTFFFFF", "A" : false, "V" :  50}
-    }
-
-    dummy_messages = {
-        "0" : {"T" : "S", "R" : "M", "A" : "45", "D" : [0, 17]},
-        "1" : {"T" : "Z", "R" : "O", "A" : "U", "D" : [3, 4]},
-        "2" : {"T" : "S", "R" : "T", "A" : "", "D" : [4, 37]},
-        "3" : {"T" : "T", "R" : "1", "A" : "70", "D" : [11, 11]},
-        "4" : {"T" : "S", "R" : "M", "A" : "30", "D" : [23, 2]},
-        "5" : {"T" : "I", "R" : "", "A" : "", "D" : [23, 5]},
-        "6" : {"T" : "S", "R" : "T", "A" : "", "D" : [23, 28]},
-        "7" : {"T" : "S", "R" : "M", "A" : "20", "D" : [23, 50]},
-        "8" : {"T" : "S", "R" : "Z", "A" : "15", "D" : [25, 3]},        
-        "9" : {"T" : "S", "R" : "M", "A" : "15", "D" : [26, 18]},
-    }
+    dummy_timings = {}
+    dummy_response = {}
 
     dummy_timing_setter() {
         const d = new Date();
@@ -97,34 +108,35 @@ export class TestRequestQueue extends RequestQueue {
 
         var that = this;
 
-        for (var i = 0; i < 6; i++) {
-            var dummy_timing = this.dummy_timings[i];
-
-            if (dummy_timing["D"][today] == "T" && dummy_timing["A"]) {
-                var timingSumMinutes = 60 * dummy_timing["H"] + dummy_timing["M"];
+        for(var dummy_timing of this.dummy_timings["timing"]) {
+            if (dummy_timing["days"][today] && dummy_timing["active"]) {
+                var timingSumMinutes = 60 * dummy_timing["hour"] + dummy_timing["minute"];
 
                 if (currentMinutes < timingSumMinutes && timingSumMinutes < currentMinutes + 30) {
-                    setTimeout(function(index, originalSum) {
-                        var currentTiming = that.dummy_timings[index];
-                        var timingSumMinutes =  60 * currentTiming["H"] + currentTiming["M"];
+                    setTimeout(function(dummy_timing, originalSum) {
+                        var timingSumMinutes =  60 * dummy_timing["hour"] + dummy_timing["minute"];
 
                         if (Math.abs(timingSumMinutes - originalSum) <= 1) {
-                            that.dummy_value = currentTiming["V"];
-                            that.addNewMessage("T", index + 1, currentTiming["V"]);
+                            that.dummy_response["value"] = dummy_timing["value"];
+                            that.addNewMessage(3, dummy_timing["value"]);
                         }
 
-                    }, (timingSumMinutes - currentMinutes) * 60 * 1000, i, timingSumMinutes);
+                    }, (timingSumMinutes - currentMinutes) * 60 * 1000, dummy_timing, timingSumMinutes);
                 }
             }
         }
     }    
 
-    addNewMessage(t, r, a) {
+    addNewMessage(event, value) {
         for (var i = 8; i >= 0; i--) {
-            this.dummy_messages[String(i+1)] = this.dummy_messages[String(i)];
+            this.dummy_response["messageContainer"]["genericMessage"][i + 1] = this.dummy_response["messageContainer"]["genericMessage"][i];
         }
 
-        this.dummy_messages["0"] = {"T" : t, "R" : r, "A" : a, "D" : this.serializeDate(new Date())};
+        this.dummy_response["messageContainer"]["genericMessage"][0] = this.sh.GenericMessage.create({
+            "value" : value,
+            "event" : event,
+            "datetime" : this.serializeDate(new Date())
+        })
     }
 
     launchRequest(request) {
@@ -133,63 +145,63 @@ export class TestRequestQueue extends RequestQueue {
     }
 
     launchTestRequest(request) {
-        var delay = 0;            
+        var delay = 0;
+        var requestData = request.getPostData() != null ? this.sh.Request.decode(request.getPostData()) : null;
 
-        switch(request.getLocation()) {
+        var location = request.getLocation();
+
+        switch(location) {
             case "/D":
                 
                 break;
             case "/V":
-                if (this.dummy_value != request.getPostData()["V"]) {
-                    this.dummy_value = request.getPostData()["V"];
-                    this.addNewMessage("S", "M", this.dummy_value);
+                if (this.dummy_response["value"] != requestData["value"]) {
+                    delay = Math.round(20.0 * Math.abs(this.dummy_response["value"] - requestData["value"]) / 100);
+                    this.dummy_response["value"] = requestData["value"];
+                    this.addNewMessage(2, requestData["value"]);
                 }
-                delay = 1;
+                else {
+                    delay = 1;
+                }                
                 break;
             case "/T":
-                this.dummy_timings = request.getPostData();
+                this.dummy_timings["timing"] = requestData["timing"];
                 this.dummy_timing_setter();
-                this.addNewMessage("S", "T", "");
+                this.addNewMessage(7, 0);
+                delay = 1;
                 break;
-            case "/Z":    
-                var z = request.getPostData()["Z"];
+            case "/Z":
+                var z = requestData["zero"];
 
-                if (z == "up") {
-                    delay = 2;
-                    this.addNewMessage("Z", "O", "U");
-                    this.dummy_value = 100;
+                if (z == this.sh.Zero.values.up) {
+                    delay = 1;
+                    this.dummy_response["value"] = 100;
+                    this.addNewMessage(4, 100);
                 }
-                else if (z == "down") {
-                    delay = 2;
-                    this.addNewMessage("Z", "O", "D");
-                    this.dummy_value = 0;
+                else if (z == this.sh.Zero.values.down) {
+                    delay = 1;
+                    this.dummy_response["value"] = 0;
+                    this.addNewMessage(4, 0);
                 }
                 else {
                     delay = 10;
-                    this.addNewMessage("S", "Z", this.dummy_value);
-                }                
+                    this.addNewMessage(6, requestData["value"]);
+                }
                 
                 break;
         }
 
-        var responseObject = {
-            "G" : {
-                "R" : 0,
-                "V" : this.dummy_value,
-                "M" : {
-                    "M" : this.dummy_messages,
-                    "S" : this.serializeDate(new Date(Date.now() - 1000 * 60 * ( 60 * 23 + 5)))
-                }
-            }
-        }
-
-        if (request.getLocation() == "/D") {
-            responseObject["T"] = this.dummy_timings;
-        }
-
         var that = this;
         setTimeout(function() {
-            that.guiElements.parseResponse(responseObject);
+            if (location == "/D") {                
+                var responseBuffer = that.sh.TimingContainer.encode(that.dummy_timings).finish();
+                that.guiElements.parseTimings(responseBuffer)
+            }
+            else {
+                var responseBuffer = that.sh.Response.encode(that.dummy_response).finish();;
+                that.guiElements.parseGenericResponse(responseBuffer)
+            }
+
             that.currentRequest = null;
 
             that.guiElements.setGuiState(true);
