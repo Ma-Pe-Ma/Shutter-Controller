@@ -61,11 +61,9 @@ void ProcessQueue::saveCurrentStateToFlash() {
     uint8_t buffer[Shutter_CurrentState_size];
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_CurrentState_size);
     
-    if (!pb_encode(&stream, Shutter_CurrentState_fields, &currentState)) {
-                
+    if (pb_encode(&stream, Shutter_CurrentState_fields, &currentState)) {
+        LittleFSHandler::writeFile("state.txt", buffer, stream.bytes_written);
     }
-    
-    LittleFSHandler::writeFile("state.txt", buffer, stream.bytes_written);
 }
 
 void ProcessQueue::loadCurrentStateFromFlash() {
@@ -77,7 +75,7 @@ void ProcessQueue::loadCurrentStateFromFlash() {
 
         pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) currentStateSerialized.c_str(), currentStateSerialized.length());
         if (!pb_decode(&istream, Shutter_CurrentState_fields, &currentState)) {
-
+            LittleFSHandler::deleteFile("state.txt");
         }
     }
     else {

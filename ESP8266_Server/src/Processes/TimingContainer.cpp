@@ -45,7 +45,8 @@ void TimingContainer::loadTimingsFromFlash() {
 
         pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) timingsSerialized.c_str(), timingsSerialized.length());
         if(!pb_decode(&istream, Shutter_Request_fields, &timingContainer)) {
-
+            LittleFSHandler::deleteFile("timings.txt");
+            return;
         }
         
         this->parseTimings(timingContainer);

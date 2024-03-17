@@ -8,11 +8,7 @@ const NR_OF_MESSAGES = 10;
 var requestQueue;
 var guiElements;
 
-var shResponse;
-var shRequest;
-var shZero;
-var shTiming;
-var shTimingContainer;
+var sh = {}
 
 class GuiElements {
     constructor() {
@@ -70,23 +66,23 @@ class GuiElements {
     }
     
     initTimings() {
-        var timingContainer = shTimingContainer.create({
+        var timingContainer = sh.TimingContainer.create({
             "timing" : []
         });
 
         for (var i = 0; i < NR_OF_TIMINGS; i++) {
-            timingContainer["timing"].push(shTiming.create({"hour" : null, "minute" : null, "days" : [false, false, false, false, false, false, false], "active" : true}));
+            timingContainer["timing"].push(sh.Timing.create({"hour" : null, "minute" : null, "days" : [false, false, false, false, false, false, false], "active" : true}));
         }
 
         this.timings = document.getElementById("timings");
         this.timingTemplate = document.getElementById("timingTemplate");
         this.checkboxTemplate = document.getElementById("checkboxTemplate");
 
-        this.parseTimings(shTimingContainer.encode(timingContainer).finish());
+        this.parseTimings(sh.TimingContainer.encode(timingContainer).finish());
     }
 
     serializeTimings() {
-        var timingRequest = shRequest.create({
+        var timingRequest = sh.Request.create({
             "timing" : []
         });
 
@@ -102,7 +98,7 @@ class GuiElements {
             }
 
             timingRequest["timing"].push(
-                shTiming.create({
+                sh.Timing.create({
                     "hour" : parseInt(times[0]),
                     "minute" : parseInt(times[1]),
                     "days" : days,
@@ -112,7 +108,7 @@ class GuiElements {
             );            
         }
 
-        return shRequest.encode(timingRequest).finish();
+        return sh.Request.encode(timingRequest).finish();
     }
 
     parseTimings(byteArray) {
@@ -124,7 +120,7 @@ class GuiElements {
             return valueString.length == 1 ? "0" + valueString : valueString;
         }
 
-        var timingContainer = shTimingContainer.decode(byteArray);
+        var timingContainer = sh.TimingContainer.decode(byteArray);
 
         for (var i = 0; i < timingContainer.timing.length; i++) {
             var timing = timingContainer.timing[i];
@@ -165,7 +161,7 @@ class GuiElements {
     }
 
     parseGenericResponse(byteArray) {
-        var genericResponse = shResponse.decode(byteArray);
+        var genericResponse = sh.Response.decode(byteArray);
 
         if (genericResponse["retryTime"] > 0) {
             var newRequest = new CustomRequest();
@@ -218,11 +214,11 @@ class GuiElements {
         {
             var request = new CustomRequest();
             
-            var zeroRequest = shRequest.create({
+            var zeroRequest = sh.Request.create({
                 "zero" : state
             });
 
-            request.setPostData(shRequest.encode(zeroRequest).finish());
+            request.setPostData(sh.Request.encode(zeroRequest).finish());
             request.setLocation("/Z");
             requestQueue.addNewRequest(request);
         }
@@ -256,26 +252,26 @@ class GuiElements {
         this.setButton.onclick = function() {
             var request = new CustomRequest();
 
-            var valueRequest = shRequest.create({
+            var valueRequest = sh.Request.create({
                 "value" : document.getElementById("seekbar").value
             });
 
-            request.setPostData(shRequest.encode(valueRequest).finish());
+            request.setPostData(sh.Request.encode(valueRequest).finish());
 			request.setLocation("/V");
             requestQueue.addNewRequest(request);
         };
         this.upButton = document.getElementById("upButton");
         this.upButton.onclick = function() {
-            sendZero(shZero.values.up);
+            sendZero(sh.Zero.values.up);
         };
 
         this.downButton = document.getElementById("downButton");
         this.downButton.onclick = function() {
-            sendZero(shZero.values.down);
+            sendZero(sh.Zero.values.down);
         };       
         this.autoButton = document.getElementById("autoButton");
         this.autoButton.onclick = function() {
-            sendZero(shZero.values.current);
+            sendZero(sh.Zero.values.current);
         };
     }
 }
@@ -380,18 +376,19 @@ function tryDequeue() {
 }
 
 window.onload = function() { 
-    protobuf.load("/Shutter.proto", function(err, root) {        
-        shResponse = root.lookupType("Shutter.Response");
-        //shGenericMessage = root.lookupType("Shutter.GenericMessage");
-        shRequest = root.lookupType("Shutter.Request");
-        //shEvent = root.lookup("Shutter.Event");
-        shZero = root.lookup("Shutter.Zero");    
-        shTiming = root.lookupType("Shutter.Timing");
-        //shMessageContainer = root.lookupType("Shutter.MessageContainer");
-        shTimingContainer = root.lookupType("Shutter.TimingContainer");
+    protobuf.load("/Shutter.proto", function(err, root) {
+        sh.Event = root.lookup("Shutter.Event");
+        sh.Zero = root.lookup("Shutter.Zero");
+        sh.Timing = root.lookupType("Shutter.Timing");
+        sh.TimingContainer = root.lookupType("Shutter.TimingContainer");
+        sh.GenericMessage = root.lookupType("Shutter.GenericMessage");
+        sh.MessageContainer = root.lookupType("Shutter.MessageContainer");
+        sh.Response = root.lookupType("Shutter.Response");
+        sh.Request = root.lookupType("Shutter.Request");
+        sh.CurrentState = root.lookupType("Shutter.CurrentState");
 
         guiElements = new GuiElements();
-        requestQueue = testMode ? new TestRequestQueue(guiElements) : new RequestQueue(guiElements);
+        requestQueue = testMode ? new TestRequestQueue(guiElements, sh) : new RequestQueue(guiElements);
 
         guiElements.bindGUIElements();
         guiElements.initMessages();

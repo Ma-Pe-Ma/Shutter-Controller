@@ -32,28 +32,36 @@ void MessageHandler::saveMessagesToFlash() {
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, Shutter_MessageContainer_size);
     
     if (!pb_encode(&stream, Shutter_MessageContainer_fields, &messageContainer)) {
-        Serial.println("Failed to encode");        
+        Serial.println("Failed to encode messageContainer...");        
     }
-
-    LittleFSHandler::writeFile("messages.txt", buffer, stream.bytes_written);
+    else {
+        LittleFSHandler::writeFile("messages.txt", buffer, stream.bytes_written);
+    }
 }
 
 void MessageHandler::loadMessagesFromFlash() {
+    messageContainer.genericMessage_count = NR_OF_MESSAGES;
+
     String messagesDump;
-    LittleFSHandler::readFile("messages.txt", messagesDump);
+    LittleFSHandler::readFile("messages.txt", messagesDump);    
+
+    bool initContainer = true;
 
     if (messagesDump != "") {
         pb_istream_t istream = pb_istream_from_buffer((const unsigned char*) messagesDump.c_str(), messagesDump.length());
-        if (!pb_decode(&istream, Shutter_MessageContainer_fields, &messageContainer)) {
-
+        if (pb_decode(&istream, Shutter_MessageContainer_fields, &messageContainer)) {
+            initContainer = false;
+        }
+        else {
+            LittleFSHandler::deleteFile("messages.txt");
         }
     }
-    else {
+
+    if (initContainer) {
         for (int i = 0; i < NR_OF_MESSAGES; i++) {
             messageContainer.genericMessage[i].event = Shutter_Event_empty;
             messageContainer.genericMessage[i].value = 0;
-            messageContainer.genericMessage[i].datetime[0] = '-';
-            messageContainer.genericMessage[i].datetime[1] = '\0';
+            strncpy(messageContainer.genericMessage[i].datetime, "-", 1);
         }
     }
 

@@ -120,4 +120,8 @@ namespace LittleFSHandler {
             Serial.printf("  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n", (tmstruct->tm_year) + 1900, (tmstruct->tm_mon) + 1, tmstruct->tm_mday, tmstruct->tm_hour, tmstruct->tm_min, tmstruct->tm_sec);
         }
     }
+
+    void format() {
+        LittleFS.format();
+    }
 }
