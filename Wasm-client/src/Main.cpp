@@ -57,7 +57,7 @@ int main() {
 	}
 #endif
 	windowHandler->terminate();
-	mainWindow->terminate();	
+	mainWindow->terminate();
 
 	return 0;
 }

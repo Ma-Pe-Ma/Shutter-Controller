@@ -22,6 +22,9 @@ The serving HTML page has to be served with the ESP itself just like the [HTML+J
 
 For the desktop version only the [OpenSSL developer tools](https://wiki.openssl.org/index.php/Binaries) installation path is need to be set as it cannot be built with CMake.
 
+	set proto_path=/ShutterController/
+	protoc -I=%proto_path%/ESP8266_Server/src/ --cpp_out=%proto_path%/Wasm-client/src/ %proto_path%/ESP8266_Server/src/Shutter.proto
+
 ## Using the desktop version
 After building the following additional configuration is needed
 * Add your server's (DDNS) URL to the `./resources/connection.txt` file

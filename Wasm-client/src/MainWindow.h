@@ -6,12 +6,12 @@
 #include <chrono>
 #include <mutex>
 
-#include <json.hpp>
-
 #include "RequestQueue.h"
+#include "Message.h"
 
 #include "Timing.h"
-#include "Message.h"
+
+#include "Shutter.pb.h"
 
 const int numberOfTimings = 6;
 const int numberOfMessages = 10;
@@ -43,11 +43,13 @@ class MainWindow {
 	std::shared_ptr<Request> createRequest();
 
 	bool lastRequestOk = false;
+
+	std::vector<std::string> dayNameMap;
 public:
 	void initializeRequests(std::shared_ptr<std::map<std::string, std::string>>);
 	void update();
 
-    std::function<std::shared_ptr<Request>(nlohmann::json)> receiveResponse;
+    std::function<std::shared_ptr<Request>(std::vector<unsigned char>)> receiveResponse;
 
 	void terminate();
 
@@ -61,15 +63,11 @@ public:
 		this->translation = translation;
 		Message::setTranslation(translation);
 
-		std::vector<std::string> dayNameMap;
-
 		for (int i = 0; i < 7; i++)
 		{
 			std::string key = "w" + std::to_string(i);
 			dayNameMap.push_back((*translation)[key]);
 		}
-
-		Timing::setNameMap(dayNameMap);		
 	}
 };
 

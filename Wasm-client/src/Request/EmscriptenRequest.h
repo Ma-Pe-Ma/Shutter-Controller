@@ -22,21 +22,18 @@ public:
             emscripten_fetch_attr_t attr;
             emscripten_fetch_attr_init(&attr);
 
-            std::string jsonString;
-
-            if (postdata == nullptr || postdata->empty())
+            if (postdata == nullptr)
             {
                 strcpy(attr.requestMethod, "GET");
             }
             else
             {
-                jsonString = postdata->dump();
                 strcpy(attr.requestMethod, "POST");
-                attr.requestData = jsonString.c_str();
-                attr.requestDataSize = jsonString.size();
+                attr.requestData = (const char*) &(*postdata)[0];
+                attr.requestDataSize = postdata->size();
             }
 
-            //const char* headers[] = { "Content-Type", "application/json", "Access-Control-Allow-Origin", "*", 0};
+            //const char* headers[] = { "Content-Type", "text/plain", "Access-Control-Allow-Origin", "*", 0};
             //const char* headers[] = { "Access-Control-Allow-Origin", "*", 0 };
 
             //attr.requestHeaders = headers;
@@ -51,7 +48,6 @@ public:
 
                 //This is currently unreachable see explanation below
                 if (fetch->status == 302) {
-
                     auto headerLength = emscripten_fetch_get_response_headers_length(fetch);
                     char* plainHeaders = new char[headerLength + 1];
                     auto hS = emscripten_fetch_get_response_headers(fetch, plainHeaders, headerLength + 1);
@@ -63,8 +59,7 @@ public:
                         char* key = headers[2 * index + 0];
                         char* value = headers[2 * index + 1];
 
-                        if (strcmp(key, "Location") || strcmp(key, "location"))
-                        {;
+                        if (strcmp(key, "Location") || strcmp(key, "location")) {
                             std::cout << "REDIRECTING FROM WASM MODULE to " << value << std::endl;
 
                             //not working, see explanation below
@@ -75,24 +70,12 @@ public:
                     }
 
                     delete[] plainHeaders;
-                }                
-
-                std::string responseString(fetch->data);
-                responseString = responseString.substr(0, fetch->numBytes);
-
-                try {
-                    self->response = nlohmann::json::parse(responseString);
-                    self->lastRequestSuccess = true;
                 }
-                catch (nlohmann::json::exception e) {
-                    //std::cout << "e: " << e.what() << std::endl;
-                    //self->lastRequestSuccess = false;
 
-                    // lame solution: Emscripten fetch auto redirect so 302 status is indetectable
-                    // this why the redirected page is returned in the response which cannot be parsed
-                    // so this exception is caught
-                    redirect_to_location("/");
-                }
+                unsigned char* buffer = (unsigned char*) fetch->data;
+                
+                self->response = std::vector<unsigned char>(buffer, buffer + fetch->numBytes);
+                self->lastRequestSuccess = true;
             };
 
             attr.onerror = [](emscripten_fetch_t* fetch) -> void {

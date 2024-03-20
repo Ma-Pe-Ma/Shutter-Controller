@@ -15,7 +15,7 @@ namespace LittleFSHandler {
         readFile("fail.txt", failedStartupCount);
         int retryCount = failedStartupCount.toInt() < 1 ? 1 : failedStartupCount.toInt() + 1;
 
-        if (retryCount > 4) {
+        if (retryCount > 2) {
             LittleFS.format();
         }
         else {

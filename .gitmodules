@@ -7,9 +7,6 @@
 [submodule "DesktopClient/src/submodules/cpp-httplib"]
 	path = Wasm-client/src/submodules/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib.git
-[submodule "DesktopClient/src/submodules/json"]
-	path = Wasm-client/src/submodules/json
-	url = https://github.com/nlohmann/json.git
 [submodule "DesktopClient/src/submodules/stb"]
 	path = Wasm-client/src/submodules/stb
 	url = https://github.com/nothings/stb.git

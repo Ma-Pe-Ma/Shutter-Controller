@@ -57,6 +57,5 @@ bool ZeroProcess::checkFinished() {
 }
 
 std::tuple<Shutter_Event, int> ZeroProcess::generateMessage() {
-    //TODO: 
     return {Shutter_Event_zero_find, (int) (targetValue * 100)};
 }
