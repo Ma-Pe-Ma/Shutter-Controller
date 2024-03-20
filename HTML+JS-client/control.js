@@ -53,15 +53,15 @@ class GuiElements {
     }
 
     initMessages() {
-        messages = document.getElementById("messages");
-        messageTemplate = document.getElementById("messageTemplate");
+        this.messages = document.getElementById("messages");
+        this.messageTemplate = document.getElementById("messageTemplate");
 
         for (var i = 0; i < NR_OF_MESSAGES; i++) {
-            var messageElement = messageTemplate.content.cloneNode(true);
+            var messageElement = this.messageTemplate.content.cloneNode(true);
             messageElement.getElementById("id").innerText =`${i+1}`;
             messageElement.getElementById("event").innerText = `-`;
             messageElement.getElementById("date").innerText = `-`;
-            messages.appendChild(messageElement);
+            this.messages.appendChild(messageElement);
         }
     }
     
@@ -179,14 +179,14 @@ class GuiElements {
         
         this.startupTimeText.innerText = messageContainer["startTime"];
 
-        messages.innerHTML = "";
+        this.messages.innerHTML = "";
 
         for (var i = 0; i < messageContainer.genericMessage.length; i++) {
-            var messageElement = messageTemplate.content.cloneNode(true);
+            var messageElement = this.messageTemplate.content.cloneNode(true);
             messageElement.getElementById("id").innerText =`${i+1}`;
             messageElement.getElementById("event").innerText = this.getFormattedMessage(messageContainer.genericMessage[i]);
             messageElement.getElementById("date").innerText = messageContainer.genericMessage[i].datetime;
-            messages.appendChild(messageElement);
+            this.messages.appendChild(messageElement);
         }
 
         return null;
@@ -375,8 +375,8 @@ function tryDequeue() {
     window.requestAnimationFrame(tryDequeue);
 }
 
-window.onload = function() { 
-    protobuf.load("/Shutter.proto", function(err, root) {
+window.onload = function() {
+    protobuf.load("Shutter.proto", function(err, root) {
         sh.Event = root.lookup("Shutter.Event");
         sh.Zero = root.lookup("Shutter.Zero");
         sh.Timing = root.lookupType("Shutter.Timing");

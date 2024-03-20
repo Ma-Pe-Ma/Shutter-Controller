@@ -5,7 +5,6 @@
 
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <cpp-httplib/httplib.h>
-#include <json.hpp>
 #include <exception>
 
 class SimpleRequest : public Request {
@@ -28,11 +27,11 @@ public:
 
             httplib::Result res;
             try {
-                if (postdata == nullptr || postdata->empty())
+                if (postdata == nullptr)
                 {
                     if (res = cli.Get(sub))
                     {
-                        response = nlohmann::json::parse(res->body);
+                        response.insert(response.begin(), res->body.begin(), res->body.end());
                         lastRequestSuccess = true;
                     }
                     else
@@ -42,9 +41,9 @@ public:
                     }
                 }
                 else {
-                    if (res = cli.Post(sub, postdata->dump(), "text/plain"))
+                    if (res = cli.Post(sub, (const char*) postdata->data(), postdata->size(), "text/plain"))
                     {
-                        response = nlohmann::json::parse(res->body);
+                        response.insert(response.begin(), res->body.begin(), res->body.end());
                         lastRequestSuccess = true;
                     }
                     else

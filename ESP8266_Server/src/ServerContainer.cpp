@@ -68,6 +68,12 @@ void ServerContainer::initialize() {
         }       
     });
 
+    secureServer.on("/Shutter.proto", HTTP_GET, [this]() -> void {
+        this->secureServer.sendHeader("Cross-Origin-Embedder-Policy", "require-corp");
+        this->secureServer.sendHeader("Cache-Control", "max-age=31536000");        
+        this->secureServer.send(200, "text/plain", StaticPage::protoFormat);
+    });
+
     secureServer.on("/W.js", HTTP_GET, [this]() -> void {
         this->secureServer.sendHeader("Cross-Origin-Embedder-Policy", "require-corp");
         this->secureServer.sendHeader("Cache-Control", "max-age=31536000");        
@@ -181,7 +187,7 @@ void ServerContainer::initialize() {
             }
             else if (this->processQueue.getCurrentSettingProcess() != nullptr) {
                 this->messageHandler.addNewMessage(Shutter_Event_zero_fail, 0);
-                retryTime = 3;
+                retryTime = this->processQueue.getCurrentSettingProcess()->getRemainingTime();
             }
             else if(request.zero == Shutter_Zero_up) {
                 this->processQueue.processZero(request.zero);
@@ -197,7 +203,7 @@ void ServerContainer::initialize() {
             uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
 
-            int bytesWritten = this->serializeResponseContent(buffer, response);
+            int bytesWritten = this->serializeResponseContent(buffer, response, retryTime);
             this->secureServer.send(200, "text/plain", buffer, bytesWritten);
 
             Serial.println("Zeroing was set: " + String(request.zero));

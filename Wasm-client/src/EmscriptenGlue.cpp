@@ -70,8 +70,10 @@ EM_JS(char*, create_datestring_by_offset, (int hour, int minute), {
 	var date = new Date(Date.now() - 1000 * 60 * (hour * 60 + minute));
 	var h = date.getHours() < 10 ? '0' + date.getHours() : date.getHours();
 	var m = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
+	var mo = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1;
+	var d = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
 
-	return stringToNewUTF8(`${date.getFullYear()}. ${ date.getMonth() + 1 }. ${ date.getDate() }. ${ h }:${ m }`);
+	return stringToNewUTF8(`${date.getFullYear()}. ${mo}. ${d}. ${h}:${m}`);
 	});
 
 EM_JS(int, get_today, (), {

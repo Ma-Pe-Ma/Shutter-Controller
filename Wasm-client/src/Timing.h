@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "Shutter.pb.h"
+
 class Timing {
 	int hour = 12;
 	int minute = 0;
@@ -12,47 +14,31 @@ class Timing {
 	bool active = false;
 
 	int value = 0;
-
-	inline static std::vector<std::string> nameMap = {};
 public:
-	std::string serializeDayState()
-	{
-		std::string result;
+	void receiveProtoObject(const Shutter::Timing& timing) {
+		this->hour = timing.hour();
+		this->minute = timing.minute();
+		this->active = timing.active();
+		this->value = timing.value();
 
-		for (int i = 0; i < 7; i++)
-		{
-			if (days[i])
-			{
-				result += 'T';
-			}
-			else
-			{
-				result += 'F';
-			}		
-		}
-
-		return result;
-	}
-
-	void parseDayState(std::string stateString)
-	{
-		int length = stateString.length() < 7 ? stateString.length() : 7;
-
-		for (int i = 0; i < length; i++)
-		{
-			if (stateString[i] == 'T')
-			{
-				days[i] = true;
-			}
-			else {
-				days[i] = false;
-			}
+		for (int i = 0; i < timing.days_size(); i++) {
+			this->days[i] = timing.days(i);
 		}
 	}
 
-	inline static void setNameMap(std::vector<std::string> nameMap) { Timing::nameMap = nameMap; };
+	void sendProtoObject(Shutter::Timing* timing) {
+		timing->set_hour(this->hour);
+		timing->set_minute(this->minute);
+		timing->set_active(this->active);
+		timing->set_value(this->value);		
+
+		for (int i = 0; i < 7; i++) {
+			timing->add_days(this->days[i]);
+		}
+	}
 
 	friend class MainWindow;
+	friend class DemoRequest;
 };
 
 #endif
