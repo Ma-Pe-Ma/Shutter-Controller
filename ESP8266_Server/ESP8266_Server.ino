@@ -1,12 +1,12 @@
 #include "src/ServerContainer.h"
 #include <NTPClient.h>
-#include <EasyDDNS.h>
 
 #include "src/LittleFSHandler.h"
 #include "src/Processes/SettingProcess.h"
 #include "src/Processes/Timing.h"
 #include "src/TimeCalibration.h"
 #include "src/MessageHandler.h"
+#include "src/DdnsUpdater.h"
 
 #include "Configuration.h"
 
@@ -27,6 +27,7 @@ void setup() {
     // setup serial
     //Serial.begin(115200, SERIAL_8N1, SERIAL_TX_ONLY);
     Serial.begin(115200);
+    //Serial.setDebugOutput(true);
     Serial.println("Program started!");
     Serial.println("");
     
@@ -59,14 +60,7 @@ void setup() {
     Serial.println("Startup value: " + String(value) + ", date:" + date);
     Serial.println();
 
-    // setup ddns
-    EasyDDNS.service(DDNS_SERVICE);
-    EasyDDNS.client(DDNS_DOMAIN, DDNS_TOKEN);
-
-    EasyDDNS.onUpdate([&] (const char* oldIP, const char* newIP) {
-        Serial.print("New IP: ");
-        Serial.println(newIP);
-    });
+    DdnsUpdater::init(DDNS_DOMAIN, DDNS_TOKEN);
 
     Serial.println("STARTUP FINISHED!");
 }
@@ -76,34 +70,8 @@ unsigned long lasttime = 0;
 void loop() {
     unsigned long current = millis();
 
-    //if WiFi disconnected and no process is in progress, try to reccnnect
-    if (WiFi.status() != WL_CONNECTED && serverContainer.getProcessQueue().getQueueCount() == 0) {
-        Serial.println("Reconnecting");
-
-        WiFi.mode(WIFI_STA);
-        WiFi.begin(SSID, PSWD);
-
-        while (WiFi.status() != WL_CONNECTED) {
-            delay(500);
-            Serial.print(".");
-        }
-
-        Serial.println();
-
-        Serial.print("Connected, IP address: ");
-        Serial.println(WiFi.localIP());
-    }
-    //if WiFi disconnected and a process is in progress, finish it first
-    else if (WiFi.status() != WL_CONNECTED && serverContainer.getProcessQueue().getQueueCount() != 0) {
-        serverContainer.getProcessQueue().processQueue();
-
-        if (current - lasttime > 3000) {
-            lasttime = current;
-            Serial.println("Not connected, but processing: " + String(serverContainer.getProcessQueue().getQueueCount()));
-        }
-    }
-    //normal working state 
-    else {
+    //if WiFi is connected then act normally
+    if (WiFi.status() == WL_CONNECTED) {
         //notifying current working state on serial
         if (current - lasttime > 30000) {
             lasttime = current;
@@ -115,9 +83,40 @@ void loop() {
             serverContainer.getTimingContainer().checkTimings(TimeCalibration::correctDay(TimeCalibration::dateTime.getDay()), TimeCalibration::dateTime.getHours(), TimeCalibration::dateTime.getMinutes());
         }
         
-        EasyDDNS.update(10000);
+        if (serverContainer.getProcessQueue().getQueueCount() == 0) {
+            DdnsUpdater::update(30000);
+        }
+        
         //handle server + setting functionalities
         serverContainer.listen();
+    }
+    else {
+        // if disconnected and no process is in progress, try to reccnnect
+        if (serverContainer.getProcessQueue().getQueueCount() == 0) {
+            Serial.println("Reconnecting");
+
+            WiFi.mode(WIFI_STA);
+            WiFi.begin(SSID, PSWD);
+
+            while (WiFi.status() != WL_CONNECTED) {
+                delay(500);
+                Serial.print(".");
+            }
+
+            Serial.println();
+
+            Serial.print("Reconnected, IP address: ");
+            Serial.println(WiFi.localIP());
+        }
+        // if disconnected then first process the current process
+        else {
+            serverContainer.getProcessQueue().processQueue();
+
+            if (current - lasttime > 3000) {
+                lasttime = current;
+                Serial.println("Not connected, but processing: " + String(serverContainer.getProcessQueue().getQueueCount()));
+            }
+        }
     }
 
     esp_yield();

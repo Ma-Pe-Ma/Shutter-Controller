@@ -20,12 +20,25 @@ void ServerContainer::initialize() {
 
     //handle login page
     secureServer.on("/", HTTP_GET, [this]() -> void {
-        if (this->secureServer.hasHeader("Cookie") && this->isCookieValid()) {
+        if(this->authenticationCheck()) {
+            this->secureServer.sendHeader("Location", String("/C"), true);
+            this->secureServer.send(302, "text/plain", "");
+        }
+        else{
+            this->secureServer.sendHeader("Cache-Control", "max-age=31536000");
+            this->secureServer.send(200, "text/html", StaticPage::loginPage);
+            Serial.println("Showing login page!");
+        }
+    });
+
+    secureServer.on("/C", HTTP_GET, [this]() -> void {
+        if (this->authenticationCheck()) {
+            this->secureServer.sendHeader("Cache-Control", "max-age=31536000");
             this->secureServer.send(200, "text/html", StaticPage::controlPage);
         }
         else {
-            this->secureServer.send(200, "text/html", StaticPage::loginPage);
-            Serial.println("Showing login page!");
+            this->secureServer.sendHeader("Location", String("/"), true);
+            this->secureServer.send(302, "text/plain", "");
         }
     });
 
@@ -216,14 +229,13 @@ void ServerContainer::initialize() {
     //handle login
     secureServer.on("/L", HTTP_POST, [this]() -> void {
         //if already signed in
-        if (this->secureServer.hasHeader("Cookie") && isCookieValid()) {
+        if (this->authenticationCheck()) {
             Serial.println("ALREADY SIGNED IN!");
             this->secureServer.sendHeader("Location", String("/"));
             this->secureServer.send(302, "text/plain", "");
         }
         else {
-            if (this->authenticationCheck()) {
-                Serial.println("Signing IN...");
+            if (secureServer.hasArg("username") && secureServer.arg("username") == USER_NAME && secureServer.hasArg("password") && secureServer.arg("password") == PASSWORD) {
                 this->secureServer.sendHeader("Cache-Control", "no-cache");
                 this->secureServer.sendHeader("Set-Cookie", generateCookie());
                 this->secureServer.sendHeader("Location", String("/"));
@@ -231,7 +243,7 @@ void ServerContainer::initialize() {
             }
             else {
                 this->secureServer.send(200, "text/html", StaticPage::loginFail);
-            }    
+            }
         }
     });
 
@@ -318,15 +330,13 @@ bool ServerContainer::authenticationCheck() {
         return true;
     }
 
+#ifndef COOKIE_AUTHORIZATION_ONLY
     if (secureServer.args() < 2) {
         return false;
     }
 
-#ifndef COOKIE_AUTHORIZATION_ONLY
-    if (secureServer.hasArg("username") && secureServer.hasArg("password")) {
-        if (secureServer.arg("username") == USER_NAME && secureServer.arg("password") == PASSWORD) {
-            return true;
-        }
+    if (secureServer.hasArg("username") && secureServer.arg("username") == USER_NAME && secureServer.hasArg("password") && secureServer.arg("password") == PASSWORD) {
+        return true;
     }
 #endif
 
@@ -334,6 +344,10 @@ bool ServerContainer::authenticationCheck() {
 }
 
 bool ServerContainer::isCookieValid() {
+    if (!secureServer.hasHeader("Cookie")) {
+        return false;
+    }
+
     String receivedCookie = secureServer.header("Cookie");
 
     //Sign out after 5 minutes of idle state
