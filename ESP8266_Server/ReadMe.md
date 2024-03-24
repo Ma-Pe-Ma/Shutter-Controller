@@ -1,7 +1,7 @@
 # Shutter Controller - ESP8266 server
 Before reading this through make sure you have read the [project's ReadMe](/ReadMe.md).
 
-Important note: the ESP reboots after every 48 days to prevent time overflowing.
+Important note: the ESP reboots after every 48 days automatically to prevent time overflowing.
 
 ## Setting up
 ### Networking parameters
@@ -21,16 +21,16 @@ Make sure to add your chosen DDNS domain at the "**subjectAltName**" argument. A
 The ESP is programmed in Arduno environment. For this you have to install the proper [core](https://github.com/esp8266/Arduino) (installation instructions are also included there).
 ### Library dependencies
 These libraries can be installed from the Arduino library manager:
- * [EasyDDNS](https://github.com/ayushsharma82/EasyDDNS)
  * [ArduinoQueue](https://github.com/EinarArnason/ArduinoQueue)
- * [ArduinoJSON](https://github.com/bblanchon/ArduinoJson)
  * [NTP Client](https://github.com/arduino-libraries/NTPClient)
+
+The [nanopb](https://github.com/nanopb/nanopb) library has to be downloaded manually, and the `pb_common.*`, `pb_decode.*`, `pb_encode.*` files have to be copied to the [src](./src/) directory.
 
 ### Configuring
 The server can be configured with the [Configuration.h](./Configuration.h) header file:
-* SSID and PSWD: the SSID and the password of the local WiFi network to which the ESP connects
-* DDNS properties: checkout [EasyDDNS's readme](https://github.com/ayushsharma82/EasyDDNS#readme) what they mean
-* User-name and password: simple authentication credentials
+* SSID and PSWD: the `SSID` and the `password` of the local WiFi network to which the ESP connects
+* DuckDNS properties: the project used the DuckDNS for DDNS, the used `domain` and its `token` have to be specified
+* `User-name` and `password`: simple authentication credentials
 * Up and down pins
 * Total time of the shutter's operations of going up and down
 * the path where the resources of the HTML+JS/WASM clients are served
@@ -48,10 +48,9 @@ The server has to serve the files with the following headers:
 * `Cross-Origin-Resource-Policy: cross-origin` - enable other sites to use these files as resources
 * `Cache-Control: max-age=31536000` - cache the resources for at least a year as they will not change
 
-### Protobuf
+### Protobuf configuration
+
+The [Shutter.proto](./src/Shutter.proto) descriptor file has to be compiled with nanopb's protoc with the following commands.
 
     set proto_path=/ShutterController/ESP8266_Server/src/
     protoc --nanopb_out=%proto_path% --nanopb_opt=-I%proto_path% -I%proto_path% Shutter.proto
-
-## Backlog
-* implement configuring automatic zeroing at given time? (+clients too?)

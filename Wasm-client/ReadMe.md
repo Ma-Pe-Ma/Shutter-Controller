@@ -7,7 +7,7 @@ The latter version is built by the Emscripten sdk and it runs in a HTML canvas e
 ## Library dependencies
 The following dependencies are needed for both versions:
 * [DearImGui](https://github.com/ocornut/imgui) - an immediate mode GUI library which 
-* [Json for modern c++](https://github.com/nlohmann/json) - library for creating, parsing and serializing json objects
+* [Protocol buffers](https://github.com/protocolbuffers/protobuf) - library for creating, parsing and serializing binary messages
 * [GLFW](https://github.com/glfw/glfw) - utility used to create OpenGL contexts, and windows
 
 These libraries are only needed for the desktop version:
@@ -16,14 +16,17 @@ These libraries are only needed for the desktop version:
 * [STB](https://github.com/nothings/stb) - library which loads the icon for the desktop window (the WASM version is served with a favicon)
 
 ## Build instructions
-The project uses CMake as the build system which does not need further configuration if it's built as a WASM module. However the resources/built files have to be served with an [external server](../ESP8266_Server/ReadMe.md#Setting-up-the-external-resource-provider-server).
+
+The project uses CMake as the build system. First the protobuf project needs to be built and installed and then its installation location have to be specified in the [CmakeLists.txt](./CMakeLists.txt) (which explains the detailed steps for building and installing). The [Shutter.Proto](../ESP8266_Server/src/Shutter.proto) descriptor file has to be compiled with these commands:
+
+	set proto_path=/ShutterController/
+	protoc -I=%proto_path%/ESP8266_Server/src/ --cpp_out=%proto_path%/Wasm-client/src/ %proto_path%/ESP8266_Server/src/Shutter.proto
+
+Apart from this, this module does not need further configuration if it's built as a WASM module. However the resources/built files have to be served with an [external server](../ESP8266_Server/ReadMe.md#Setting-up-the-external-resource-provider-server).
 
 The serving HTML page has to be served with the ESP itself just like the [HTML+JS client](../HTML+JS-client/ReadMe.md#configuration)
 
 For the desktop version only the [OpenSSL developer tools](https://wiki.openssl.org/index.php/Binaries) installation path is need to be set as it cannot be built with CMake.
-
-	set proto_path=/ShutterController/
-	protoc -I=%proto_path%/ESP8266_Server/src/ --cpp_out=%proto_path%/Wasm-client/src/ %proto_path%/ESP8266_Server/src/Shutter.proto
 
 ## Using the desktop version
 After building the following additional configuration is needed
@@ -33,5 +36,4 @@ After building the following additional configuration is needed
 * Install OpenSSL user libraries (if the target system is different from the developing system)
 
 ## Backlog
-* make the url + credentials settable in the desktop version
 * eliminate STB library
