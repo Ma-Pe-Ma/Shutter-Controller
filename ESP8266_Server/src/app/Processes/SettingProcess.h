@@ -4,7 +4,7 @@
 #include "../MessageHandler.h"
 #include "../../Configuration.h"
 
-#include "../Shutter.pb.h"
+#include "Shutter.pb.h"
 
 #include <tuple>
 

@@ -18,16 +18,16 @@ As the communication is implemented through secure https requests you have to cr
 Make sure to add your chosen DDNS domain at the "**subjectAltName**" argument. After executing it: fill in the required fields.
 
 ### Core
-The ESP is programmed in Arduno environment. For this you have to install the proper [core](https://github.com/esp8266/Arduino) (installation instructions are also included there).
+The project is implemented as a [PlatformIO](https://platformio.org/) project which uses the proper Arduino core.
+
 ### Library dependencies
-These libraries can be installed from the Arduino library manager:
+These libraries are added as submodules in the project, and they don't need further configuring:
  * [ArduinoQueue](https://github.com/EinarArnason/ArduinoQueue)
  * [NTP Client](https://github.com/arduino-libraries/NTPClient)
-
-The [nanopb](https://github.com/nanopb/nanopb) library has to be downloaded manually, and the `pb_common.*`, `pb_decode.*`, `pb_encode.*` files have to be copied to the [src](./src/) directory.
+ * [nanopb](https://github.com/nanopb/nanopb)
 
 ### Configuring
-The server can be configured with the [Configuration.h](./Configuration.h) header file:
+The server can be configured with the [Configuration.h](./src/Configuration.h) header file:
 * SSID and PSWD: the `SSID` and the `password` of the local WiFi network to which the ESP connects
 * DuckDNS properties: the project used the DuckDNS for DDNS, the used `domain` and its `token` have to be specified
 * `User-name` and `password`: simple authentication credentials
@@ -35,7 +35,7 @@ The server can be configured with the [Configuration.h](./Configuration.h) heade
 * Total time of the shutter's operations of going up and down
 * the path where the resources of the HTML+JS/WASM clients are served
 
-You have to specify the key and certificate (created by OpenSSL) in the [Keys.h](./Keys.h) header file.
+You have to specify the key and certificate (created by OpenSSL) in the [Keys.h](./src/Keys.h) header file.
 
 ### Setting up the external resource provider server
 
@@ -47,10 +47,3 @@ The server has to serve the files with the following headers:
 * `Access-Control-Allow-Origin: your-dns.com` - allow only our application's site to fetch the resources
 * `Cross-Origin-Resource-Policy: cross-origin` - enable other sites to use these files as resources
 * `Cache-Control: max-age=31536000` - cache the resources for at least a year as they will not change
-
-### Protobuf configuration
-
-The [Shutter.proto](./src/Shutter.proto) descriptor file has to be compiled with nanopb's protoc with the following commands.
-
-    set proto_path=/ShutterController/ESP8266_Server/src/
-    protoc --nanopb_out=%proto_path% --nanopb_opt=-I%proto_path% -I%proto_path% Shutter.proto

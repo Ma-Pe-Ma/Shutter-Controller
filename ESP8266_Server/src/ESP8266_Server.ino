@@ -1,12 +1,12 @@
-#include "src/ServerContainer.h"
 #include <NTPClient.h>
 
-#include "src/LittleFSHandler.h"
-#include "src/Processes/SettingProcess.h"
-#include "src/Processes/Timing.h"
-#include "src/TimeCalibration.h"
-#include "src/MessageHandler.h"
-#include "src/DdnsUpdater.h"
+#include "app/ServerContainer.h"
+#include "app/LittleFSHandler.h"
+#include "app/Processes/SettingProcess.h"
+#include "app/Processes/Timing.h"
+#include "app/TimeCalibration.h"
+#include "app/MessageHandler.h"
+#include "app/DdnsUpdater.h"
 
 #include "Configuration.h"
 
