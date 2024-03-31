@@ -6,7 +6,7 @@
 #include "SettingProcess.h"
 #include "ZeroProcess.h"
 
-#include "../Shutter.pb.h"
+#include "Shutter.pb.h"
 
 class ProcessQueue {
     Shutter_CurrentState currentState;

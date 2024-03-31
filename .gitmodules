@@ -10,3 +10,12 @@
 [submodule "DesktopClient/src/submodules/stb"]
 	path = Wasm-client/src/submodules/stb
 	url = https://github.com/nothings/stb.git
+[submodule "ESP8266_Server/lib/ArduinoQueue"]
+	path = ESP8266_Server/lib/ArduinoQueue
+	url = https://github.com/EinarArnason/ArduinoQueue.git
+[submodule "ESP8266_Server/lib/NTPClient"]
+	path = ESP8266_Server/lib/NTPClient
+	url = https://github.com/arduino-libraries/NTPClient.git
+[submodule "ESP8266_Server/lib/nanopb"]
+	path = ESP8266_Server/lib/nanopb
+	url = https://github.com/nanopb/nanopb.git

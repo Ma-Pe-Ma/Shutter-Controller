@@ -11,7 +11,9 @@ Demos for the clients can be tried out [here](https://mapema.hu/wasm/shutter-con
 ## Features
 
 ### Working principle
-The shutter is controlled by an [ESP8226](https://www.espressif.com/en/products/socs/esp8266), only two pins are used: one for signalling up, and one for signalling down. For both signals a seperate relay is used to turn on the power circuit to move the shutter to the proper direction (up or down).
+The shutter is controlled by an [ESP8226](https://www.espressif.com/en/products/socs/esp8266), the code of which is implemented as a [PlatformIO](https://platformio.org/) project. 
+
+Only two pins are used: one for signalling up, and one for signalling down. For both signals a seperate relay is used to turn on the power circuit to move the shutter to the proper direction (up or down).
 
 There is no feedback for the current position of the shutter so it's only possible to operate it for a given amount of time. The speed of the rolling is assumed constant so a setting operation's duration can be calculated by the current position, the next position and by the speed.
 
@@ -24,7 +26,7 @@ Also there is an automatic method which first finds one of the extremities and t
 An additional handy function is timing the setting operations: you can schedule setting operations at specific times on the given days of the week.
 
 ### Communication, clients
-The ESP acts as an HTTPS server to which the clients can POST settings and GET the current state.
+The ESP acts as an HTTPS server to which the clients can POST settings and GET the current state. The messages are sent in binary format which are created with [ProtoBuf](https://protobuf.dev/).
 
 There are two clients, both can be accessed from browsers: 
 * [HTML+JS](./HTML+JS-client/) - HTML + JavaScript solution with Bootstrap styling

@@ -1,7 +1,7 @@
 #include "TimingContainer.h"
 
-#include "../pb_encode.h"
-#include "../pb_decode.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 void TimingContainer::initialize(ProcessQueue* processQueue) {
     loadTimingsFromFlash();

@@ -1,8 +1,8 @@
 #include "ProcessQueue.h"
 #include "../TimeCalibration.h"
 
-#include "../pb_encode.h"
-#include "../pb_decode.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
 
 void ProcessQueue::processQueue() { 
     if (currentProcess == nullptr && !settingQueue.isEmpty()) {

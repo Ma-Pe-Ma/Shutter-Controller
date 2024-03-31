@@ -4,8 +4,6 @@
 #include "SettingProcess.h"
 #include "../TimeCalibration.h"
 
-#include "../Shutter.pb.h"
-
 class Timing : public SettingProcess {
     bool queued = false;
     int8_t id = -1;
