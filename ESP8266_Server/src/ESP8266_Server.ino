@@ -1,5 +1,3 @@
-#include <NTPClient.h>
-
 #include "app/ServerContainer.h"
 #include "app/LittleFSHandler.h"
 #include "app/Processes/SettingProcess.h"

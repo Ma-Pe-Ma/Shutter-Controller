@@ -14,17 +14,22 @@ elseif(EMSCRIPTEN)
 endif()
 
 For emscripten use this command to run cmake, for Windows turn set manually the speicified arguments:
-emcmake cmake -B./out/build/wasm-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=OFF -DABSL_USE_GOOGLETEST_HEAD=OFF -DABSL_PROPAGATE_CXX_STD=ON
+emcmake cmake -B./out/build/wasm-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=ON -DABSL_USE_GOOGLETEST_HEAD=OFF -DABSL_PROPAGATE_CXX_STD=ON
 
 The MSVC static runtime option should be turned on. After building, install the protobuf library (in VS build->install protobuf, with emscripten run: "cmake --install ." at the build directory.
-
-After installing set the installation path for the "shutter_wasm_proto_dir" variable below.
 ]]
 
-set(shutter_wasm_proto_dir "" CACHE STRING "Path to protobuf installation directory")
+# after installing, set the installation path for the "SHUTTER_PROTO_DIR" variable below.
+set(SHUTTER_PROTO_DIR "" CACHE STRING "Path to protobuf installation directory")
+
+# specify OpenSSL installation path for desktop build
+set(OPEN_SSL_PATH "" CACHE STRING "Path to the OpenSSL installation")
+
+# copy the used message proto file to this project
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/../ESP8266_Server/src/app/Shutter.proto" DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # to build emscripten version: emcmake cmake -B./out/build/wasm-release -G "Ninja" -DCMAKE_BUILD_TYPE=Release
-add_executable (ShutterClient
+add_executable(ShutterClient
 	"src/Main.cpp"
 	"src/WindowHandler.h"
 	"src/WindowHandler.cpp"
@@ -40,8 +45,6 @@ add_executable (ShutterClient
 	"src/Request/DemoRequest.h"
 	"src/EmscriptenGlue.h"
 	"src/EmscriptenGlue.cpp"
-	"src/Shutter.pb.h"
-	"src/Shutter.pb.cc"
 
 	"src/submodules/imgui/backends/imgui_impl_opengl3.cpp"
 	"src/submodules/imgui/backends/imgui_impl_glfw.cpp"
@@ -50,22 +53,20 @@ add_executable (ShutterClient
 	"src/submodules/imgui/imgui_tables.cpp"
 	"src/submodules/imgui/imgui_widgets.cpp"
 	"src/submodules/glad.c"
+
+	"src/Shutter.proto"
 )
 
 target_include_directories(ShutterClient PRIVATE
 	"src/submodules/"
 	"src/submodules/imgui"
-	"src/submodules/glfw/include"	
-	"src/submodules/json/single_include/nlohmann"
+	"src/submodules/glfw/include"
 )
 
 if(NOT EMSCRIPTEN)
 	set_property(TARGET ShutterClient PROPERTY
 		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
 	)
-
-	# specify open ssl installation path!
-	set(OPEN_SSL_PATH "C:/Path/To/OpenSSL/")
 
 	target_link_directories(ShutterClient PRIVATE
 		"${OPEN_SSL_PATH}/lib/"
@@ -123,8 +124,25 @@ else()
 	)
 endif()
 
-list(APPEND CMAKE_PREFIX_PATH "${shutter_wasm_proto_dir}") 
+list(APPEND CMAKE_PREFIX_PATH "${SHUTTER_PROTO_DIR}") 
 find_package(Protobuf CONFIG REQUIRED)
+
+# cannot run PROTOBUF_GENERATE when cross-compiling to WASM, can run it only on the compiling system
+# therefore this project first needs to be compiled for the compiling system to generate the protobuf files below
+if(NOT EMSCRIPTEN)
+	PROTOBUF_GENERATE(
+		TARGET ShutterClient
+		LANGUAGE cpp
+		GENERATE_EXTENSIONS .pb.h .pb.cc
+		IMPORT_DIRS "${CMAKE_CURRENT_LIST_DIR}/src"
+		PROTOC_OUT_DIR "${CMAKE_CURRENT_LIST_DIR}/src"
+	)
+else()
+	target_sources(ShutterClient PUBLIC
+		"src/Shutter.pb.h"
+		"src/Shutter.pb.cc"
+	)
+endif()
 
 target_link_libraries(ShutterClient PUBLIC 
 	"protobuf::libprotobuf"
