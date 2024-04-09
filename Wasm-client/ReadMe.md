@@ -17,10 +17,7 @@ These libraries are only needed for the desktop version:
 
 ## Build instructions
 
-The project uses CMake as the build system. First the protobuf project needs to be built and installed and then its installation location have to be specified in the [CmakeLists.txt](./CMakeLists.txt) (which explains the detailed steps for building and installing). The [Shutter.Proto](../ESP8266_Server/src/Shutter.proto) descriptor file has to be compiled with these commands:
-
-	set proto_path=/ShutterController/
-	protoc -I=%proto_path%/ESP8266_Server/src/ --cpp_out=%proto_path%/Wasm-client/src/ %proto_path%/ESP8266_Server/src/Shutter.proto
+The project uses CMake as the build system. First the protobuf project needs to be built and installed and then its installation location have to be specified in the [CmakeLists.txt](./CMakeLists.txt) (which explains the detailed steps for building and installing). The `.proto` compilation is executed automatically during building.
 
 Apart from this, this module does not need further configuration if it's built as a WASM module. However the resources/built files have to be served with an [external server](../ESP8266_Server/ReadMe.md#Setting-up-the-external-resource-provider-server).
 

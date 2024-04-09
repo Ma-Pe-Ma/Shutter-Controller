@@ -64,10 +64,6 @@ target_include_directories(ShutterClient PRIVATE
 )
 
 if(NOT EMSCRIPTEN)
-	set_property(TARGET ShutterClient PROPERTY
-		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-	)
-
 	target_link_directories(ShutterClient PRIVATE
 		"${OPEN_SSL_PATH}/lib/"
 	)
@@ -91,10 +87,6 @@ if(NOT EMSCRIPTEN)
 	target_link_libraries(ShutterClient PRIVATE
 		glfw
 	)
-
-	# set the application to be multithreaded for MSVC
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 else()
 	# generate html file
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
@@ -150,6 +142,10 @@ target_link_libraries(ShutterClient PUBLIC
 
 # windows specific settings
 if (WIN32)
+	set_property(TARGET ShutterClient PROPERTY
+		MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+	)	
+
 	# Release mode
 	if (CMAKE_BUILD_TYPE STREQUAL "Release")
 		# hide Console Window
@@ -157,17 +153,23 @@ if (WIN32)
 			PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup"
 		)
 
-		# runtime libraries, earlier they are necessary when the app have to be build with them statically
-		target_link_libraries(ShutterClient PRIVATE
-			#msvcmrt
-			msvcrt
-		)
+		set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 
+		# link the static runtime library
+		target_link_libraries(ShutterClient PRIVATE
+			MSVCRT
+		)
 	# Debug mode
 	else()
 		# show console window
 		set_target_properties(ShutterClient
 			PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE"
+		)
+
+		set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+
+		target_link_libraries(ShutterClient PRIVATE
+			MSVCRTD
 		)
 	endif()
 endif()

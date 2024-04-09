@@ -16,3 +16,8 @@
 key.pem
 cert.pem
 /ESP8266_Server/src/pb*.*
+
+/Wasm-client/src/*.pb.*
+/Wasm-client/src/Shutter.proto
+/Wasm-client/imgui.ini
+/Wasm-client/resources/Roboto-Medium.ttf
