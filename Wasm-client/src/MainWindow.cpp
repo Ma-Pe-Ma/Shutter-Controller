@@ -29,14 +29,13 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
     requestQueue.setSiteAddress(siteAddress, parameters);
 
     receiveResponse = [this](std::vector<unsigned char> byteArray) -> std::shared_ptr<Request> {
-        this->guiMutex.lock();
+        std::lock_guard<std::mutex> guard(this->guiMutex);
 
         lastRequestOk = true;
 
         Shutter::Response response;
         if (!response.ParseFromArray((const void*)&byteArray[0], byteArray.size())) {
             lastRequestOk = false;
-            this->guiMutex.unlock();
             return nullptr;
         }
 
@@ -46,7 +45,6 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
             newRequest->setDelay(response.retrytime());
             newRequest->setCallback(this->receiveResponse);
             
-            this->guiMutex.unlock();
             return newRequest;
         }
 
@@ -62,8 +60,6 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
 
         lastStatusCheck = std::chrono::system_clock::now();
 
-        this->guiMutex.unlock();
-
         return nullptr;
     };
 
@@ -73,14 +69,13 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
     auto timingRequest = createRequest();
     timingRequest->setLocation("/D");
     timingRequest->setCallback([this](std::vector<unsigned char>& byteArray) -> std::shared_ptr<Request> {
-        this->guiMutex.lock();
+        std::lock_guard<std::mutex> guard(this->guiMutex);
         
         lastRequestOk = true;
 
         Shutter::TimingContainer incomingTimingContainer;
         if (!incomingTimingContainer.ParseFromArray((const void*) &byteArray[0], byteArray.size())) {
             lastRequestOk = false;
-            this->guiMutex.unlock();
             return nullptr;
         }
 
@@ -88,7 +83,6 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
             this->timings[i].receiveProtoObject(incomingTimingContainer.timing(i));
         }
 
-        this->guiMutex.unlock();
         return nullptr;
     });
 
@@ -103,7 +97,7 @@ void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::s
 void MainWindow::update()
 {
     requestQueue.tryDequeue();
-    guiMutex.lock();
+    std::lock_guard<std::mutex> guard(this->guiMutex);
 
     ImGui::SetNextWindowPos(ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(windowSize[0], windowSize[1]));
@@ -148,8 +142,6 @@ void MainWindow::update()
 
         this->requestQueue.pushNewRequestIfQueueIsEmpty(request);
     }
-
-    guiMutex.unlock();
 }
 
 void MainWindow::handleSetting()

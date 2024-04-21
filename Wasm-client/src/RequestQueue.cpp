@@ -7,39 +7,29 @@
 
 bool RequestQueue::isActive()
 {
-	bool isActive = false;
-
-	requestMutex.lock();
-
-	isActive = !requestQueue.empty() || currentRequest != nullptr;
-
-	requestMutex.unlock();
-
-	return isActive;
+	std::lock_guard<std::mutex> guard(requestMutex);
+	return !requestQueue.empty() || currentRequest != nullptr;
 }
 
 void RequestQueue::pushNewRequest(std::shared_ptr<Request> newRequest)
 {
-	requestMutex.lock();
+	std::lock_guard<std::mutex> guard(requestMutex);
 	requestQueue.push(newRequest);
-	requestMutex.unlock();
 }
 
 void RequestQueue::pushNewRequestIfQueueIsEmpty(std::shared_ptr<Request> newRequest)
 {
-	requestMutex.lock();
+	std::lock_guard<std::mutex> guard(requestMutex);
 
 	if (requestQueue.size() == 0 && currentRequest == nullptr)
 	{
 		requestQueue.push(newRequest);		
 	}
-
-	requestMutex.unlock();
 }
 
 void RequestQueue::tryDequeue()
 {
-	requestMutex.lock();
+	std::lock_guard<std::mutex> guard(requestMutex);
 
 	// handle finished request
 	if (currentRequest != nullptr && currentRequest->isFinished())
@@ -68,8 +58,6 @@ void RequestQueue::tryDequeue()
 
 		currentRequest->launchRequest();
 	}
-	
-	requestMutex.unlock();	
 }
 
 void RequestQueue::terminate()

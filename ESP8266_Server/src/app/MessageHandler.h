@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "LittleFSHandler.h"
 
-#include "../Configuration.h"
+#include "Configuration.h"
 
 #include "Shutter.pb.h"
 

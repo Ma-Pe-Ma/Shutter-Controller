@@ -14,7 +14,7 @@
 
 #include "Shutter.pb.h"
 
-#include "../Configuration.h"
+#include "Configuration.h"
 
 class MessageHandler;
 

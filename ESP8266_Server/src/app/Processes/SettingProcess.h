@@ -2,7 +2,7 @@
 #define SETTINGPROCESS_H
 
 #include "../MessageHandler.h"
-#include "../../Configuration.h"
+#include "../Configuration.h"
 
 #include "Shutter.pb.h"
 

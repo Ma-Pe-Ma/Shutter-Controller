@@ -1,6 +1,6 @@
 #include "ServerContainer.h"
 
-#include "../Keys.h"
+#include "Keys.h"
 #include "BrowserClient.h"
 #include "Hash.h"
 
@@ -145,13 +145,12 @@ void ServerContainer::initialize() {
             request.value -= request.value % 5 - (request.value % 5 < 3 ? 0 : 5);
 
             processQueue.setClientValue(1.0f * request.value / 100);
-            int wait = 3;
 
             uint8_t buffer[Shutter_Response_size];
             Shutter_Response response = Shutter_Response_init_default;
             SettingProcess* current = processQueue.getCurrentSettingProcess();
 
-            int bytesWritten = this->serializeResponseContent(buffer, response, wait);
+            int bytesWritten = this->serializeResponseContent(buffer, response,  current != nullptr ? current->getRemainingTime() : 3);
             this->secureServer.send(200, "text/plain", buffer, bytesWritten);
         }
         else {
@@ -321,7 +320,7 @@ void ServerContainer::handleRedirectSecure() {
 }
 
 bool ServerContainer::authenticationCheck() {
-#ifdef DISABLE_AUTHENTICATION
+#if DISABLE_AUTHENTICATION
     secureServer.sendHeader("Access-Control-Allow-Origin", "*");
     return true;
 #endif
@@ -330,7 +329,7 @@ bool ServerContainer::authenticationCheck() {
         return true;
     }
 
-#ifndef COOKIE_AUTHORIZATION_ONLY
+#if !COOKIE_AUTHORIZATION_ONLY
     if (secureServer.args() < 2) {
         return false;
     }
