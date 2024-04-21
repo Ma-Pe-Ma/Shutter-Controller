@@ -6,7 +6,7 @@
 #include "app/MessageHandler.h"
 #include "app/DdnsUpdater.h"
 
-#include "Configuration.h"
+#include "app/Configuration.h"
 
 ServerContainer serverContainer;
 
@@ -41,7 +41,7 @@ void setup() {
     Serial.println("");
 
     Serial.print("Connected, IP address: ");
-    Serial.println( WiFi.localIP());
+    Serial.println(WiFi.localIP());
 
     Serial.print("MAC Address: ");
     Serial.println(WiFi.macAddress());
