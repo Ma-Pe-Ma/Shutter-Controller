@@ -3,30 +3,32 @@
 #include <iostream>
 #include <format>
 
-#include <imgui/ImGui.h>
+#include <imgui/imgui.h>
 #ifdef __EMSCRIPTEN__
-#include "Request/DemoRequest.h"
-#include "Request/EmscriptenRequest.h"
+#include "request/DemoRequest.h"
+#include "request/EmscriptenRequest.h"
 #else
-#include "Request/SimpleRequest.h"
+#include "request/SimpleRequest.h"
 #endif
 
 #include "Shutter.pb.h"
 
-void MainWindow::initializeRequests(std::shared_ptr<std::map<std::string, std::string>> connectionParameters)
-{
-#ifdef __EMSCRIPTEN__
-    if (use_demo_request()) {
-        DemoRequest::dummyTimingSetter();
-    }
-#endif
-
+void MainWindow::initializeOfflineRequests(std::shared_ptr<std::map<std::string, std::string>> connectionParameters) {
     std::string siteAddress = (*connectionParameters)["siteAddress"];
     std::string username = (*connectionParameters)["username"];
     std::string password = (*connectionParameters)["password"];
     std::string parameters = "?username=" + username + "&password=" + password;
 
     requestQueue.setSiteAddress(siteAddress, parameters);
+}
+
+void MainWindow::initializeRequests()
+{
+#ifdef __EMSCRIPTEN__
+    if (use_demo_request()) {
+        DemoRequest::dummyTimingSetter();
+    }    
+#endif
 
     receiveResponse = [this](std::vector<unsigned char> byteArray) -> std::shared_ptr<Request> {
         std::lock_guard<std::mutex> guard(this->guiMutex);
@@ -183,7 +185,8 @@ void MainWindow::handleTimings()
     for (int i = 0; i < numberOfTimings; i++) {
         ImGui::PushItemWidth(24);
 
-        std::string id = std::vformat((*translation)["timingLabel"], std::make_format_args(i + 1));
+        int idNum = i + 1;
+        std::string id = std::vformat((*translation)["timingLabel"], std::make_format_args(idNum));
         ImGui::PushID(id.c_str());
 
         ImGui::Text(id.c_str());

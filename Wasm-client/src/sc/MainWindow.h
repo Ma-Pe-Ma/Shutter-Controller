@@ -46,7 +46,8 @@ class MainWindow {
 
 	std::vector<std::string> dayNameMap;
 public:
-	void initializeRequests(std::shared_ptr<std::map<std::string, std::string>>);
+	void initializeOfflineRequests(std::shared_ptr<std::map<std::string, std::string>>);
+	void initializeRequests();
 	void update();
 
     std::function<std::shared_ptr<Request>(std::vector<unsigned char>)> receiveResponse;

@@ -13,11 +13,7 @@
 .externalNativeBuild
 .cxx
 .vscode
-key.pem
-cert.pem
+**.pem
 /ESP8266_Server/src/pb*.*
 
-/Wasm-client/src/*.pb.*
-/Wasm-client/src/Shutter.proto
-/Wasm-client/imgui.ini
-/Wasm-client/resources/Roboto-Medium.ttf
+
