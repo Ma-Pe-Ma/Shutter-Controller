@@ -2,7 +2,9 @@
 
 ![status](https://badgen.net/badge/status/finished/green) ![license](https://badgen.net/github/license/Ma-Pe-Ma/Shutter-Controller)
 
-![Server](https://badgen.net/badge/ESP%20server/working/green) ![Browser](https://badgen.net/badge/HTML+JS%20client/working/green) ![Desktop](https://badgen.net/badge/WASM%20client/working/green) 
+![Server](https://github.com/Ma-Pe-Ma/Shutter-Controller/actions/workflows/platformio-server.yaml/badge.svg)  ![Browser](https://badgen.net/badge/HTML+JS%20client/working/green) 
+
+![WASM](https://github.com/Ma-Pe-Ma/Shutter-Controller/actions/workflows/cmake-wasm.yml/badge.svg) ![Linux](https://github.com/Ma-Pe-Ma/Shutter-Controller/actions/workflows/cmake-linux.yml/badge.svg) ![Windows](https://github.com/Ma-Pe-Ma/Shutter-Controller/actions/workflows/cmake-windows.yml/badge.svg)
 
 This is a very simple solution for controlling motorized rolling shutters remotely through the world wide web by using a microcontroller.
 
