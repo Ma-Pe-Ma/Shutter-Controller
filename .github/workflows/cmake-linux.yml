@@ -1,0 +1,83 @@
+name: Build Linux Client
+run-name: Build Linux Client
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Wasm-client/src/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Wasm-client/src/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      matrix:
+        os: [ubuntu-24.04]
+        build_type: [Release]
+        c_compiler: [gcc, clang]
+        c_compiler: [gcc]
+        include:
+          - os: ubuntu-24.04
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-24.04
+             c_compiler: clang
+             cpp_compiler: clang++
+
+    steps:
+    - name: Set up dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libwayland-dev
+        sudo apt-get install -y libxkbcommon-dev
+        sudo apt-get install -y xorg-dev
+        sudo apt-get install -y libssl-dev
+        
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/Wasm-client/build" >> "$GITHUB_OUTPUT"
+        echo "install-output-dir=${{ github.workspace }}/Wasm-client/install" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Protobuf build directory
+      id: cache-protobuf
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.strings.outputs.build-output-dir }}/src/submodules/protobuf/
+        key: protobuf-linux-build
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}/Wasm-client
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+    - name: Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --prefix ${{ steps.strings.outputs.install-output-dir }} --component shutter
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ShutterController-linux-x64
+        path: ${{ steps.strings.outputs.install-output-dir }}
