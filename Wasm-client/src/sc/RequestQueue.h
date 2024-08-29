@@ -6,15 +6,15 @@
 #include <mutex>
 #include <atomic>
 
-#include "Request/Request.h"
+#include "request/Request.h"
 
 class RequestQueue {
 	std::queue<std::shared_ptr<Request>> requestQueue;
 	std::shared_ptr<Request> currentRequest = nullptr;
 	std::mutex requestMutex;
 
-	std::string siteAddress;
-	std::string parameters;
+	std::string siteAddress = "";
+	std::string parameters = "";
 
 	bool lastRequestSuccess = true;
 public:

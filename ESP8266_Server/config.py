@@ -85,13 +85,16 @@ const char serverKey[] PROGMEM = R"EOF(
 {key})EOF";'''
 
 try:
-    with open('./key.pem') as key_file, open('./cert.pem') as cert_file, open('./src/app/Keys.h', 'w') as key_header_file:
+    with open('./key.pem') as key_file, open('./cert.pem') as cert_file:
         body = body_template.format(key=key_file.read(), cert=cert_file.read())
-        config_header = header_template.format(name='KEYS', body=body)
-        
-        key_header_file.write(config_header)
 
 except Exception as err:
+    body = body_template.format(key='', cert='')
+
     print(Fore.RED + 'Error loading key/cert file: ' + str(err))
     print(Fore.RED + 'Please place the correct key+cert files in the project root directory.')
-    sys.exit(1)
+
+with open('./src/app/Keys.h', 'w') as key_header_file:
+    config_header = header_template.format(name='KEYS', body=body)
+        
+    key_header_file.write(config_header)

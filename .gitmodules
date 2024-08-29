@@ -19,3 +19,6 @@
 [submodule "ESP8266_Server/lib/nanopb"]
 	path = ESP8266_Server/lib/nanopb
 	url = https://github.com/nanopb/nanopb.git
+[submodule "Wasm-Client/src/submodules/protobuf"]
+	path = Wasm-Client/src/submodules/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git

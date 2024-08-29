@@ -25,12 +25,14 @@ int main() {
 	windowHandler = std::make_shared<WindowHandler>();
 	windowHandler->initialize();
 
-	std::shared_ptr<std::map<std::string, std::string>> translation = loadMapFile("./resources/translation_en.txt");
-	std::shared_ptr<std::map<std::string, std::string>> connection = loadMapFile("./resources/connection.txt");
+	std::shared_ptr<std::map<std::string, std::string>> translation = loadMapFile("./assets/translation_en.txt");
 
 	mainWindow = std::make_shared<MainWindow>();
 	mainWindow->setTranslation(translation);
-	mainWindow->initializeRequests(connection);
+#ifndef __EMSCRIPTEN__
+	mainWindow->initializeOfflineRequests(loadMapFile("./resources/connection.txt"));
+#endif
+	mainWindow->initializeRequests();	
 	mainWindow->setWindowSize(windowHandler->getScreenWidth(), windowHandler->getScreenHeight());
 
 	windowHandler->subscribeToDisplaySizeChange([&](int width, int height) -> void {

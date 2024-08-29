@@ -1,0 +1,61 @@
+name: Build WASM Client
+run-name: Build WASM Client
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Wasm-client/src/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Wasm-client/src/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up dependencies
+      run: |
+        sudo apt-get install -y ninja-build
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/Wasm-client/build" >> "$GITHUB_OUTPUT"
+        echo "install-output-dir=${{ github.workspace }}/Wasm-client/install" >> "$GITHUB_OUTPUT"
+    
+    - uses: mymindstorm/setup-emsdk@v14
+ 
+    - name: Checking out repository and its submodules
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+
+    - name: Cache Protobuf build directory
+      id: cache-protobuf
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.strings.outputs.build-output-dir }}/src/submodules/protobuf/
+        key: protobuf-wasm-build
+
+    - name: Configure CMake
+      run: >
+        emcmake cmake -B${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_BUILD_TYPE=Release
+        -G "Ninja" 
+        -S ${{ github.workspace }}/Wasm-client/
+
+    - name: Build
+      run: ninja -C ${{ steps.strings.outputs.build-output-dir }}
+
+    - name: Install
+      run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --prefix ${{ steps.strings.outputs.install-output-dir }} --component shutter
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ShutterController-wasm
+        path: ${{ steps.strings.outputs.install-output-dir }}
