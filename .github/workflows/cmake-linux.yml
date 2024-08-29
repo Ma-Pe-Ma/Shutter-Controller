@@ -78,5 +78,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ShutterController-linux-x64
+        name: ShutterController-linux-x64-${{ matrix.cpp_compiler }}
         path: ${{ steps.strings.outputs.install-output-dir }}
