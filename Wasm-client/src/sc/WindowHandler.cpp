@@ -44,7 +44,7 @@ void WindowHandler::initialize()
 	//stbi_set_flip_vertically_on_load(true);
 	int componentNr = 0;
 	GLFWimage windowIcon;
-	windowIcon.pixels = stbi_load("./resources/icon.png", &windowIcon.width, &windowIcon.height, &componentNr, 4);
+	windowIcon.pixels = stbi_load("./assets/shutter.png", &windowIcon.width, &windowIcon.height, &componentNr, 4);
 
 	glfwSetWindowIcon(window, 1, &windowIcon);
 
@@ -98,7 +98,7 @@ void WindowHandler::initialize()
 	builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
 	builder.BuildRanges(&ranges);
 
-	io.Fonts->AddFontFromFileTTF("./resources/Roboto-Medium.ttf", 16, nullptr, ranges.Data);
+	io.Fonts->AddFontFromFileTTF("./assets/Roboto-Medium.ttf", 16, nullptr, ranges.Data);
 	io.Fonts->Build();
 
 	//std::cout<<"GL VERSION: "<<glGetString(GL_VERSION)<<std::endl;

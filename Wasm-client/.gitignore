@@ -399,3 +399,9 @@ FodyWeavers.xsd
 
 *.pem
 out/
+/resources/
+*.rc
+/src/sc/*.pb.*
+/src/sc/*.proto
+imgui.ini
+/assets/**.ttf

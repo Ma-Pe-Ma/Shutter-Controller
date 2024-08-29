@@ -6,8 +6,6 @@
 
 #include "Processes/Timing.h"
 
-#include <Time.h>
-
 //UTC+TIME_ZONE
 #define TIME_ZONE 1
 #define NTP_ADRESS "pool.ntp.org"
