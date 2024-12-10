@@ -18,7 +18,6 @@ public:
         std::this_thread::sleep_for(std::chrono::milliseconds(this->delay * 1000));
 
         requestThread = std::thread([this]() -> void {
-
             emscripten_fetch_attr_t attr;
             emscripten_fetch_attr_init(&attr);
 

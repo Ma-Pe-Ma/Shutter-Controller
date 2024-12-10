@@ -1,17 +1,17 @@
-appname Redõnyvezérlõ
-msetting Kézi beállítás: 
-timings Idõzítések
-setText Beállítás
-zeroing Nullázás
+appname RedÅ‘nyvezÃ©rlÅ‘
+msetting KÃ©zi beÃ¡llÃ­tÃ¡s: 
+timings IdÅ‘zÃ­tÃ©sek
+setText BeÃ¡llÃ­tÃ¡s
+zeroing NullÃ¡zÃ¡s
 svalue [%]
 automatic Megkeres
 up Fel
 down Le
-active aktív
-time idõ
-value value
-update Módosít
-timingLabel Idõzítés {0}:
+active aktÃ­v
+time idÅ‘
+value Ã©rtÃ©k
+update MÃ³dosÃ­t
+timingLabel IdÅ‘zÃ­tÃ©s {0}:
 w0 H
 w1 K
 w2 Sze
@@ -19,22 +19,22 @@ w3 Cs
 w4 P
 w5 Sz
 w6 V
-toz Nullázás típusa: 
-curPos Jelenlegi pozíció: {0}%%
-sync Szinkronizálás folyamatban...
-avail Nem elérhetõ!
-running Elérhetõ!
-sstate A szerver állapota: {0}
-stime Szerver indítási idõ: {0}
-messages Üzenetek:
+toz NullÃ¡zÃ¡s tÃ­pusa: 
+curPos Jelenlegi pozÃ­ciÃ³: {0}%
+sync SzinkronizÃ¡lÃ¡s folyamatban...
+avail Nem elÃ©rhetÅ‘!
+running ElÃ©rhetÅ‘!
+sstate A szerver Ã¡llapota: {0}
+stime Szerver indÃ­tÃ¡si idÅ‘: {0}
+messages Ãœzenetek:
 mid ID
-mevent Esemény
-mdate Idõpont
+mevent EsemÃ©ny
+mdate IdÅ‘pont
 empty -
-start Szerver indítás
-set Kézi beállítás: {0}%%
-timing Idõzítés végrehajtva: {0}%%
-zero Pozíció nullázva: {0}!
-zero_fail Nullázás meghíusult, a redõny foglalt
-zero_find Pozíció megkeresve: {0}%%
-timings_updated Idõzítések beállítva!
+start Szerver indÃ­tÃ¡s
+set KÃ©zi beÃ¡llÃ­tÃ¡s: {0}%
+timing IdÅ‘zÃ­tÃ©s vÃ©grehajtva: {0}%
+zero PozÃ­ciÃ³ nullÃ¡zva: {0}%
+zero_fail NullÃ¡zÃ¡s meghÃ­usult, a redÅ‘ny foglalt
+zero_find PozÃ­ciÃ³ megkeresve: {0}%
+timings_updated IdÅ‘zÃ­tÃ©sek beÃ¡llÃ­tva!

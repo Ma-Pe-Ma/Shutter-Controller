@@ -20,7 +20,7 @@ w4 F
 w5 Sa
 w6 Su
 toz Type of zero: 
-curPos Current position: {0}%%
+curPos Current position: {0}%
 sync Synchronisation is in progress...
 avail The server is not available!
 running The server is up and running!
@@ -32,9 +32,9 @@ mevent Event
 mdate Date
 empty -
 start Server start.
-set Manual set: {0}%%
-timing Timing set: {0}%%
-zero Zeroing: {0}%%.
+set Manual set: {0}%
+timing Timing set: {0}%
+zero Zeroing: {0}%
 zero_fail Zeroing failed, shutter is busy
-zero_find Position found: {0}%%
+zero_find Position found: {0}%
 timings_updated Timings updated.

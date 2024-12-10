@@ -3,7 +3,6 @@
 
 #include "Request.h"
 
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include <cpp-httplib/httplib.h>
 #include <exception>
 
@@ -17,8 +16,10 @@ public:
         requestThread = std::thread([this]() -> void {
             httplib::Client cli(siteAddress);
 
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
             cli.set_ca_cert_path("./resources/cert.pem");
             cli.enable_server_certificate_verification(true);
+#endif            
             cli.set_connection_timeout(timeout);
             //cli.set_read_timeout(timeout, 0);
             //cli.set_write_timeout(timeout, 0);

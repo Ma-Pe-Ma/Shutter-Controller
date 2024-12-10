@@ -149,7 +149,7 @@ void MainWindow::update()
 void MainWindow::handleSetting()
 {
     ImGui::NewLine();
-    ImGui::Text((*translation)["msetting"].c_str());
+    ImGui::Text("%s", (*translation)["msetting"].c_str());
     ImGui::SameLine();
 
     ImGui::PushItemWidth(150);
@@ -189,7 +189,7 @@ void MainWindow::handleTimings()
         std::string id = std::vformat((*translation)["timingLabel"], std::make_format_args(idNum));
         ImGui::PushID(id.c_str());
 
-        ImGui::Text(id.c_str());
+        ImGui::Text("%s", id.c_str());
         ImGui::SameLine();
 
         ImGui::Text("\t");
@@ -289,7 +289,7 @@ void MainWindow::handleZeroing()
 
     ImGui::NewLine();
 
-    ImGui::Text(((*translation)["toz"]).c_str());
+    ImGui::Text("%s", ((*translation)["toz"]).c_str());
     ImGui::SameLine();
 
     if (ImGui::Button((*translation)["up"].c_str()))
@@ -315,7 +315,7 @@ void MainWindow::handleZeroing()
 void MainWindow::handleMessages() {
     ImGui::NewLine();
 
-    ImGui::Text(std::vformat((*translation)["curPos"], std::make_format_args(currentValue)).c_str());
+    ImGui::Text("%s", std::vformat((*translation)["curPos"], std::make_format_args(currentValue)).c_str());
    
     std::string stateMessage = (*translation)["avail"];
     auto messageColor = IM_COL32(255, 0, 0, 255);
@@ -333,13 +333,13 @@ void MainWindow::handleMessages() {
     }
 
     ImGui::PushStyleColor(ImGuiCol_Text, messageColor);
-    ImGui::Text(std::vformat((*translation)["sstate"], std::make_format_args(stateMessage)).c_str());
+    ImGui::Text("%s", std::vformat((*translation)["sstate"], std::make_format_args(stateMessage)).c_str());
     ImGui::PopStyleColor();
     
-    ImGui::Text(std::vformat((*translation)["stime"], std::make_format_args(startupMessage)).c_str());
+    ImGui::Text("%s", std::vformat((*translation)["stime"], std::make_format_args(startupMessage)).c_str());
 
     ImGui::NewLine();
-    ImGui::Text(((*translation)["messages"]).c_str());
+    ImGui::Text("%s", ((*translation)["messages"]).c_str());
     ImGui::NewLine();
 
     ImGui::Columns(3);
@@ -347,13 +347,13 @@ void MainWindow::handleMessages() {
     ImGui::SetColumnWidth(1, 150);
     ImGui::SetColumnWidth(2, 140);
 
-    ImGui::Text(((*translation)["mid"]).c_str());
+    ImGui::Text("%s", ((*translation)["mid"]).c_str());
     ImGui::NextColumn();
 
-    ImGui::Text(((*translation)["mevent"]).c_str());
+    ImGui::Text("%s", ((*translation)["mevent"]).c_str());
     ImGui::NextColumn();
 
-    ImGui::Text(((*translation)["mdate"]).c_str());
+    ImGui::Text("%s", ((*translation)["mdate"]).c_str());
     ImGui::NextColumn();
     ImGui::Separator();
 
@@ -364,15 +364,15 @@ void MainWindow::handleMessages() {
         if (processedmessage != "-")
         {
             std::string textID = std::to_string(i + 1);
-            ImGui::Text(textID.c_str());
+            ImGui::Text("%s", textID.c_str());
             ImGui::NextColumn();
 
             std::string message = processedmessage;
 
-            ImGui::Text(message.c_str());
+            ImGui::Text("%s", message.c_str());
             ImGui::NextColumn();
 
-            ImGui::Text(messages[i].date.c_str());
+            ImGui::Text("%s", messages[i].date.c_str());
             ImGui::NextColumn();
             ImGui::Separator();
         }

@@ -19,6 +19,12 @@ class RequestQueue {
 	bool lastRequestSuccess = true;
 public:
 	void setSiteAddress(std::string siteAddress, std::string parameters) {
+#if !defined CPPHTTPLIB_OPENSSL_SUPPORT && !defined __EMSCRIPTEN__
+		if (siteAddress.substr(0, 5) == "https") {
+			siteAddress = "http" + siteAddress.substr(5);
+		}
+#endif
+
 		this->siteAddress = siteAddress;
 		this->parameters = parameters;
 	}
